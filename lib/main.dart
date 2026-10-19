@@ -224,6 +224,58 @@ class StartupErrorApp extends StatelessWidget {
   }
 }
 
+/// On wide desktop browser windows the phone-style UI would stretch across
+/// the whole screen. This keeps the entire app (including dialogs and
+/// bottom sheets) inside a centered, phone-width column with a branded
+/// backdrop. On phones, narrow windows and native builds it does nothing.
+class _WebFrame extends StatelessWidget {
+  final Widget child;
+  const _WebFrame({required this.child});
+
+  static const double _maxWidth = 480;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!kIsWeb) return child;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth <= _maxWidth + 40) return child;
+        final height = constraints.maxHeight;
+        return ColoredBox(
+          color: const Color(0xFF0B1B33),
+          child: Center(
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                boxShadow: [
+                  BoxShadow(color: Color(0x66000000), blurRadius: 40),
+                ],
+              ),
+              child: ClipRect(
+                child: SizedBox(
+                  width: _maxWidth,
+                  height: height,
+                  child: MediaQuery.fromView(
+                    view: View.of(context),
+                    child: Builder(
+                      builder: (context) {
+                        final media = MediaQuery.of(context);
+                        return MediaQuery(
+                          data: media.copyWith(size: Size(_maxWidth, height)),
+                          child: child,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -353,37 +405,39 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _appState,
-      child: Sizer(
-        builder: (context, orientation, screenType) {
-          precacheImage(
-            const AssetImage('assets/images/maintix_full_logo.png'),
-            context,
-          );
-          return Consumer<AppState>(
-            builder: (context, appState, _) {
-              AppTheme.applySystemUI(appState.themeMode);
-              return MaterialApp.router(
-                title: 'Maintix',
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: appState.themeMode,
-                // 🚨 CRITICAL: NEVER REMOVE OR MODIFY
-                builder: (context, child) {
-                  return MediaQuery(
-                    data: MediaQuery.of(
-                      context,
-                    ).copyWith(textScaler: TextScaler.linear(1.0)),
-                    // App-wide tap animation (glow on every tappable widget)
-                    child: GlobalTapEffect(child: child!),
-                  );
-                },
-                // 🚨 END CRITICAL SECTION
-                debugShowCheckedModeBanner: false,
-                routerConfig: appRouter,
-              );
-            },
-          );
-        },
+      child: _WebFrame(
+        child: Sizer(
+          builder: (context, orientation, screenType) {
+            precacheImage(
+              const AssetImage('assets/images/maintix_full_logo.png'),
+              context,
+            );
+            return Consumer<AppState>(
+              builder: (context, appState, _) {
+                AppTheme.applySystemUI(appState.themeMode);
+                return MaterialApp.router(
+                  title: 'Maintix',
+                  theme: AppTheme.lightTheme,
+                  darkTheme: AppTheme.darkTheme,
+                  themeMode: appState.themeMode,
+                  // 🚨 CRITICAL: NEVER REMOVE OR MODIFY
+                  builder: (context, child) {
+                    return MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: TextScaler.linear(1.0)),
+                      // App-wide tap animation (glow on every tappable widget)
+                      child: GlobalTapEffect(child: child!),
+                    );
+                  },
+                  // 🚨 END CRITICAL SECTION
+                  debugShowCheckedModeBanner: false,
+                  routerConfig: appRouter,
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
