@@ -59,12 +59,17 @@ void main() {
 
       // Initialize OneSignal push notifications (real push — works even
       // when the app is closed or killed, unlike the old local-only setup).
-      try {
-        OneSignal.Debug.setLogLevel(OSLogLevel.error);
-        OneSignal.initialize(_oneSignalAppId);
-        await OneSignal.Notifications.requestPermission(true);
-      } catch (e) {
-        debugPrint('OneSignal init error (non-fatal): $e');
+      // OneSignal's Flutter plugin has no web implementation, so the web
+      // build skips it (in-app notifications still arrive via Supabase
+      // Realtime).
+      if (!kIsWeb) {
+        try {
+          OneSignal.Debug.setLogLevel(OSLogLevel.error);
+          OneSignal.initialize(_oneSignalAppId);
+          await OneSignal.Notifications.requestPermission(true);
+        } catch (e) {
+          debugPrint('OneSignal init error (non-fatal): $e');
+        }
       }
 
       // 🚨 CRITICAL: Device orientation lock - DO NOT REMOVE
@@ -276,7 +281,9 @@ class _MyAppState extends State<MyApp> {
               }
             } else if (event == AuthChangeEvent.signedOut) {
               NotificationService.instance.unsubscribe();
-              OneSignal.logout();
+              if (!kIsWeb) {
+                OneSignal.logout();
+              }
               _appState.logout();
               final currentPath = appRouter
                   .routerDelegate
@@ -315,7 +322,9 @@ class _MyAppState extends State<MyApp> {
   /// Associates this device's OneSignal subscription with the signed-in
   /// Supabase user (external_id). The Edge Function targets pushes using
   /// this same ID, so no player-id syncing table is needed.
+  /// No-op on web, where OneSignal is not initialized.
   void _linkOneSignalIdentity(String userId) {
+    if (kIsWeb) return;
     try {
       OneSignal.login(userId);
     } catch (e) {
