@@ -1,0 +1,86 @@
+# MOVE THIS FILE to .github/workflows/deploy_web.yml (rename the path on GitHub).
+# It could not be created there automatically because the integration token
+# is not allowed to write workflow files.
+name: Build and Deploy Web App
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/web-app
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: maintix-web-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Flutter web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Generate web icons from the Maintix logo
+        run: |
+          pip install --quiet pillow
+          mkdir -p web/icons
+          python3 - <<'PY'
+          from PIL import Image
+
+          src = Image.open('assets/images/maintix_m_logo.png').convert('RGBA')
+
+          def render(size, pad_ratio):
+              canvas = Image.new('RGBA', (size, size), (255, 255, 255, 255))
+              inner = int(size * (1 - 2 * pad_ratio))
+              logo = src.resize((inner, inner), Image.LANCZOS)
+              offset = (size - inner) // 2
+              canvas.paste(logo, (offset, offset), logo)
+              return canvas.convert('RGB')
+
+          for size in (192, 512):
+              render(size, 0.08).save(f'web/icons/Icon-{size}.png')
+              render(size, 0.20).save(f'web/icons/Icon-maskable-{size}.png')
+          render(64, 0.06).save('web/favicon.png')
+          PY
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build web release
+        run: flutter build web --release --base-href /maintix/
+
+      - name: Add SPA fallback page
+        run: cp build/web/index.html build/web/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

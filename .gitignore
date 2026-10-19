@@ -33,7 +33,10 @@ pubspec.lock
 .pub-cache/
 .pub/
 /build/
-/web/
+
+# Web icons are generated from assets/images/maintix_m_logo.png in CI
+/web/favicon.png
+/web/icons/
 
 # Symbolication related
 app.*.symbols
