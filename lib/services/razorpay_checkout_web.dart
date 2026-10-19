@@ -1,6 +1,7 @@
-// Web implementation using Razorpay JS SDK via dart:js
-// ignore_for_file: avoid_web_libraries_in_flutter
-import 'dart:js' as js;
+// Web implementation using the Razorpay JS SDK via dart:js_interop.
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+
 import 'package:flutter/material.dart';
 
 Future<void> launchRazorpayCheckout({
@@ -15,25 +16,21 @@ Future<void> launchRazorpayCheckout({
   required Function(String errorMsg) onFailure,
 }) async {
   try {
-    // Check if Razorpay JS SDK is loaded
-    final razorpayExists = js.context.hasProperty('Razorpay');
-    if (!razorpayExists) {
+    // Check if Razorpay JS SDK is loaded (script tag in web/index.html)
+    if (!globalContext.has('Razorpay')) {
       onFailure('Razorpay SDK not loaded. Please refresh and try again.');
       return;
     }
 
     // Register global callbacks that JS can call back into Dart
-    js.context['_rzpOnSuccess'] = js.allowInterop((
-      String paymentId,
-      String rzpOrderId,
-      String signature,
-    ) {
-      onSuccess(paymentId, rzpOrderId, signature);
-    });
+    globalContext['_rzpOnSuccess'] =
+        ((JSString paymentId, JSString rzpOrderId, JSString signature) {
+          onSuccess(paymentId.toDart, rzpOrderId.toDart, signature.toDart);
+        }).toJS;
 
-    js.context['_rzpOnFailure'] = js.allowInterop((String errorMsg) {
-      onFailure(errorMsg);
-    });
+    globalContext['_rzpOnFailure'] = ((JSString errorMsg) {
+      onFailure(errorMsg.toDart);
+    }).toJS;
 
     // Build and open Razorpay checkout via JS eval
     final script =
@@ -99,7 +96,7 @@ Future<void> launchRazorpayCheckout({
       })();
     ''';
 
-    js.context.callMethod('eval', [script]);
+    globalContext.callMethod<JSAny?>('eval'.toJS, script.toJS);
   } catch (e) {
     onFailure('Failed to launch Razorpay: $e');
   }
