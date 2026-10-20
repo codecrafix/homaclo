@@ -13,12 +13,10 @@ const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MN=['Jan','Feb','Mar','Apr'
 const fmtDate=d=>`${DN[d.getDay()]}, ${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`;
 const newCart=()=>({q:{'500L':0,'750L':0,'1000L':0,'1500L':0,'2000L':0},di:0,date:fmtDate(new Date()),slot:'',addr:'',land:'',phone:'',useCoins:false,coupon:null,agree:false});
 const S={user:null,profile:null,coins:0,cart:newCart(),step:1,busy:false,paying:false};
-let couponMsg='';
+let couponMsg='',rating=5;
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),3800)}
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
-
-/* ---------- theme ---------- */
 (function(){const t=store('mx_theme');if(t)document.documentElement.dataset.theme=t})();
 
 /* ---------- data helpers ---------- */
@@ -42,6 +40,7 @@ async function deductCoins(n,desc){
     S.coins=nb;return true;
   }catch(e){return false}
 }
+async function refreshCoins(){if(!S.user)return;const {data}=await sb.from('user_coins').select('balance').eq('user_id',S.user.id).maybeSingle();S.coins=data?.balance||0}
 async function setup(){
   if(S.busy||!S.user)return;S.busy=true;
   try{
@@ -71,12 +70,15 @@ async function setup(){
 /* ---------- auth ---------- */
 function navAuth(){
   document.body.classList.toggle('authed',!!S.user);
-  const b=$('#authBtn');b.textContent=S.user?'Sign out':'Sign in';
+  $('#authBtn').textContent=S.user?'Sign out':'Sign in';
 }
-sb.auth.onAuthStateChange(async(ev,session)=>{
+// Do not await Supabase calls inside this callback (known deadlock); defer instead.
+sb.auth.onAuthStateChange((ev,session)=>{
   S.user=session?.user||null;
-  if(S.user){await setup()}else{S.profile=null;S.coins=0}
-  navAuth();route();
+  setTimeout(async()=>{
+    if(S.user)await setup();else{S.profile=null;S.coins=0}
+    navAuth();route();
+  },0);
 });
 function openLogin(email){
   const d=$('#dlg');
@@ -84,7 +86,7 @@ function openLogin(email){
   <form id="lf"><label>Email address</label><input id="em" type="email" required autocomplete="email" placeholder="you@example.com" value="${h(email||'')}">
   <button class="btn block" style="margin-top:18px">Send code</button></form>
   <button class="btn ghost block" style="margin-top:10px" data-act="close">Cancel</button>`;
-  d.showModal();
+  if(!d.open)d.showModal();
   $('#lf').onsubmit=async e=>{
     e.preventDefault();const em=$('#em').value.trim().toLowerCase(),btn=$('#lf .btn');btn.disabled=true;btn.textContent='Sending…';
     const {error}=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true}});
@@ -152,7 +154,7 @@ function successDialog(pid,oid){
   d.innerHTML=`<div class="c"><div style="font-size:3rem">🎉</div><h3>Payment successful</h3><p class="muted" style="margin:8px 0 16px">Your booking is confirmed.</p>
   <div class="card small" style="box-shadow:none;padding:12px;text-align:left"><div class="line"><span class="muted">Payment ID</span><b>${h(pid)}</b></div><div class="line"><span class="muted">Order ID</span><b>${h(oid)}</b></div></div>
   <a class="btn block" style="margin-top:16px" href="#/bookings" data-act="close">View my bookings</a></div>`;
-  d.showModal();
+  if(!d.open)d.showModal();
 }
 function finishFlow(){S.cart=newCart();S.step=1;couponMsg=''}
 async function pay(){
@@ -196,7 +198,6 @@ async function pay(){
     rz.on('payment.failed',onFail);rz.open();
   }catch(e){S.paying=false;toast('Could not open payment window.');route()}
 }
-async function refreshCoins(){if(!S.user)return;const {data}=await sb.from('user_coins').select('balance').eq('user_id',S.user.id).maybeSingle();S.coins=data?.balance||0}
 
 /* ---------- views ---------- */
 const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
@@ -204,7 +205,8 @@ const COL=['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6','#06b6d4','#0d9488'
 const ini=n=>(n||'C').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'C';
 const col=n=>COL[(n||'C').charCodeAt(0)%COL.length];
 function reviewCard(r){const n=r.user_name||'Customer';return `<div class="card hov"><div class="row"><div class="av" style="background:${col(n)}">${h(ini(n))}</div><div><b>${h(n)}</b><div class="stars small">${stars(r.rating)}</div></div></div><p class="muted" style="margin-top:14px">“${h(r.review_text)}”</p></div>`}
-const gate=(msg)=>`<div class="page"><div class="wrap c fade"><h2>${msg}</h2><p class="muted" style="margin:10px 0 22px">Sign in with your email to continue.</p><button class="btn" data-act="auth">Sign in</button></div></div>`;
+const gate=msg=>`<div class="page"><div class="wrap c fade"><h2>${msg}</h2><p class="muted" style="margin:10px 0 22px">Sign in with your email to continue.</p><button class="btn" data-act="auth">Sign in</button></div></div>`;
+const AF='grid-template-columns:repeat(auto-fit,minmax(210px,1fr))';
 const tankSvg=`<svg viewBox="0 0 400 400" class="tankart" aria-hidden="true"><defs><radialGradient id="w" cx="50%" cy="45%"><stop offset="0" stop-color="#67e8f9"/><stop offset="1" stop-color="#0e9aa8"/></radialGradient><linearGradient id="s" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".55"/></linearGradient><clipPath id="cp"><circle cx="200" cy="200" r="128"/></clipPath></defs><circle cx="200" cy="200" r="190" fill="none" stroke="#22d3ee" stroke-opacity=".18"/><circle cx="200" cy="200" r="165" fill="#0b2a52" stroke="#1d4f86" stroke-width="10"/><circle cx="200" cy="200" r="128" fill="url(#w)"/><g clip-path="url(#cp)"><circle class="rip" cx="200" cy="200" r="128" fill="none" stroke="#fff" stroke-width="3"/><circle class="rip" cx="200" cy="200" r="128" fill="none" stroke="#fff" stroke-width="3"/><path class="sweep" d="M200 200 L200 72 A128 128 0 0 1 328 200Z" fill="url(#s)"/></g><circle cx="200" cy="200" r="128" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/><circle cx="200" cy="34" r="10" fill="#22d3ee"/><circle cx="366" cy="200" r="10" fill="#22d3ee"/><circle cx="200" cy="366" r="10" fill="#22d3ee"/><circle cx="34" cy="200" r="10" fill="#22d3ee"/></svg>`;
 
 function homeView(){
@@ -212,8 +214,8 @@ function homeView(){
   <p class="lead">Professional, hygienic water tank cleaning with transparent pricing and doorstep service. Book in under two minutes.</p>
   <div class="cta"><a class="btn" href="#/book">Book a cleaning →</a><a class="btn ghost" href="#/services">See pricing</a></div>
   <div class="chips"><span>✔ Food-grade cleaning agents</span><span>✔ No hidden charges</span><span>✔ Secure Razorpay payment</span></div></div>${tankSvg}</div></section>
-  <div class="wrap"><div class="stats" id="stats"><div class="stat"><b>₹1,000</b><span class="muted">Starting price</span></div><div class="stat"><b>5</b><span class="muted">Tank sizes</span></div><div class="stat"><b id="st-r">—</b><span class="muted">Customer rating</span></div><div class="stat"><b>₹500</b><span class="muted">Off on 3+ tanks</span></div></div></div>
-  <section class="sec"><div class="wrap"><div class="head c"><h2>How it works</h2><p>Four simple steps from tap to sparkling tank.</p></div><div class="grid g3" style="grid-template-columns:repeat(4,1fr)">
+  <div class="wrap"><div class="stats"><div class="stat"><b>₹1,000</b><span class="muted">Starting price</span></div><div class="stat"><b>5</b><span class="muted">Tank sizes</span></div><div class="stat"><b id="st-r">—</b><span class="muted">Customer rating</span></div><div class="stat"><b>₹500</b><span class="muted">Off on 3+ tanks</span></div></div></div>
+  <section class="sec"><div class="wrap"><div class="head c"><h2>How it works</h2><p>Four simple steps from tap to sparkling tank.</p></div><div class="grid" style="${AF}">
   ${[['Choose','Pick your tank size and quantity.'],['Schedule','Select a date and 2-hour time slot.'],['Pay securely','Pay online with UPI, card or netbanking.'],['We clean','Our trained team arrives and cleans.']].map((x,i)=>`<div class="card hov"><div class="num">${i+1}</div><h4>${x[0]}</h4><p class="muted small">${x[1]}</p></div>`).join('')}</div></div></section>
   <section class="sec alt"><div class="wrap"><div class="head"><h2>Why families choose Maintix</h2></div><div class="grid g3">
   ${[['🧪','Eco-friendly, food-grade agents','Safe for drinking water storage and your family.'],['💰','Transparent pricing','Fixed price per tank size. What you see is what you pay.'],['📅','Same-day & scheduled slots','Pick the date and time that suits you.'],['🛡️','Trained professionals','Careful, hygienic cleaning at your doorstep.'],['🪙','Rewards wallet','Earn coins on signup and reviews, redeem on bookings.'],['📍','Local to Satna','A neighbourhood team, quick to reach you.']].map(x=>`<div class="card hov"><div style="font-size:1.8rem">${x[0]}</div><h4 style="margin:10px 0 6px">${x[1]}</h4><p class="muted small">${x[2]}</p></div>`).join('')}</div></div></section>
@@ -228,7 +230,7 @@ async function homeAfter(){
 }
 function servicesView(){
   return `<div class="page"><div class="wrap fade"><div class="head"><h1>Services &amp; pricing</h1><p>Simple fixed pricing by tank capacity. Book 3 or more tanks and save ₹500.</p></div>
-  <div class="grid g5">${Object.entries(PRICES).map(([k,p])=>`<div class="card hov c"><div class="tk" style="margin:0 auto 12px">💧</div><h3>${k}</h3><div class="price" style="margin:8px 0">${inr(p)}</div><a class="btn sm block" href="#/book">Book</a></div>`).join('')}</div>
+  <div class="grid" style="${AF}">${Object.entries(PRICES).map(([k,p])=>`<div class="card hov c"><div class="tk" style="margin:0 auto 12px">💧</div><h3>${k}</h3><div class="price" style="margin:8px 0">${inr(p)}</div><a class="btn sm block" href="#/book">Book</a></div>`).join('')}</div>
   <div class="head" style="margin-top:60px"><h2>All services</h2></div><div class="grid g3" id="svc"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>`;
 }
 async function servicesAfter(){
@@ -240,7 +242,7 @@ function summaryBox(){
   const items=Object.entries(c.q).filter(([,v])=>v>0);
   return `<div class="card sum"><h4 style="margin-bottom:10px">Order summary</h4>${items.length?items.map(([k,v])=>`<div class="line"><span>${k} × ${v}</span><span>${inr(PRICES[k]*v)}</span></div>`).join(''):'<p class="muted small">No tanks selected yet.</p>'}
   ${t.bulk?`<div class="line ok"><span>🎉 Bulk discount</span><span>−${inr(t.bulk)}</span></div>`:''}${t.cp?`<div class="line ok"><span>Coupon ${h(c.coupon.code)}</span><span>−${inr(t.cp)}</span></div>`:''}${t.coins?`<div class="line ok"><span>Wallet coins</span><span>−${inr(t.coins)}</span></div>`:''}
-  <div class="line t"><span>Total</span><span>${inr(t.total)}</span></div>${c.date&&S.step>1?`<p class="muted small" style="margin-top:10px">📅 ${h(c.date)}${c.slot?'<br>🕒 '+h(c.slot):''}</p>`:''}</div>`;
+  <div class="line t"><span>Total</span><span>${inr(t.total)}</span></div>${S.step>1?`<p class="muted small" style="margin-top:10px">📅 ${h(c.date)}${c.slot?'<br>🕒 '+h(c.slot):''}</p>`:''}</div>`;
 }
 function bookView(){
   const c=S.cart,t=calc(),st=S.step;let body='';
@@ -265,7 +267,7 @@ function bookView(){
   return `<div class="page"><div class="wrap fade"><h1>Book a cleaning</h1><div class="steps">${['Tanks','Schedule','Address','Pay'].map((s,i)=>`<span class="${st===i+1?'on':st>i+1?'done':''}">${i+1}. ${s}</span>`).join('')}</div><div class="bk"><div class="card">${body}</div>${summaryBox()}</div></div></div>`;
 }
 function readStep3(){const c=S.cart;c.addr=($('#f-addr')?.value??c.addr);c.land=($('#f-land')?.value??c.land);c.phone=($('#f-ph')?.value??c.phone).replace(/\D/g,'')}
-async function bookingsView(){
+function bookingsView(){
   if(!S.user)return gate('Sign in to see your bookings');
   return `<div class="page"><div class="wrap fade"><h1>My bookings</h1><div class="stack" id="bl" style="margin-top:24px"><div class="sk"></div><div class="sk"></div></div></div></div>`;
 }
@@ -276,29 +278,29 @@ async function bookingsAfter(){
 function reviewsView(){
   return `<div class="page"><div class="wrap fade"><div class="head"><h1>Customer reviews</h1><p id="ravg" class="muted"></p></div><div id="rform"></div><div class="grid g3" id="rl"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>`;
 }
-let rating=5;
 async function reviewsAfter(){
   const {data}=await sb.from('reviews').select('*').eq('is_approved',true).order('created_at',{ascending:false});
   const el=$('#rl');if(!el)return;
   el.innerHTML=data?.length?data.map(reviewCard).join(''):'<p class="muted">No reviews yet.</p>';
-  if(data?.length)$('#ravg').innerHTML=`<span class="stars">${stars(data.reduce((s,r)=>s+r.rating,0)/data.length)}</span> ${(data.reduce((s,r)=>s+r.rating,0)/data.length).toFixed(1)} from ${data.length} review${data.length>1?'s':''}`;
+  if(data?.length){const avg=data.reduce((s,r)=>s+r.rating,0)/data.length;$('#ravg').innerHTML=`<span class="stars">${stars(avg)}</span> ${avg.toFixed(1)} from ${data.length} review${data.length>1?'s':''}`}
   const f=$('#rform');if(!f)return;
   if(!S.user){f.innerHTML='<div class="card" style="margin-bottom:24px"><p class="muted">Sign in after your booking to share your experience and earn 10 coins.</p></div>';return}
   const {data:b}=await sb.from('bookings').select('created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
   const {data:r}=await sb.from('reviews').select('created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
   const can=b?.length&&(!r?.length||new Date(b[0].created_at)>new Date(r[0].created_at));
-  f.innerHTML=can?`<div class="card" style="margin-bottom:24px"><h4>Write a review · earn 10 🪙</h4><div id="stp" style="font-size:1.8rem;margin:8px 0">${[1,2,3,4,5].map(i=>`<button class="icon" style="font-size:1.3rem;width:auto;padding:0 6px;border:0;background:none;color:#f59e0b" data-act="star" data-n="${i}">${i<=rating?'★':'☆'}</button>`).join('')}</div><textarea id="rt" rows="3" placeholder="How was your experience?"></textarea><button class="btn" style="margin-top:12px" data-act="rsub">Submit review</button><p class="muted small" style="margin-top:8px">Reviews appear publicly after approval.</p></div>`:'<div class="card" style="margin-bottom:24px"><p class="muted">You can review once after each booking.</p></div>';
+  if(!$('#rform'))return;
+  f.innerHTML=can?`<div class="card" style="margin-bottom:24px"><h4>Write a review · earn 10 🪙</h4><div id="stp" style="margin:8px 0">${[1,2,3,4,5].map(i=>`<button style="font-size:1.7rem;padding:0 4px;border:0;background:none;color:#f59e0b;cursor:pointer" data-act="star" data-n="${i}">${i<=rating?'★':'☆'}</button>`).join('')}</div><textarea id="rt" rows="3" placeholder="How was your experience?"></textarea><button class="btn" style="margin-top:12px" data-act="rsub">Submit review</button><p class="muted small" style="margin-top:8px">Reviews appear publicly after approval.</p></div>`:'<div class="card" style="margin-bottom:24px"><p class="muted">You can write one review after each booking.</p></div>';
 }
 function profileView(){
   if(!S.user)return gate('Sign in to view your profile');
   const p=S.profile||{};
   return `<div class="page"><div class="wrap fade"><h1>My profile</h1><div class="grid g2" style="margin-top:24px"><div class="card"><div class="row"><div class="av" style="background:${col(p.full_name)};width:56px;height:56px">${h(ini(p.full_name))}</div><div><b>${h(p.full_name)}</b><div class="muted small">${h(S.user.email)}</div></div></div>
   <label>Full name</label><input id="p-n" value="${h(p.full_name)}"><label>Phone</label><input id="p-p" inputmode="tel" value="${h(p.phone_number)}"><label>City / address</label><input id="p-l" value="${h(p.location)}"><button class="btn" style="margin-top:18px" data-act="psave">Save changes</button></div>
-  <div class="stack"><div class="card"><div class="line"><span class="muted">Wallet balance</span><b class="price" style="font-size:1.6rem">🪙 ${S.coins}</b></div><div id="ctx" class="small muted"></div></div>
+  <div class="stack"><div class="card"><div class="line"><span class="muted">Wallet balance</span><b class="price" style="font-size:1.6rem">🪙 <span id="cb">${S.coins}</span></b></div><div id="ctx" class="small muted"></div></div>
   <div class="card"><h4>Need help?</h4><label>Subject</label><input id="t-s"><label>Message</label><textarea id="t-m" rows="3"></textarea><button class="btn navy" style="margin-top:14px" data-act="tsend">Send to support</button></div></div></div></div></div>`;
 }
 async function profileAfter(){
-  if(!S.user)return;await refreshCoins();
+  if(!S.user)return;await refreshCoins();if($('#cb'))$('#cb').textContent=S.coins;
   const {data}=await sb.from('coin_transactions').select('*').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(8);const el=$('#ctx');if(!el)return;
   el.innerHTML=data?.length?data.map(x=>`<div class="line"><span>${h(x.description)}</span><b class="${x.amount>0?'ok':'err'}">${x.amount>0?'+':''}${x.amount}</b></div>`).join(''):'No coin activity yet.';
 }
@@ -313,24 +315,25 @@ function legalView(kind){
 
 /* ---------- router ---------- */
 const ROUTES={'':'home',services:'services',book:'book',bookings:'bookings',reviews:'reviews',profile:'profile',about:'about',privacy:'privacy',terms:'terms'};
-async function route(){
+let lastR='';
+function route(){
   const key=location.hash.replace(/^#\/?/,'').split('?')[0];const r=ROUTES[key]??'home';
   $$('#links a').forEach(a=>a.classList.toggle('on',a.dataset.r===r));
   $('#nav').classList.remove('open');
-  const app=$('#app');let after=null,html;
+  let after=null,html;
   switch(r){
     case 'home':html=homeView();after=homeAfter;break;
     case 'services':html=servicesView();after=servicesAfter;break;
     case 'book':html=bookView();break;
-    case 'bookings':html=await bookingsView();after=bookingsAfter;break;
+    case 'bookings':html=bookingsView();after=bookingsAfter;break;
     case 'reviews':html=reviewsView();after=reviewsAfter;break;
     case 'profile':html=profileView();after=profileAfter;break;
     case 'about':html=aboutView();break;
     default:html=legalView(r);
   }
-  const y=r==='book'?scrollY:0;app.innerHTML=html;if(r==='book')scrollTo(0,y);else scrollTo(0,0);
+  const y=scrollY;$('#app').innerHTML=html;scrollTo(0,(r===lastR&&r==='book')?y:0);lastR=r;
   if(after)after();
-  document.title=({home:'Maintix — Professional Water Tank Cleaning in Satna'}[r])||`${r[0].toUpperCase()+r.slice(1)} · Maintix`;
+  document.title=r==='home'?'Maintix — Professional Water Tank Cleaning in Satna':`${r[0].toUpperCase()+r.slice(1)} · Maintix`;
 }
 window.addEventListener('hashchange',route);
 
@@ -341,21 +344,21 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act,c=S.cart;
-  if(el.tagName==='INPUT')return;
   switch(a){
     case 'theme':{const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');const n=cur==='dark'?'light':'dark';document.documentElement.dataset.theme=n;store('mx_theme',n);break}
     case 'menu':$('#nav').classList.toggle('open');break;
     case 'auth':if(S.user){await sb.auth.signOut();location.hash='#/';toast('Signed out')}else openLogin();break;
     case 'close':$('#dlg').close();break;
-    case 'q':c.q[el.dataset.k]=Math.max(0,Math.min(10,c.q[el.dataset.k]+Number(el.dataset.d)));if(c.coupon&&calc().tanks<3&&c.coupon.code==='TANK500'){c.coupon=null;couponMsg=''}route();break;
+    case 'q':c.q[el.dataset.k]=Math.max(0,Math.min(10,c.q[el.dataset.k]+Number(el.dataset.d)));if(c.coupon&&c.coupon.code==='TANK500'&&calc().tanks<3){c.coupon=null;couponMsg=''}route();break;
     case 'day':c.di=Number(el.dataset.i);c.date=fmtDate(new Date(Date.now()+c.di*864e5));route();break;
     case 'slot':c.slot=el.dataset.s;route();break;
     case 'back':readStep3();S.step=Math.max(1,S.step-1);route();break;
     case 'next':
+      if(S.step===1&&!calc().tanks)return;
+      if(S.step===2&&!c.slot)return;
       if(S.step===3){readStep3();if(c.addr.trim().length<10)return toast('Please enter your complete address');if(c.phone.length!==10)return toast('Enter a valid 10-digit phone number')}
-      if(S.step===1&&!calc().tanks)return;if(S.step===2&&!c.slot)return;
-      if(S.step===3&&!c.phone&&S.profile?.phone_number)c.phone=S.profile.phone_number;
-      S.step=Math.min(4,S.step+1);if(S.step===3&&!c.phone&&S.profile?.phone_number)c.phone=S.profile.phone_number;if(S.step===3&&!c.addr&&S.profile?.location)c.addr=S.profile.location;
+      S.step=Math.min(4,S.step+1);
+      if(S.step===3){if(!c.phone&&S.profile?.phone_number)c.phone=S.profile.phone_number;if(!c.addr&&S.profile?.location)c.addr=S.profile.location}
       route();break;
     case 'cp':{const r=await validateCoupon($('#f-cp').value);couponMsg=r.message;c.coupon=r.valid?r:null;route();break}
     case 'rmcp':c.coupon=null;couponMsg='';route();break;
@@ -368,7 +371,7 @@ document.addEventListener('click',async e=>{
       el.disabled=true;
       const {error}=await sb.from('reviews').insert({user_id:S.user.id,user_name:S.profile?.full_name||'',service_name:'Water Tank Cleaning',rating,review_text:txt,is_approved:false});
       if(error){toast('Could not submit review');el.disabled=false;return}
-      await addCoins(10,'reward','Review submitted for Water Tank Cleaning');toast('Thanks! +10 coins added. Your review will appear after approval.');route();break}
+      await addCoins(10,'reward','Review submitted for Water Tank Cleaning');toast('Thanks! +10 coins added. Your review appears after approval.');route();break}
     case 'psave':{
       const upd={full_name:$('#p-n').value.trim(),phone_number:$('#p-p').value.trim(),location:$('#p-l').value.trim(),updated_at:new Date().toISOString()};
       const {data,error}=await sb.from('profiles').update(upd).eq('id',S.user.id).select().maybeSingle();
