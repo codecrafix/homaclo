@@ -1,6 +1,3 @@
-# MOVE THIS FILE to .github/workflows/deploy_web.yml (rename the path on GitHub).
-# It could not be created there automatically because the integration token
-# is not allowed to write workflow files.
 name: Build and Deploy Web App
 
 on:
@@ -61,16 +58,24 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Build web release
-        run: flutter build web --release --base-href /maintix/
+      - name: Build web release (app under /maintix/app/)
+        run: flutter build web --release --base-href /maintix/app/
 
-      - name: Add SPA fallback page
-        run: cp build/web/index.html build/web/404.html
+      - name: Assemble Pages output
+        run: |
+          mkdir -p public/app
+          cp -r build/web/. public/app/
+          cp public/app/index.html public/app/404.html
+          rm -rf public/app/site
+          cp -r web/site/. public/
+          mkdir -p public/site
+          cp -r web/site/. public/site/
+          cp web/site/index.html public/404.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/web
+          path: public
 
   deploy:
     name: Deploy to GitHub Pages
