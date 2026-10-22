@@ -1,0 +1,21 @@
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;font-size:16px}
+body{font-size:.95rem;overflow-wrap:break-word}
+h1{font-size:clamp(1.9rem,6.2vw,3.4rem)}h2{font-size:clamp(1.45rem,4.6vw,2.2rem)}h3{font-size:1.12rem}h4{font-size:.98rem}
+.hero p.lead{font-size:clamp(.95rem,2.6vw,1.12rem)}p{font-size:.95rem}.small,.muted.small{font-size:.82rem}
+.card h3,.card h4,.tk,.price,.stat b{overflow-wrap:anywhere}
+.grid.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}.grid.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr))}.grid.g5{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.stats{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}.stat{padding:16px 10px}.stat b{font-size:clamp(1.25rem,4vw,1.8rem)}.stat span{font-size:.8rem}
+.price{font-size:clamp(1.25rem,4vw,1.7rem)}.page{padding:30px 0 70px}.sec{padding:clamp(44px,8vw,84px) 0}.card{padding:clamp(16px,3.5vw,26px)}.head{margin-bottom:clamp(24px,5vw,44px)}
+input,textarea,select{padding:11px 13px;font-size:16px}textarea{min-height:84px}label{font-size:.82rem;margin:12px 0 5px}.btn{padding:12px 22px;font-size:.92rem}.btn.sm{padding:9px 16px}
+.foot-g{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}.foot{padding:40px 0 26px}
+.band{padding:clamp(28px,6vw,54px) clamp(18px,5vw,54px)}.band h2{font-size:clamp(1.35rem,4.5vw,2rem)}
+.chips{gap:10px 16px;font-size:.82rem}.kick{font-size:.72rem}
+.tank{padding:14px}.tank h4{font-size:.95rem}
+.fade{animation:fi2 .35s ease both}@keyframes fi2{from{opacity:0}}
+#app{min-height:75vh}.boot{display:grid;place-items:center;min-height:70vh}.boot span{width:30px;height:40px;background:linear-gradient(160deg,#22d3ee,#06b6d4);border-radius:50% 50% 50% 50%/62% 62% 38% 38%;animation:fl 1.1s ease-in-out infinite}
+.sum .dh{display:none}
+@media(max-width:1024px){
+.hero .wrap,.bk{grid-template-columns:1fr}.hero{padding:44px 0 80px}.hero-img{max-width:420px;aspect-ratio:16/11}.sum{position:static}
+.burger{display:block}#links{position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;margin:0;display:none}.nav.open #links{display:flex}
+.nav{gap:10px;padding:10px 16px}.nav-r .btn{padding:8px 14px}}
+@media(max-width:520px){.hero h1{font-size:clamp(1.8rem,9vw,2.3rem)}.cta .btn{flex:1 1 100%}.steps span{min-width:84px;font-size:.72rem}.story h3{font-size:1.05rem}.pc b{font-size:1rem}.nav .logo{font-size:1.15rem}}
