@@ -1,0 +1,18 @@
+.pm-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:880px;margin:0 auto}
+.pm{position:relative;display:flex;flex-direction:column;gap:6px;padding:26px;border-radius:22px;background:linear-gradient(145deg,#0d9488,#0a2540);color:#fff;box-shadow:0 14px 34px rgba(10,37,64,.22);overflow:hidden}
+.pm.alt{background:linear-gradient(145deg,#0a2540,#050c1a);border:1px solid rgba(34,211,238,.25)}
+.pm::after{content:'';position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
+.pm-t{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.pm-a{font-size:1rem;font-weight:700}.pm-a b{font-family:Fraunces,serif;font-size:2.6rem;line-height:1;font-weight:800;margin-right:6px}
+.pm p{margin:0;opacity:.92}
+.pm-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.pm-c{padding:9px 14px;border:1.5px dashed rgba(255,255,255,.65);border-radius:12px;font-weight:800;letter-spacing:.12em;font-size:.9rem}
+.pm-c.auto{letter-spacing:0;font-weight:700;font-size:.8rem;border-style:solid}
+.pm-b{min-height:44px;padding:0 18px;border:0;border-radius:12px;background:#fff;color:#0a2540;font-family:inherit;font-weight:700;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
+.pm small{opacity:.72;font-size:.75rem;margin-top:8px}
+/* footer promo strip */
+.fp{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:32px 0 8px;padding:20px 24px;border-radius:20px;background:linear-gradient(135deg,rgba(13,148,136,.28),rgba(6,182,212,.08));border:1px solid rgba(34,211,238,.28)}
+.fp-t{display:flex;flex-direction:column;gap:4px;min-width:220px;flex:1}
+.fp-k{font-size:.68rem;font-weight:800;letter-spacing:.14em;color:#22d3ee}
+.fp-t b{color:#fff;font-size:1.05rem}.fp-t span:last-child{color:#94a3b8;font-size:.85rem}
+.fp .cbar{margin:0}
