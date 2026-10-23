@@ -1,12 +1,12 @@
 'use strict';
-/* Reviews system — mirrors app: lib/presentation/reviews_screen + AppState.checkReviewEligibility/submitDbReview
-   Rules (same as app):
-   - Feed = approved DB reviews (newest first) + 6 Satna sample reviews; header avg = DB avg or 5.0
-   - "Write a Review" always visible. Signed out -> sign-in prompt. No booking -> locked (Booking Required).
-   - Latest review newer than latest booking -> locked (Review Already Submitted).
-   - Submit: insert review (is_approved=false) + 10 coins ('reward'), then locks until next booking. */
+/* Reviews system — mirrors app: reviews_screen.dart, reviews_card_widget.dart, profile_menu_widget.dart (My Reviews), AppState review logic.
+   - Public feed = approved reviews only (newest first) + 6 Satna sample reviews; header avg = DB avg or 5.0
+   - Write a Review always visible: signed out -> sign-in prompt; no booking -> locked; latest review newer than latest booking -> locked
+   - Submit: insert (is_approved=false) + 10 coins, then locked until next booking
+   - Profile -> My Reviews: all of the user's reviews, ✅ Live / ⏳ Approval pending */
 (function(){
   const COLORS=['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6','#06b6d4','#0d9488'];
+  const TEAL='#06a9cc';
   const MOCK=[
     ['Rajesh Sharma','Civil Lines, Satna','2 weeks ago',5,'Excellent service! The team was professional and thorough. My 1000L tank was cleaned spotlessly. Water quality has improved significantly. Highly recommend to everyone in Satna!','1000L Cleaned','#3B82F6','RS'],
     ['Ramesh Tiwari','Dawari, Satna','2 weeks ago',5,'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Maintix ki team bahut professional hai. Definitely recommend karunga.','1000L Tank Cleaned','#10B981','RT'],
@@ -27,9 +27,14 @@
     const hr=Math.floor(d*24);return hr>0?hr+' hour(s) ago':'Just now';
   }
   function cardHtml(o){
-    return `<div class="card" style="position:relative;padding:18px"><div class="row" style="align-items:flex-start"><div class="av" style="background:${o.color}">${h(o.initials)}</div>
-      <div class="grow"><b>${h(o.name)}</b><div class="muted small">📍 ${h(o.location)} · ${h(o.timeAgo)}</div><div class="stars small">${stars5(o.rating)}</div></div></div>
-      <p class="muted" style="margin:12px 0">${h(o.review)}</p><span class="pill g">${h(o.tag)}</span>${o.del?`<button data-rv="del" data-id="${h(o.del)}" aria-label="Delete review" style="position:absolute;top:10px;right:10px;border:0;border-radius:50%;width:30px;height:30px;cursor:pointer;background:color-mix(in srgb,var(--err) 14%,transparent);color:var(--err)">🗑</button>`:''}</div>`;
+    return `<div style="position:relative;padding:16px;border-radius:16px;background:var(--sf);box-shadow:var(--sh);border-left:3px solid ${o.color}80">
+      <div style="display:flex;gap:12px;align-items:center"><div class="av" style="width:44px;height:44px;background:${o.color}">${h(o.initials)}</div>
+        <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b style="font-size:.92rem">${h(o.name)}</b><span style="padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok);font-size:.62rem;font-weight:700">✓ Verified</span></div>
+        <div class="muted" style="font-size:.72rem">📍 ${h(o.location)}</div></div>
+        <div style="text-align:right;flex:none"><div class="stars" style="font-size:.85rem;letter-spacing:1px">${stars5(o.rating)}</div><div class="muted" style="font-size:.66rem">${h(o.timeAgo)}</div></div></div>
+      <p class="muted" style="margin:12px 0 10px;font-size:.88rem">${h(o.review)}</p>
+      <span style="display:inline-block;padding:4px 10px;border-radius:20px;background:color-mix(in srgb,${TEAL} 14%,transparent);color:${TEAL};font-size:.74rem;font-weight:600">💧 ${h(o.tag)}</span>
+      ${o.del?`<button data-rv="del" data-id="${h(o.del)}" aria-label="Delete review" style="position:absolute;bottom:10px;right:10px;border:0;border-radius:50%;width:30px;height:30px;cursor:pointer;background:color-mix(in srgb,var(--err) 12%,transparent);color:var(--err)">🗑</button>`:''}</div>`;
   }
   function dbCard(r){
     const own=S.user&&r.user_id===S.user.id;
@@ -50,7 +55,7 @@
     loading=false;renderFeed();
   }
 
-  /* ---- eligibility (same logic as checkReviewEligibility) ---- */
+  /* ---- eligibility (same logic as AppState.checkReviewEligibility) ---- */
   async function eligibility(){
     if(!S.user)return {s:'anon'};
     const {data:b}=await sb.from('bookings').select('created_at,service_name').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
@@ -73,15 +78,15 @@
       <label>Service</label><input id="rv-svc" readonly value="${h(service)}">
       <label>Your Rating</label><div id="rv-st">${[1,2,3,4,5].map(i=>`<button data-rv="star" data-n="${i}" aria-label="${i} star" style="font-size:2rem;padding:0 3px;border:0;background:none;color:#f59e0b;cursor:pointer">${i<=rate?'★':'☆'}</button>`).join('')}</div>
       <label>Your Review</label><textarea id="rv-txt" rows="4" maxlength="300" placeholder="Tell others about your experience..."></textarea>
-      <button class="btn block" id="rv-go" style="margin-top:16px" data-rv="submit">Submit Review (+10 🪙)</button>
+      <button class="btn block" id="rv-go" style="margin-top:16px;background:${TEAL};color:#fff;box-shadow:none" data-rv="submit">Submit Review (+10 🪙)</button>
       <button class="btn ghost block" style="margin-top:10px" data-act="close">Cancel</button>`;
     if(!d.open)d.showModal();
   }
   async function onWrite(btn){
     if(!S.user){info('🔐','Sign in required','Please login or signup first to write a review.',['Sign in / Sign up','login']);return}
-    const o=btn.textContent;btn.disabled=true;btn.textContent='Checking…';
+    const o=btn.innerHTML;btn.disabled=true;btn.textContent='Checking…';
     let e;try{e=await eligibility()}catch(x){e={s:'err'}}
-    btn.disabled=false;btn.textContent=o;
+    btn.disabled=false;btn.innerHTML=o;
     if(e.s==='nobooking')return info('🔒','Booking Required','Please complete a service booking first to unlock verified customer reviews!');
     if(e.s==='done')return info('🔒','Review Already Submitted','You have already submitted a review for your last booking. Complete another booking to write a new review!');
     if(e.s!=='ok')return say('Could not check review eligibility. Try again.');
@@ -94,7 +99,6 @@
     busy=true;btn.disabled=true;btn.textContent='Submitting...';
     const service=document.getElementById('rv-svc').value.trim()||'Water Tank Cleaning';
     try{
-      // re-check so double-submit / stale form cannot bypass the lock
       const e=await eligibility();
       if(e.s!=='ok'){dlg().close();busy=false;return info('🔒','Review Already Submitted','You have already submitted a review for your last booking. Complete another booking to write a new review!')}
       const {error}=await sb.from('reviews').insert({user_id:S.user.id,user_name:(S.profile&&S.profile.full_name)||'',service_name:service,rating:rate,review_text:txt,is_approved:false});
@@ -112,17 +116,43 @@
     if(!d.open)d.showModal();
   }
 
-  /* ---- page (replaces old reviewsView/reviewsAfter from app.js) ---- */
+  /* ---- Profile -> My Reviews (all own reviews incl. pending) ---- */
+  async function openMy(){
+    const d=dlg();
+    d.innerHTML='<h3>My Reviews</h3><div class="sk" style="margin-top:14px"></div>';
+    if(!d.open)d.showModal();
+    let list=[];
+    try{const {data}=await sb.from('reviews').select('*').eq('user_id',S.user.id).order('created_at',{ascending:false});list=data||[]}catch(e){}
+    const body=list.length?list.map(r=>`<div style="padding:14px;border-radius:12px;background:var(--bg);margin-bottom:12px">
+      <div style="display:flex;align-items:center"><span class="stars" style="letter-spacing:1px">${stars5(Math.round(r.rating))}</span><span style="flex:1"></span><button data-rv="my-del" data-id="${h(r.id)}" aria-label="Delete review" style="border:0;background:none;color:var(--err);cursor:pointer;font-size:1rem">🗑</button></div>
+      <p class="muted small" style="margin:6px 0 4px">${h(r.review_text)}</p>
+      <div class="muted" style="font-size:.72rem">${h(ago(r.created_at))}  •  ${r.is_approved?'✅ Live':'⏳ Approval pending'}</div></div>`).join('')
+      :`<div class="c" style="padding:34px 0"><div style="font-size:2.6rem;color:var(--mut)">☆</div><b class="muted" style="display:block;margin:8px 0 4px">No reviews yet</b><span class="muted small">Complete a booking to write your first review</span></div>`;
+    d.innerHTML=`<div style="display:flex;align-items:center;margin-bottom:12px"><h3 style="font-size:1.15rem">My Reviews</h3><span style="flex:1"></span><span style="padding:4px 10px;border-radius:12px;background:color-mix(in srgb,${TEAL} 14%,transparent);color:${TEAL};font-size:.76rem;font-weight:600">${list.length} review${list.length!==1?'s':''}</span></div>
+      <div style="max-height:55vh;overflow-y:auto">${body}</div><button class="btn ghost block" style="margin-top:12px" data-act="close">Close</button>`;
+  }
+  function injectMy(){
+    const ctx=document.getElementById('ctx');if(!ctx||document.getElementById('rv-my'))return;
+    const stack=ctx.closest('.stack');if(!stack)return;
+    const b=document.createElement('button');b.id='rv-my';b.dataset.rv='my';b.className='card';
+    b.style.cssText='display:flex;gap:12px;align-items:center;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit';
+    b.innerHTML='<span style="width:40px;height:40px;border-radius:10px;background:rgba(245,158,11,.14);display:grid;place-items:center;font-size:1.2rem">⭐</span><span style="flex:1"><b style="display:block">My Reviews</b><span class="muted small">Reviews you have submitted</span></span><span class="muted">›</span>';
+    stack.insertBefore(b,stack.children[1]||null);
+  }
+  const appEl=document.getElementById('app');
+  if(appEl){new MutationObserver(injectMy).observe(appEl,{childList:true,subtree:true});injectMy()}
+
+  /* ---- Reviews page (replaces old reviewsView/reviewsAfter from app.js) ---- */
   window.reviewsView=function(){
     return `<div class="page"><div class="wrap fade" style="max-width:820px">
-      <div style="background:linear-gradient(135deg,#072654,#1a3f5c);color:#fff;border-radius:22px;padding:24px 26px">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="color:#f59e0b;font-size:1.6rem">★</span><b id="rv-avg" style="font:800 1.9rem 'Plus Jakarta Sans'">5.0</b>
-        <span style="padding:3px 10px;border-radius:8px;background:rgba(22,163,74,.22);color:#4ade80;font-weight:700;font-size:.75rem">✓ Verified</span></div>
-        <p style="color:rgba(255,255,255,.72);margin-top:6px">What our customers say</p></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;background:linear-gradient(135deg,#072654,#0a5a8a);color:#fff;border-radius:18px;padding:18px 10px;text-align:center">
-        ${[['👥','500+','Happy Customers'],['★','5.0','Avg Rating'],['✅','100%','Satisfaction Rate']].map(x=>`<div><div>${x[0]}</div><b style="font:800 1.4rem 'Plus Jakarta Sans'">${x[1]}</b><div style="font-size:.72rem;color:rgba(255,255,255,.65)">${x[2]}</div></div>`).join('')}</div>
-      <button class="btn block" style="margin-top:16px;height:50px" data-rv="write">✍️ Write a Review</button>
-      <h3 style="margin:22px 0 12px;font-size:1.1rem">Customer Reviews</h3>
+      <div style="background:linear-gradient(135deg,#0f2a47,#1a3f5c);color:#fff;border-radius:22px;padding:34px 26px 20px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="color:#f59e0b;font-size:1.7rem">★</span><b id="rv-avg" style="font:800 2rem 'Plus Jakarta Sans'">5.0</b>
+        <span style="padding:4px 10px;border-radius:8px;background:rgba(22,163,74,.25);color:#4ade80;font-weight:700;font-size:.78rem">✓ Verified</span></div>
+        <p style="color:rgba(255,255,255,.7);margin-top:8px">What our customers say</p></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;background:linear-gradient(135deg,#0f2a47,#0a5a8a);color:#fff;border-radius:18px;padding:18px 6px;text-align:center">
+        ${[['👥','500+','Happy<br>Customers'],['★','5.0','Avg<br>Rating'],['✅','100%','Satisfaction<br>Rate']].map((x,i)=>`<div style="${i?'border-left:1px solid rgba(255,255,255,.15)':''}"><div style="font-size:1.2rem">${x[0]}</div><b style="font:800 1.5rem 'Plus Jakarta Sans'">${x[1]}</b><div style="font-size:.72rem;color:rgba(255,255,255,.65);line-height:1.3">${x[2]}</div></div>`).join('')}</div>
+      <button class="btn block" style="margin-top:16px;height:50px;border-radius:14px;background:${TEAL};color:#fff;box-shadow:none" data-rv="write">✍️ Write a Review</button>
+      <h3 style="margin:22px 0 12px;font-size:1.1rem;font-family:'Plus Jakarta Sans',sans-serif">Customer Reviews</h3>
       <div class="stack" id="rfeed"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>`;
   };
   window.reviewsAfter=function(){loading=!DB.length;renderFeed();loadFeed()};
@@ -134,13 +164,17 @@
       case 'login':if(typeof openLogin==='function')openLogin();break;
       case 'star':rate=Number(el.dataset.n);document.querySelectorAll('#rv-st button').forEach((b,i)=>b.textContent=i<rate?'★':'☆');break;
       case 'submit':onSubmit(el);break;
+      case 'my':if(S.user)openMy();break;
       case 'del':confirmDel(el.dataset.id);break;
       case 'del-ok':{
         el.disabled=true;
         try{await sb.from('reviews').delete().eq('id',el.dataset.id).eq('user_id',S.user.id)}catch(x){}
         dlg().close();await loadFeed();break}
+      case 'my-del':{
+        try{await sb.from('reviews').delete().eq('id',el.dataset.id).eq('user_id',S.user.id)}catch(x){}
+        dlg().close();await loadFeed();say('Review deleted');break}
     }
   });
-  // keep feed live: refresh every 30s while reviews page is open
+  // keep the public feed live: refresh every 30s while the reviews page is open
   setInterval(()=>{if(document.getElementById('rfeed')&&!document.hidden)loadFeed()},30000);
 })();
