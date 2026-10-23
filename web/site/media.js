@@ -15,6 +15,8 @@ function extras(){
   const rl=$('#rl');if(rl&&!$('.rvimg')){const d=document.createElement('div');d.className='rvimg';d.append(fig(1,'A mother handing her daughter a glass of clean water','Clean water for the people you love'));rl.before(d)}
   const sv=$('#svc');if(sv&&!$('.svbn')){const g=$('.page .grid');if(g)g.before(fig(4,'Rooftop water tanks serviced by Maintix','Tank cleaning from 500L to 2000L','svbn'))}
   $$('#svc .card').forEach(c=>{if(/solar/i.test(c.textContent)&&!$('.ph',c))c.prepend(fig(7,'Maintix technician inspecting a rooftop solar installation','', 'thumb'))});
+  /* Water Tank Cleaning service card: img/maintix-10.png (card shows without image until the file exists) */
+  $$('#svc .card').forEach(c=>{const t=($('h3',c)||{}).textContent||'';if(/tank/i.test(t)&&!/solar/i.test(t)&&!$('.ph',c))c.prepend(fig(10,'Maintix water tank cleaning service','','thumb'))});
 }
 function run(){hero();story();extras()}
 let q=0;new MutationObserver(()=>{cancelAnimationFrame(q);q=requestAnimationFrame(run)}).observe($('#app'),{childList:true,subtree:true});run();
