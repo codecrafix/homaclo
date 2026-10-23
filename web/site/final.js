@@ -111,3 +111,68 @@ addCoins=async function(n,type,desc){
   return ok;
 };
 })();
+
+/* Profile photo upload (same mechanism as the app): resized + compressed JPEG goes to the public
+   'avatars' bucket at {user_id}/avatar_<timestamp>.jpg, and the public URL is saved in profiles.avatar_url. */
+(function(){
+const MAX=800,QUALITY=.85,LIMIT=15*1024*1024,MARK='/storage/v1/object/public/avatars/';
+function compress(file){
+  return new Promise((ok,no)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      try{
+        const k=Math.min(1,MAX/Math.max(img.naturalWidth,img.naturalHeight));
+        const w=Math.max(1,Math.round(img.naturalWidth*k)),hh=Math.max(1,Math.round(img.naturalHeight*k));
+        const c=document.createElement('canvas');c.width=w;c.height=hh;
+        const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,hh);x.drawImage(img,0,0,w,hh);
+        c.toBlob(b=>b?ok(b):no(new Error('compress failed')),'image/jpeg',QUALITY);
+      }catch(e){no(e)}finally{URL.revokeObjectURL(url)}
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);no(new Error('bad image'))};
+    img.src=url;
+  });
+}
+const BADGE='<span aria-hidden="true" style="position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:#0a84ff;color:#fff;display:grid;place-items:center;font-size:12px;border:2px solid #fff">📷</span>';
+document.addEventListener('DOMContentLoaded',()=>{
+  const _pv=profileView;
+  profileView=function(){
+    const html=_pv();
+    if(!S.user||!S.profile)return html;
+    const re=/<div class="av" style="([^"]*)">([^<]*)<\/div>/;
+    if(!re.test(html))return html;
+    const u=S.profile.avatar_url;
+    return html.replace(re,(m,st,ini)=>{
+      const inner=u?`<img class="av" id="avimg" alt="Profile photo" src="${h(u)}" style="width:56px;height:56px;object-fit:cover">`:m;
+      return `<label for="avf" id="avlab" title="Change profile photo" style="position:relative;cursor:pointer;display:block;flex:none;width:56px;height:56px"><span id="avbox">${inner}</span>${BADGE}</label><input id="avf" type="file" accept="image/jpeg,image/png,image/webp" hidden>`;
+    });
+  };
+  if(/^#\/profile/.test(location.hash)&&S.user)route();
+});
+document.addEventListener('change',async e=>{
+  const f=e.target;if(!f||f.id!=='avf'||!f.files||!f.files[0]||!S.user)return;
+  const file=f.files[0];f.value='';
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('Please choose a JPG, PNG or WebP image');return}
+  if(file.size>LIMIT){toast('Image is too large (max 15 MB)');return}
+  const box=document.getElementById('avbox');if(!box)return;
+  const before=box.innerHTML,prev=URL.createObjectURL(file);
+  box.innerHTML=`<img class="av" id="avimg" alt="Profile photo" src="${prev}" style="width:56px;height:56px;object-fit:cover;opacity:.55">`;
+  try{
+    const blob=await compress(file);
+    const uid=S.user.id,path=`${uid}/avatar_${Date.now()}.jpg`;
+    const up=await sb.storage.from('avatars').upload(path,blob,{contentType:'image/jpeg',upsert:true});
+    if(up.error)throw up.error;
+    const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+    const {error}=await sb.from('profiles').update({avatar_url:url,updated_at:new Date().toISOString()}).eq('id',uid);
+    if(error){sb.storage.from('avatars').remove([path]);throw error}
+    const old=S.profile&&S.profile.avatar_url;
+    if(S.profile)S.profile.avatar_url=url;
+    const im=document.getElementById('avimg');if(im){im.src=url;im.style.opacity=''}
+    toast('Profile photo updated ✅');
+    const i=old?old.indexOf(MARK):-1;
+    if(i>-1){const key=decodeURIComponent(old.slice(i+MARK.length).split('?')[0]);if(key&&key!==path)sb.storage.from('avatars').remove([key])}
+  }catch(err){
+    const b=document.getElementById('avbox');if(b)b.innerHTML=before;
+    toast('Could not upload photo. Please try again.');
+  }finally{URL.revokeObjectURL(prev)}
+});
+})();
