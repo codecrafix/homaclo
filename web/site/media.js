@@ -2,7 +2,12 @@
 const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
 const P=n=>`img/maintix-${n}.png`;
 function fig(n,alt,cap,cls){const f=document.createElement('figure');f.className='ph '+(cls||'');const i=new Image();i.src=P(n);i.alt=alt;i.loading='lazy';i.onerror=()=>f.remove();f.append(i);if(cap){const c=document.createElement('figcaption');c.textContent=cap;f.append(c)}return f}
-function hero(){const t=$('.hero .tankart');if(!t||t.dataset.fail)return;const w=document.createElement('div');w.className='hero-img';const i=new Image();i.src=P(8);i.alt='Maintix technician cleaning a rooftop water tank with a pressure washer';i.onerror=()=>{t.dataset.fail=1;w.replaceWith(t)};w.append(i);w.insertAdjacentHTML('beforeend','<span class="hb">Starting ₹1,000</span><span class="hb2">TDS tested &amp; certified</span>');t.replaceWith(w)}
+
+/* Home hero: render the live photo directly in the home markup (no old animated SVG placeholder first,
+   so nothing "swaps" after load). The photo is also preloaded from index.html. */
+const HERO='<div class="hero-img"><img src="'+P(8)+'" alt="Maintix technician cleaning a rooftop water tank with a pressure washer" width="460" height="575" decoding="async" fetchpriority="high" onerror="this.parentNode.remove()"><span class="hb">Starting ₹1,000</span><span class="hb2">TDS tested &amp; certified</span></div>';
+if(typeof homeView==='function'){const _hv=homeView;homeView=function(){return _hv().replace(/<svg[^>]*class="tankart"[\s\S]*?<\/svg>/,HERO)}}
+
 const ROWS=[[2,'Trained, uniformed professionals','Every visit is handled by a uniformed Maintix technician with gloves and proper gear, so your tank is cleaned carefully and hygienically.',['Careful, step-by-step cleaning','Safety gear on every job','Respectful of your home']],
 [3,'Professional equipment, no shortcuts','High-pressure washer, wet-and-dry vacuum, cleaning agents, boots, gloves and a safety harness all arrive with the team.',['High-pressure washing','Sludge vacuum removal','Safety-first rooftop work']],
 [5,'Tested after cleaning','We check your water with a TDS meter after the clean, so you can see the result and not just take our word for it.',['TDS meter reading shown','Clean, clear sample','Transparent process']],
@@ -14,10 +19,15 @@ function extras(){
   const hr=$('#hrev');if(hr&&!$('.rvimg')){const d=document.createElement('div');d.className='rvimg';d.append(fig(1,'A mother handing her daughter a glass of clean water in a Satna kitchen','Clean water for the people you love'));hr.before(d)}
   const rl=$('#rl');if(rl&&!$('.rvimg')){const d=document.createElement('div');d.className='rvimg';d.append(fig(1,'A mother handing her daughter a glass of clean water','Clean water for the people you love'));rl.before(d)}
   const sv=$('#svc');if(sv&&!$('.svbn')){const g=$('.page .grid');if(g)g.before(fig(4,'Rooftop water tanks serviced by Maintix','Tank cleaning from 500L to 2000L','svbn'))}
-  $$('#svc .card').forEach(c=>{if(/solar/i.test(c.textContent)&&!$('.ph',c))c.prepend(fig(7,'Maintix technician inspecting a rooftop solar installation','', 'thumb'))});
+  /* Solar cards: pick the final live image straight away (9 = solar cleaning, 7 = other solar) so the old one never flashes first */
+  $$('#svc .card').forEach(c=>{if(/solar/i.test(c.textContent)&&!$('.ph',c)){
+    const clean=/cleaning/i.test(c.textContent)&&!/maintenance|repair/i.test(c.textContent);
+    const f=fig(clean?9:7,'Maintix technician inspecting a rooftop solar installation','', 'thumb');
+    if(clean){const i=$('img',f);i.onerror=()=>{i.onerror=()=>f.remove();i.src=P(7)}}
+    c.prepend(f)}});
   /* Water Tank Cleaning service card: img/maintix-10.png (card shows without image until the file exists) */
   $$('#svc .card').forEach(c=>{const t=($('h3',c)||{}).textContent||'';if(/tank/i.test(t)&&!/solar/i.test(t)&&!$('.ph',c))c.prepend(fig(10,'Maintix water tank cleaning service','','thumb'))});
 }
-function run(){hero();story();extras()}
+function run(){story();extras()}
 let q=0;new MutationObserver(()=>{cancelAnimationFrame(q);q=requestAnimationFrame(run)}).observe($('#app'),{childList:true,subtree:true});run();
 })();
