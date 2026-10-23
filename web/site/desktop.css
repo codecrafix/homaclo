@@ -1,0 +1,16 @@
+/* DESKTOP MODE ONLY (viewport >= 600px, incl. phone browser "Desktop site").
+   Full-website navigation: menus inline in one row, no burger toggle, no bottom tab bar.
+   Mobile view (< 600px) is intentionally untouched: burger menu + bottom tabs stay exactly as before.
+   Do NOT change mobile behaviour without asking the owner. */
+@media (min-width:600px){
+  .burger{display:none!important}
+  .bnav{display:none!important}
+  .nav{flex-wrap:nowrap;gap:clamp(8px,1.6vw,20px)}
+  #links{position:static!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap;align-items:center;
+    background:transparent!important;border:0!important;padding:0!important;margin:0 0 0 clamp(4px,1.4vw,18px)!important;
+    flex:1;min-width:0;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  #links::-webkit-scrollbar{display:none}
+  #links a{flex:none;font-size:clamp(.72rem,1.2vw,.92rem);padding:8px clamp(5px,1vw,13px)}
+  .nav .logo{flex:none;font-size:clamp(1.1rem,2vw,1.35rem)}
+  .nav-r{flex:none}
+}
