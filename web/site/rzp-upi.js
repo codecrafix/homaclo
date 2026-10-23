@@ -1,20 +1,24 @@
 (function(){
 'use strict';
-/* Razorpay checkout: always show the UPI block first, then cards / netbanking / wallets.
-   Loaded right after checkout.js; only adds `config` when the caller did not pass one. */
+/* Razorpay checkout: unchanged options (UPI, cards, netbanking, wallets all come from the account's own settings).
+   Only adds a check: when Razorpay reports that UPI is OFF for the account/key in use, say so clearly. */
 const R=window.Razorpay;
 if(typeof R!=='function')return;
+let told=false;
 function W(o){
-  o=o||{};
-  if(!o.config)o.config={display:{
-    blocks:{
-      upi:{name:'Pay via UPI',instruments:[{method:'upi'}]},
-      other:{name:'Cards, Netbanking & more',instruments:[{method:'card'},{method:'netbanking'},{method:'wallet'},{method:'emi'},{method:'paylater'}]}
-    },
-    sequence:['block.upi','block.other'],
-    preferences:{show_default_blocks:false}
-  }};
-  return new R(o);
+  const rz=new R(o);
+  try{
+    rz.once('ready',r=>{
+      const m=r&&r.methods;
+      window.__rzpMethods=m;
+      if(m&&m.upi===false&&!told){
+        told=true;
+        console.warn('Razorpay: UPI is disabled for this account/key',m);
+        if(typeof toast==='function')toast('UPI is turned off for this Razorpay account. Enable it in Razorpay Dashboard → Payment Methods.');
+      }
+    });
+  }catch(e){}
+  return rz;
 }
 W.prototype=R.prototype;
 Object.assign(W,R);

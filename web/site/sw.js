@@ -1,7 +1,6 @@
 /* Maintix service worker: fast images (stale-while-revalidate) + notification taps.
-   Bump C whenever the pictures in /img are replaced: old caches are deleted on activate,
-   so visitors never see an old image again. */
-const C='mx-img-v2';
+   Bump C whenever the pictures in /img are replaced (and IMG_V in router.js): old caches are deleted on activate. */
+const C='mx-img-v3';
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(
   caches.keys().then(ks=>Promise.all(ks.filter(k=>k.indexOf('mx-img-')===0&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())

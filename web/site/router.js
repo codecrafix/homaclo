@@ -3,7 +3,10 @@
 /* Clean, personal URLs for every page: /maintix/faq, /maintix/book, /maintix/reviews ... (no #/).
    1) The site's own code asks for "location.hash"; while loading we rewrite that to window.__lh, which is backed by the
       real address (history API). Old #/route links are converted to the clean URL automatically.
-   2) The site scripts are fetched in parallel and run in their original order, so behaviour is unchanged. */
+   2) The site scripts are fetched in parallel and run in their original order, so behaviour is unchanged.
+   3) Every picture URL gets ?v=IMG_V so browsers/CDN can never show an older copy of an image.
+      Bump IMG_V (and the cache name in sw.js) whenever files in /img are replaced. */
+const IMG_V='20261023';
 const B=window.__BASE,R=window.__ROUTES;
 const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','onesignal.js'];
 
@@ -46,9 +49,13 @@ document.addEventListener('click',e=>{
 },true);
 
 /* ---------- load the site scripts ---------- */
+const Q='?v='+IMG_V;
 const fix=s=>s
   .replace(/location\.href\.split\('#'\)\[0\]\+'#\/notifications'/g,"document.baseURI+'notifications'")
-  .replace(/location\.hash/g,'window.__lh');
+  .replace(/location\.hash/g,'window.__lh')
+  .replace(/(img\/[\w-]+\.png)/g,'$1'+Q)
+  .replace(/img\/maintix-\$\{n\}\.png/g,'img/maintix-${n}.png'+Q)
+  .replace(/'img\/'\+n\+'\.png'/g,"'img/'+n+'.png"+Q+"'");
 
 function plain(){FILES.forEach(f=>{const s=document.createElement('script');s.src=f;s.async=false;document.body.appendChild(s)})}
 
