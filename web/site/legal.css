@@ -1,0 +1,24 @@
+/* Policy & legal pages (mirrors the app's policy screens) */
+.lg{max-width:760px;margin:0 auto}
+.lg-nav{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 18px;padding-bottom:2px}.lg-nav::-webkit-scrollbar{display:none}
+.lg-nav a{flex:none;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--sf);font-size:.8rem;font-weight:700;color:var(--mut);white-space:nowrap}
+.lg-nav a.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lg-hero{background:linear-gradient(135deg,#050c1a,#1a3f5c);color:#fff;border-radius:18px;padding:22px;margin-bottom:20px}
+.lg-hero .ic{font-size:2rem;line-height:1}
+.lg-hero h1{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-weight:800;font-size:clamp(1.2rem,5vw,1.5rem);margin:10px 0 4px;color:#fff;overflow-wrap:anywhere}
+.lg-hero p{color:rgba(255,255,255,.6);font-size:.78rem}
+.lg-hero.c{text-align:center;padding:26px 18px}
+.lg-logo{display:inline-flex;align-items:center;gap:9px;font:700 1.9rem Fraunces,serif;margin-bottom:10px}
+.lg-card{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:var(--sh);min-width:0}
+.lg-card h2{font:700 .95rem 'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);margin:0 0 10px;display:flex;align-items:center;gap:10px;overflow-wrap:anywhere}
+.lg-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--teal) 14%,transparent);flex:none}
+.lg-card p,.lg-card li{color:var(--mut);font-size:.85rem;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere}
+.lg-sub h3{font:600 .85rem 'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);margin:0 0 6px}
+.lg-sub{margin-bottom:12px}.lg-sub:last-child{margin-bottom:0}
+.lg-sub ul,.lg-ul{list-style:none;padding:0;margin:0}
+.lg-sub li,.lg-ul li{margin-bottom:6px}
+.lg-box{padding:10px 14px;border-radius:10px;border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--warn);font-weight:600;font-size:.88rem;margin-bottom:10px}
+.lg-card p.lg-note{color:var(--teal);font-weight:600;margin-top:8px}
+.lg-card a{color:var(--teal);text-decoration:underline}
+.lg-row{display:flex;gap:8px;padding:6px 0;font-size:.88rem}.lg-row span{color:var(--mut);font-weight:600;flex:none}.lg-row b{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.lg-svc{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:.88rem;color:var(--mut)}.lg-svc b{color:var(--ink);flex:none}
