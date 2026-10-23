@@ -104,17 +104,16 @@ class TermsScreen extends StatelessWidget {
                 ),
 
                 _termsSection(
-                  '4. Cancellation Policy (2026)',
+                  '4. Cancellation Policy',
                   null,
                   children: [
-                    _highlightBox('⚠️ Cancellation Rules', AppTheme.warning),
+                    _highlightBox('🚫 Bookings are non-cancellable', AppTheme.warning),
                     const SizedBox(height: 10),
                     _bulletList([
-                      '✅ Free cancellation: Cancel 24+ hours before scheduled service — no charge',
-                      '⚠️ Late cancellation: Cancel within 12–24 hours — ₹100 cancellation fee applies',
-                      '❌ Same-day cancellation: Cancel within 12 hours — 25% of service fee charged',
-                      '🚫 No-show: If technician arrives and access is denied — 50% of service fee charged',
-                      'Cancellation fees are deducted from your next booking or refunded within 7 business days',
+                      'All service requests (including Tank Cleaning, Solar Maintenance, and Home Services) submitted through the Maintix app are final once confirmed',
+                      'Once a booking is confirmed, you must allow the assigned technician to carry out the service',
+                      'Cancellation or refund requests due to change of mind are not entertained',
+                      'If Maintix is unable to deliver the scheduled service, you are eligible for a refund — see the Refund Policy below and section 10 of our Privacy & Refund Policy',
                     ]),
                   ],
                 ),
@@ -124,8 +123,7 @@ class TermsScreen extends StatelessWidget {
                   null,
                   children: [
                     _subSection('Accepted Payment Methods', [
-                      '• Cash on Service (CoS) — Pay directly to the technician after service completion',
-                      '• UPI / Digital Payments — Accepted via QR code at time of service',
+                      '• Online Payment — Pay securely via Razorpay using UPI, debit/credit card or netbanking',
                       '• Reward Coins — Earn 10 coins per review; redeem for discounts on future bookings',
                     ]),
                     _subSection('Pricing & Taxes', [
@@ -135,9 +133,10 @@ class TermsScreen extends StatelessWidget {
                       '• Price revisions, if any, will be communicated 30 days in advance',
                     ]),
                     _subSection('Refund Policy', [
-                      '• Full refund if service is cancelled by Maintix due to unavailability',
-                      '• Partial refund (75%) if service quality complaint is validated within 24 hours',
-                      '• Refunds processed within 5–7 business days to original payment method',
+                      '• Refunds are issued only when Maintix is unable to deliver the scheduled service (operational issues, technician unavailability, severe weather, or unforeseen technical failures)',
+                      '• An accidental double payment, or money debited without a booking being created, is fully refundable',
+                      '• Approved refunds are credited to the original payment source within 5–7 business days',
+                      '• Full details: Privacy & Refund Policy, section 10',
                     ]),
                   ],
                 ),
@@ -160,7 +159,7 @@ class TermsScreen extends StatelessWidget {
 
                 _termsSection(
                   '7. Service Quality Guarantee',
-                  'Maintix guarantees professional-grade cleaning using food-safe, eco-friendly agents. If you are unsatisfied with the service quality:\n\n• Report within 24 hours via the app or email\n• We will re-inspect and re-service at no additional cost\n• If the issue persists, a partial or full refund will be issued\n\nThis guarantee does not cover pre-existing tank damage or structural issues.',
+                  'Maintix guarantees professional-grade cleaning using food-safe, eco-friendly agents. If you are unsatisfied with the service quality:\n\n• Report within 24 hours via the app or email\n• We will re-inspect and re-service at no additional cost\n• If the issue persists, our support team will review it and resolve it with you\n\nThis guarantee does not cover pre-existing tank damage or structural issues.',
                 ),
 
                 _termsSection(
