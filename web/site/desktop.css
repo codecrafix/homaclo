@@ -13,4 +13,14 @@
   #links a{flex:none;font-size:clamp(.72rem,1.2vw,.92rem);padding:8px clamp(5px,1vw,13px)}
   .nav .logo{flex:none;font-size:clamp(1.1rem,2vw,1.35rem)}
   .nav-r{flex:none}
+
+  /* Home "How we keep your water safe": image + text side by side, alternating left/right (website style).
+     Scoped to .story only; the mother & daughter image (.rvimg) is not affected. */
+  .story{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center;margin-bottom:clamp(40px,6vw,72px)}
+  .story>.ph{aspect-ratio:4/3;max-height:420px;border-radius:22px}
+  .story>.ph img{height:100%}
+  .story.rev>.ph{order:2}
+  .story h3{font-size:clamp(1.25rem,2.4vw,1.8rem);margin-bottom:12px}
+  .story p{font-size:clamp(.9rem,1.5vw,1.05rem);line-height:1.7}
+  .story li{font-size:clamp(.88rem,1.3vw,.98rem)}
 }
