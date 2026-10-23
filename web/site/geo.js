@@ -1,17 +1,35 @@
 'use strict';
-/* Maintix geolocation: post-login permission gate, auto-fill everywhere, desktop-style nav.
-   Reverse-geocode chain mirrors the app: Mappls -> LocationIQ -> BigDataCloud. */
+/* Maintix geolocation: post-login permission gate, auto-fill everywhere.
+   Reverse-geocode chain mirrors the app: Mappls -> LocationIQ -> BigDataCloud.
+   Also: closes open dialogs on route change, and polishes the sign-in page layout on larger screens. */
 (function(){
   const MAPPLS_KEY='afrxvvpdutbnfrctntffykqkdtebbqojdsej';
   const LOCATIONIQ_KEY='pk.9021ca0351eccb4c4a9ae57085c14964';
   const FIELDS=[{id:'f-addr',label:'📍 Use my current location'},{id:'p-l',label:'📍 Detect my location'}];
 
-  /* ---- desktop-style navigation at every width (no burger/toggle) ---- */
+  /* ---- styles: geo button + roomier, more professional sign-in page on desktop/tablet.
+         (Navigation/burger/bottom-tab styles are NOT touched — original responsive behaviour is kept.) ---- */
   const st=document.createElement('style');
-  st.textContent='.burger{display:none!important}.bnav{display:none!important}.nav{flex-wrap:nowrap}'+
-    '#links{position:static!important;flex-direction:row!important;display:flex!important;background:transparent!important;border:0!important;padding:0!important;margin:0 0 0 18px!important;flex:1;overflow-x:auto;white-space:nowrap;scrollbar-width:none}'+
-    '#links::-webkit-scrollbar{display:none}#links a{flex:none}.authed .auth-only{display:block!important}.geo-btn{margin-top:8px}';
+  st.textContent='.geo-btn{margin-top:8px}'+
+    '@media(min-width:901px){'+
+      '.au{padding:72px 40px 110px;place-items:center}'+
+      '.au-in{max-width:1120px;gap:80px;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}'+
+      '.au-l h1{font-size:clamp(2.4rem,3.6vw,3.5rem);line-height:1.1;margin:24px 0 16px}'+
+      '.au-l .lead{font-size:1.08rem;line-height:1.7;max-width:500px}'+
+      '.au-bn{gap:14px;margin-top:36px}.au-bn li{padding:16px 20px;gap:16px}.au-bn b{font-size:1rem;margin-bottom:2px}.au-bn small{font-size:.85rem}'+
+      '.au-card{padding:46px 42px;max-width:500px;width:100%;justify-self:end;border-radius:30px}'+
+      '.au-card h2{font-size:1.85rem;margin-bottom:10px}.au-s{font-size:.95rem;line-height:1.6;margin-bottom:26px}'+
+      '.au-card label{font-size:.88rem;margin-bottom:9px}.au-btn{min-height:58px;margin-top:6px}.au-t{margin-top:24px;font-size:.82rem}'+
+    '}'+
+    '@media(min-width:601px) and (max-width:900px){'+
+      '.au{padding:44px 24px 110px}.au-in{max-width:620px;gap:26px}'+
+      '.au-card{padding:36px 34px}.au-card h2{font-size:1.7rem}.au-s{font-size:.95rem;margin-bottom:22px}'+
+      '.au-bn{gap:12px}.au-bn li{padding:14px}.au-bn b{font-size:.9rem}'+
+    '}';
   document.head.appendChild(st);
+
+  // Any open dialog (e.g. "Sign in required") must close when the user is routed elsewhere (login page etc.)
+  window.addEventListener('hashchange',()=>{const d=document.getElementById('dlg');if(d&&d.open)d.close()});
 
   /* ---- helpers ---- */
   const clean=v=>{if(typeof v!=='string')return null;const t=v.trim();return t&&t.toUpperCase()!=='NA'?t:null};
