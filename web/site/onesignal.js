@@ -6,6 +6,7 @@
 const APP_ID='a791ea02-af27-4af4-9a9e-a8c062f960eb';
 window.OneSignalDeferred=window.OneSignalDeferred||[];
 const base=new URL('push/onesignal/',document.baseURI).pathname;
+const granted=()=>'Notification' in window&&Notification.permission==='granted';
 let OS=null,pending;
 
 OneSignalDeferred.push(async function(O){
@@ -20,9 +21,9 @@ OneSignalDeferred.push(async function(O){
     });
     /* While the site is open, notify.js already shows the notification: skip OneSignal's duplicate. */
     O.Notifications.addEventListener('foregroundWillDisplay',e=>e.preventDefault());
-    if(Notification.permission==='granted')O.User.PushSubscription.optIn();
-    if(pending!==undefined)link(pending);
+    if(granted())O.User.PushSubscription.optIn();
   }catch(e){console.warn('OneSignal init',e)}
+  if(pending!==undefined)link(pending);
 });
 
 /* Link / unlink the browser with the signed-in user (same as OneSignal.login(userId) in the app) */
@@ -38,7 +39,7 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-np="allow"]');if(!b||!OS)return;
   try{
     await OS.Notifications.requestPermission();
-    if(Notification.permission==='granted')await OS.User.PushSubscription.optIn();
+    if(granted())await OS.User.PushSubscription.optIn();
   }catch(x){}
 });
 })();
