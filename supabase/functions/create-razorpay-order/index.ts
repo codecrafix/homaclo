@@ -33,17 +33,17 @@ Deno.serve(async (request) => {
 
   // Identify the caller from their own JWT (never trust a client-supplied
   // user id). A payment must always be tied to a real logged-in user so it
-  // can be reconciled later.
+  // can be reconciled later. current_uid() resolves the app user id for both
+  // Supabase-Auth sessions and Clerk sessions.
   const authHeader = request.headers.get("Authorization") ?? "";
   const userClient = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authHeader } },
   });
-  const {
-    data: { user },
-  } = await userClient.auth.getUser();
-  if (!user) {
+  const { data: callerId } = await userClient.rpc("current_uid");
+  if (!callerId) {
     return json({ error: "You must be signed in to pay" }, 401);
   }
+  const user = { id: callerId as string };
 
   try {
     const input = await request.json();

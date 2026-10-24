@@ -5,10 +5,11 @@
       real address (history API). Old #/route links are converted to the clean URL automatically.
    2) The site scripts are fetched in parallel and run in their original order, so behaviour is unchanged.
    3) Every picture URL gets ?v=IMG_V so browsers/CDN can never show an older copy of an image.
-      Bump IMG_V (and the cache name in sw.js) whenever files in /img are replaced. */
+      Bump IMG_V (and the cache name in sw.js) whenever files in /img are replaced.
+   4) supabase.createClient(...) is routed through clerk-auth.js (Google sign-in via Clerk). */
 const IMG_V='20261023';
 const B=window.__BASE,R=window.__ROUTES;
-const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','onesignal.js'];
+const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','clerk-ui.js','onesignal.js'];
 
 /* ---------- address <-> route ---------- */
 const rel=()=>{let p=location.pathname.slice(B.length);try{p=decodeURIComponent(p)}catch(e){}return p.replace(/index\.html$/,'').replace(/\/+$/,'')};
@@ -53,6 +54,7 @@ const Q='?v='+IMG_V;
 const fix=s=>s
   .replace(/location\.href\.split\('#'\)\[0\]\+'#\/notifications'/g,"document.baseURI+'notifications'")
   .replace(/location\.hash/g,'window.__lh')
+  .replace(/supabase\.createClient\(/g,'(window.__mkSb||supabase.createClient)(')
   .replace(/(img\/[\w-]+\.png)/g,'$1'+Q)
   .replace(/img\/maintix-\$\{n\}\.png/g,'img/maintix-${n}.png'+Q)
   .replace(/'img\/'\+n\+'\.png'/g,"'img/'+n+'.png"+Q+"'");
