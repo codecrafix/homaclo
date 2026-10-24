@@ -29,9 +29,20 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Deep links are handled by app_links (Clerk Google sign-in), not by go_router. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Clerk OAuth redirect: maintix://auth/oauth -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="maintix" android:host="auth" android:path="/oauth"/>
             </intent-filter>
         </activity>
         <!-- Brand colour for the push notification icon / heading (OneSignal). -->

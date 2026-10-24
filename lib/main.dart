@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './providers/app_state.dart';
 import './routes/app_routes.dart';
+import './services/clerk/clerk_bridge.dart';
 import './services/notification_service.dart';
 import './services/supabase_service.dart';
 import './widgets/custom_error_widget.dart';
@@ -286,6 +287,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late final AppState _appState;
   StreamSubscription<AuthState>? _authSubscription;
+  StreamSubscription<ClerkBridgeEvent>? _clerkSubscription;
   bool _initialized = false;
 
   @override
@@ -294,6 +296,7 @@ class _MyAppState extends State<MyApp> {
     _appState = AppState();
     _appState.loadThemePreference();
     _initAuthListener();
+    _initClerkListener();
     // Apply initial system UI overlay for light mode
     AppTheme.applySystemUI(ThemeMode.light);
   }
@@ -310,6 +313,11 @@ class _MyAppState extends State<MyApp> {
             debugPrint('Auth event: $event');
 
             if (event == AuthChangeEvent.signedIn && session != null) {
+              // Email-OTP login wins: drop any leftover Google (Clerk) session
+              // so its token is never attached to this user's requests.
+              if (ClerkBridge.appUserId != null) {
+                unawaited(ClerkBridge.signOut());
+              }
               // Link this device to the user BEFORE login runs, so the welcome /
               // bonus pushes created during first-time setup can reach it.
               _linkOneSignalIdentity(session.user.id);
@@ -333,19 +341,9 @@ class _MyAppState extends State<MyApp> {
                 }
               }
             } else if (event == AuthChangeEvent.signedOut) {
-              NotificationService.instance.unsubscribe();
-              if (!kIsWeb) {
-                OneSignal.logout();
-              }
-              _appState.logout();
-              final currentPath = appRouter
-                  .routerDelegate
-                  .currentConfiguration
-                  .uri
-                  .toString();
-              if (!currentPath.startsWith('/admin') && _initialized) {
-                appRouter.go(AppRoutes.signUpLoginScreen);
-              }
+              // A Google (Clerk) user has no Supabase session; ignore this.
+              if (ClerkBridge.appUserId != null) return;
+              _handleSignedOut();
             } else if (event == AuthChangeEvent.initialSession) {
               if (session != null) {
                 _linkOneSignalIdentity(session.user.id);
@@ -369,6 +367,57 @@ class _MyAppState extends State<MyApp> {
     } catch (e) {
       debugPrint('Auth listener init error (Supabase not ready): $e');
       _initialized = true;
+    }
+  }
+
+  /// Google (Clerk) sign-in / restore / sign-out. Mirrors the email-OTP flow
+  /// above so notifications, push and navigation behave the same way.
+  void _initClerkListener() {
+    _clerkSubscription = ClerkBridge.events.listen((event) async {
+      switch (event.type) {
+        case ClerkBridgeEventType.signedIn:
+        case ClerkBridgeEventType.initialSession:
+          final userId = event.userId;
+          if (userId == null) return;
+          _linkOneSignalIdentity(userId);
+          if (!_appState.isLoggedIn) {
+            await _appState.loginWithSupabase();
+          }
+          _subscribeToNotifications(userId);
+          _initialized = true;
+          final currentPath = appRouter
+              .routerDelegate
+              .currentConfiguration
+              .uri
+              .toString();
+          if (currentPath == AppRoutes.initial ||
+              currentPath == AppRoutes.signUpLoginScreen ||
+              currentPath == AppRoutes.otpVerifyScreen) {
+            appRouter.go(AppRoutes.homeScreen);
+          }
+          break;
+        case ClerkBridgeEventType.signedOut:
+          _handleSignedOut();
+          break;
+        case ClerkBridgeEventType.error:
+          break;
+      }
+    });
+  }
+
+  void _handleSignedOut() {
+    NotificationService.instance.unsubscribe();
+    if (!kIsWeb) {
+      OneSignal.logout();
+    }
+    _appState.logout();
+    final currentPath = appRouter
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .toString();
+    if (!currentPath.startsWith('/admin') && _initialized) {
+      appRouter.go(AppRoutes.signUpLoginScreen);
     }
   }
 
@@ -398,45 +447,48 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _clerkSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _appState,
-      child: _WebFrame(
-        child: Sizer(
-          builder: (context, orientation, screenType) {
-            precacheImage(
-              const AssetImage('assets/images/maintix_full_logo.png'),
-              context,
-            );
-            return Consumer<AppState>(
-              builder: (context, appState, _) {
-                AppTheme.applySystemUI(appState.themeMode);
-                return MaterialApp.router(
-                  title: 'Maintix',
-                  theme: AppTheme.lightTheme,
-                  darkTheme: AppTheme.darkTheme,
-                  themeMode: appState.themeMode,
-                  // 🚨 CRITICAL: NEVER REMOVE OR MODIFY
-                  builder: (context, child) {
-                    return MediaQuery(
-                      data: MediaQuery.of(
-                        context,
-                      ).copyWith(textScaler: TextScaler.linear(1.0)),
-                      // App-wide tap animation (glow on every tappable widget)
-                      child: GlobalTapEffect(child: child!),
-                    );
-                  },
-                  // 🚨 END CRITICAL SECTION
-                  debugShowCheckedModeBanner: false,
-                  routerConfig: appRouter,
-                );
-              },
-            );
-          },
+    return ClerkBridge.wrap(
+      ChangeNotifierProvider.value(
+        value: _appState,
+        child: _WebFrame(
+          child: Sizer(
+            builder: (context, orientation, screenType) {
+              precacheImage(
+                const AssetImage('assets/images/maintix_full_logo.png'),
+                context,
+              );
+              return Consumer<AppState>(
+                builder: (context, appState, _) {
+                  AppTheme.applySystemUI(appState.themeMode);
+                  return MaterialApp.router(
+                    title: 'Maintix',
+                    theme: AppTheme.lightTheme,
+                    darkTheme: AppTheme.darkTheme,
+                    themeMode: appState.themeMode,
+                    // 🚨 CRITICAL: NEVER REMOVE OR MODIFY
+                    builder: (context, child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(
+                          context,
+                        ).copyWith(textScaler: TextScaler.linear(1.0)),
+                        // App-wide tap animation (glow on every tappable widget)
+                        child: GlobalTapEffect(child: child!),
+                      );
+                    },
+                    // 🚨 END CRITICAL SECTION
+                    debugShowCheckedModeBanner: false,
+                    routerConfig: appRouter,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

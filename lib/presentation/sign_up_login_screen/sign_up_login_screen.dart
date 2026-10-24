@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
+import '../../services/clerk/clerk_bridge.dart';
 import '../../services/supabase_service.dart';
 import '../../widgets/maintix_logo.dart';
 
@@ -22,7 +23,9 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   String? _errorMessage;
+  StreamSubscription<ClerkBridgeEvent>? _clerkSub;
 
   late AnimationController _logoController;
   late Animation<double> _logoScale;
@@ -45,6 +48,19 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
       ),
     );
     _logoController.forward();
+
+    // Show Google (Clerk) sign-in problems on this screen.
+    _clerkSub = ClerkBridge.events.listen((event) {
+      if (!mounted) return;
+      if (event.type == ClerkBridgeEventType.error) {
+        setState(() {
+          _isGoogleLoading = false;
+          _errorMessage = event.message;
+        });
+      } else if (event.type == ClerkBridgeEventType.signedIn) {
+        setState(() => _isGoogleLoading = false);
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // If already logged in via Supabase session, go to home
@@ -70,6 +86,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
 
   @override
   void dispose() {
+    _clerkSub?.cancel();
     _emailController.dispose();
     _logoController.dispose();
     super.dispose();
@@ -98,6 +115,25 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
   }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _continueWithGoogle() async {
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      await ClerkBridge.signInWithGoogle(context);
+    } catch (e) {
+      debugPrint('Google sign-in error: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Google sign-in failed. Please try again.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
@@ -308,7 +344,9 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
                           width: double.infinity,
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _sendOtp,
+                            onPressed: (_isLoading || _isGoogleLoading)
+                                ? null
+                                : _sendOtp,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.tealAccent,
                             ),
@@ -331,6 +369,82 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
                                   ),
                           ),
                         ),
+                        if (ClerkBridge.isSupported) ...[
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: cardMutedColor.withAlpha(90),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  'or',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13,
+                                    color: cardMutedColor,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: cardMutedColor.withAlpha(90),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: OutlinedButton(
+                              onPressed: (_isLoading || _isGoogleLoading)
+                                  ? null
+                                  : _continueWithGoogle,
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: cardMutedColor.withAlpha(140),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: _isGoogleLoading
+                                  ? SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: AppTheme.tealAccent,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.g_mobiledata_rounded,
+                                          size: 32,
+                                          color: cardTextColor,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Continue with Google',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: cardTextColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 32),
                         Center(
                           child: Text(
