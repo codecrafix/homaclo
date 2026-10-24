@@ -7,10 +7,13 @@
    - The site code still talks to "sb" exactly as before; this file lends it the Clerk session.
    Clerk itself is only downloaded for people who use Google sign-in (keeps the site fast for everyone else).
    It is warmed up as soon as the sign-in screen opens, so the Google button reacts instantly.
-   All Clerk redirects are pinned to this site's own base path (never the bare github.io root, which shows GitHub's 404). */
+   All Clerk redirects are pinned to this site's own base path (never the bare github.io root, which shows GitHub's 404).
+   Auth events match the email login: a fresh Google sign-in emits SIGNED_IN (location + notification prompts, welcome
+   messages), a restored session emits INITIAL_SESSION (no repeated prompts on every page load). */
 const PK='pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk';
 const FAPI='https://glad-gannet-8278.clerk.accounts.dev';
 const FLAG='mx_clerk';
+const FRESH='mx_gsi';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const HOME=()=>location.origin+(window.__BASE||'/');
 let CU=null,real=null,started=false,busy=false,again=false,rt=0,prev='';
@@ -21,6 +24,8 @@ const flagGet=()=>{try{return Number(localStorage.getItem(FLAG))||0}catch(e){ret
 const flagOn=()=>{try{localStorage.setItem(FLAG,String(Date.now()))}catch(e){}};
 const flagOff=()=>{try{localStorage.removeItem(FLAG)}catch(e){}};
 const say=m=>{try{if(typeof toast==='function')toast(m)}catch(e){}};
+/* true only right after the visitor pressed "Continue with Google" (also survives the redirect back to the site) */
+const freshTake=()=>{try{const t=Number(sessionStorage.getItem(FRESH))||0;sessionStorage.removeItem(FRESH);return t>0&&Date.now()-t<10*60*1000}catch(e){return false}};
 
 /* remember the page the visitor was on before the login screen (to return there after Google sign-in) */
 const track=()=>{const h=window.__lh||'';if(h&&!/^#\/login/.test(h))prev=h};
@@ -57,11 +62,12 @@ function emit(ev,session){subs.slice().forEach(cb=>{try{cb(ev,session)}catch(e){
 async function setCU(u){
   CU=u;
   if(u){
-    /* realtime token is set in the background so the sign-in does not wait for it */
-    flagOn();setAuthRealtime();
+    flagOn();
+    /* the realtime token is ready before listeners start (notification channel needs it), but never waits long */
+    await Promise.race([setAuthRealtime(),sleep(1500)]);
     /* signed in from the login screen: go back to where the visitor came from */
     if(window.__lh&&/^#\/login/.test(window.__lh))window.__lh=prev||'#/profile';
-    emit('SIGNED_IN',{user:u,access_token:'clerk',token_type:'bearer'});
+    emit(freshTake()?'SIGNED_IN':'INITIAL_SESSION',{user:u,access_token:'clerk',token_type:'bearer'});
   }else{
     clearInterval(rt);flagOff();emit('SIGNED_OUT',null);
   }
@@ -152,6 +158,7 @@ window.__clerkGoogle=async function(){
   if(!C||!C.loaded){say('Google sign-in is unavailable right now. Please try again.');return}
   /* after Google, come back to the page the visitor was on, inside this site (never the bare github.io root) */
   const back=HOME()+(prev||'#/profile').replace(/^#\/?/,'');
+  try{sessionStorage.setItem(FRESH,String(Date.now()))}catch(e){}
   C.openSignIn({forceRedirectUrl:back,signUpForceRedirectUrl:back,fallbackRedirectUrl:back,signUpFallbackRedirectUrl:back});
 };
 })();
