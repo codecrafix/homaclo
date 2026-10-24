@@ -316,6 +316,35 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     );
   }
 
+  /// Razorpay's webhook (a server-side safety net) usually confirms the
+  /// payment and creates the booking on its own, often BEFORE this app's own
+  /// success callback finishes. Creating a second booking here is what made
+  /// every paid booking show up twice.
+  ///
+  /// Returns the id of the booking the webhook already created for this
+  /// order, or null if there isn't one (so the caller must create it):
+  ///  - payment row still PENDING -> webhook has not run yet -> null
+  ///  - payment row SUCCESS with a booking id -> reuse that booking
+  ///  - payment row SUCCESS without a booking id -> the webhook is in the
+  ///    middle of creating it, so wait briefly and look again
+  Future<String?> _findWebhookBooking(String orderId) async {
+    const delays = [
+      Duration.zero,
+      Duration(milliseconds: 700),
+      Duration(milliseconds: 1200),
+      Duration(milliseconds: 2000),
+    ];
+    for (final delay in delays) {
+      if (delay != Duration.zero) await Future.delayed(delay);
+      final status = await RazorpayService.instance.checkOrderStatus(orderId);
+      if (status == null) return null;
+      final id = status['bookingId'] as String?;
+      if (id != null && id.isNotEmpty) return id;
+      if (status['status'] != 'SUCCESS') return null;
+    }
+    return null;
+  }
+
   Future<void> _handlePaymentSuccess(
     BuildContext context,
     AppState appState,
@@ -339,13 +368,19 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
       );
     }
 
-    String? bookingId;
-    final bookingRecord = await appState.createConfirmedBooking(
-      serviceName: '$serviceLabel Tank Cleaning',
-      cart: cart,
-      totalAmount: amountInPaise ~/ 100,
-    );
-    bookingId = bookingRecord;
+    // Create the booking only once: reuse the one the Razorpay webhook may
+    // already have created for this order (same fix as the website).
+    String? bookingId = await _findWebhookBooking(orderId);
+    final bool bookingAlreadyCreated = bookingId != null;
+    if (bookingAlreadyCreated) {
+      await appState.loadDbBookings();
+    } else {
+      bookingId = await appState.createConfirmedBooking(
+        serviceName: '$serviceLabel Tank Cleaning',
+        cart: cart,
+        totalAmount: amountInPaise ~/ 100,
+      );
+    }
 
     await RazorpayService.instance.recordPaymentSuccess(
       razorpayOrderId: orderId,
@@ -361,23 +396,27 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
       } catch (_) {}
     }
 
-    // Trigger booking confirmed + payment success notifications
     final userId = appState.currentUserId;
     if (userId != null) {
-      await NotificationService.instance.triggerNotification(
-        userId: userId,
-        title: 'Booking Confirmed! 📅',
-        body: 'Your slot is successfully scheduled.',
-        type: 'booking',
-        localId: 1,
-      );
-      await NotificationService.instance.triggerNotification(
-        userId: userId,
-        title: 'Payment Received! 💳',
-        body: 'Service payment confirmed.',
-        type: 'payment',
-        localId: 2,
-      );
+      // When the webhook created the booking it already sent the
+      // "Booking Confirmed" and "Payment Received" notifications, so only
+      // send them here if this app created the booking itself.
+      if (!bookingAlreadyCreated) {
+        await NotificationService.instance.triggerNotification(
+          userId: userId,
+          title: 'Booking Confirmed! 📅',
+          body: 'Your slot is successfully scheduled.',
+          type: 'booking',
+          localId: 1,
+        );
+        await NotificationService.instance.triggerNotification(
+          userId: userId,
+          title: 'Payment Received! 💳',
+          body: 'Service payment confirmed.',
+          type: 'payment',
+          localId: 2,
+        );
+      }
 
       // Check if 3-tank offer should be sent
       await appState.scheduleThreeTankOfferIfNeeded(userId);
