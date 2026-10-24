@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'clerk/clerk_bridge.dart';
+import 'clerk/clerk_http_client.dart';
+
 class ProfileModel {
   final String id;
   final String email;
@@ -246,7 +249,15 @@ class SupabaseService {
     }
 
     _validateKeyProject(anonKey, parsedUrl.host);
-    await Supabase.initialize(url: url, anonKey: anonKey);
+    // On Android/iOS the Clerk session token is attached to data requests when
+    // a Google (Clerk) session is active. On web this is null (no change).
+    await Supabase.initialize(
+      url: url,
+      anonKey: anonKey,
+      httpClient: ClerkBridge.isSupported
+          ? ClerkTokenHttpClient(ClerkBridge.accessToken)
+          : null,
+    );
   }
 
   /// Reject a common configuration error where a key from another project is
@@ -283,7 +294,23 @@ class SupabaseService {
 
   SupabaseClient get client => Supabase.instance.client;
 
-  User? get currentUser => client.auth.currentUser;
+  /// The signed-in user. For a Google (Clerk) login this is a lightweight
+  /// user carrying the shared app user id (same id the website uses).
+  User? get currentUser {
+    final clerkUserId = ClerkBridge.appUserId;
+    if (clerkUserId != null) {
+      return User(
+        id: clerkUserId,
+        appMetadata: const <String, dynamic>{'provider': 'clerk'},
+        userMetadata: ClerkBridge.appUserMetadata,
+        aud: 'authenticated',
+        createdAt: DateTime.now().toIso8601String(),
+        email: ClerkBridge.appUserEmail,
+      );
+    }
+    return client.auth.currentUser;
+  }
+
   bool get isLoggedIn => currentUser != null;
 
   // ─── AUTH ────────────────────────────────────────────────────────────────
@@ -307,6 +334,10 @@ Future<void> sendOtp(String email) async {
   }
 
   Future<void> signOut() async {
+    if (ClerkBridge.appUserId != null) {
+      await ClerkBridge.signOut();
+      return;
+    }
     await client.auth.signOut();
   }
 
