@@ -6,7 +6,8 @@
    2) The site scripts are fetched in parallel and run in their original order, so behaviour is unchanged.
    3) Every picture URL gets ?v=IMG_V so browsers/CDN can never show an older copy of an image.
       Bump IMG_V (and the cache name in sw.js) whenever files in /img are replaced.
-   4) supabase.createClient(...) is routed through clerk-auth.js (Google sign-in via Clerk). */
+   4) supabase.createClient(...) is routed through clerk-auth.js (Google sign-in via Clerk).
+   5) Clerk's own return hash (#/sso-callback ...) is left untouched so Google sign-in can finish. */
 const IMG_V='20261023';
 const B=window.__BASE,R=window.__ROUTES;
 const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','clerk-ui.js','onesignal.js'];
@@ -24,8 +25,9 @@ function go(t,replace){
 Object.defineProperty(window,'__lh',{configurable:true,get:()=>'#/'+rel()+location.search,set:v=>go(v)});
 
 /* Old links like /maintix/#/faq or /maintix/book#/notifications -> clean URL; drop a trailing slash */
-if(/^#\//.test(location.hash)){const n=norm(location.hash);history.replaceState(null,'',B+n.p+n.q)}
-else if(rel()&&/\/$/.test(location.pathname))history.replaceState(null,'',B+rel()+location.search);
+const CK=/^#\/(sso-callback|factor-|verify|continue|reset-password)/.test(location.hash);
+if(!CK&&/^#\//.test(location.hash)){const n=norm(location.hash);history.replaceState(null,'',B+n.p+n.q)}
+else if(rel()&&/\/$/.test(location.pathname))history.replaceState(null,'',B+rel()+location.search+(CK?location.hash:''));
 
 addEventListener('popstate',()=>dispatchEvent(new Event('hashchange')));
 

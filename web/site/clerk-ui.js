@@ -12,13 +12,20 @@ function inject(){
   const w=document.createElement('div');w.className='au-g';
   w.innerHTML='<button type="button" class="au-gb" data-gs="1">'+G+' Continue with Google</button><div class="au-or"><span>or</span></div>';
   c.insertBefore(w,c.firstChild);
+  /* start downloading Clerk now so the Google button opens instantly */
+  if(window.__clerkWarm)setTimeout(window.__clerkWarm,300);
 }
 const app=$('#app');
 if(app)new MutationObserver(inject).observe(app,{childList:true,subtree:true});
 inject();
-document.addEventListener('click',e=>{
+document.addEventListener('pointerdown',e=>{
+  if(e.target.closest&&e.target.closest('[data-gs]')&&window.__clerkWarm)window.__clerkWarm();
+},{passive:true});
+document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-gs]');if(!b)return;
   e.preventDefault();
-  if(window.__clerkGoogle)window.__clerkGoogle();
+  if(b.dataset.busy||!window.__clerkGoogle)return;
+  b.dataset.busy='1';b.style.opacity='.7';
+  try{await window.__clerkGoogle()}finally{delete b.dataset.busy;b.style.opacity=''}
 });
 })();

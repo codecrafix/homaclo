@@ -5,11 +5,14 @@
    - A Clerk user is mapped to the same app user id that bookings/wallet use (public.ensure_clerk_profile in Supabase,
      which links an existing profile by the Clerk-verified e-mail or creates a new one).
    - The site code still talks to "sb" exactly as before; this file lends it the Clerk session.
-   Clerk itself is only downloaded for people who use Google sign-in (keeps the site fast for everyone else). */
+   Clerk itself is only downloaded for people who use Google sign-in (keeps the site fast for everyone else).
+   It is warmed up as soon as the sign-in screen opens, so the Google button reacts instantly.
+   All Clerk redirects are pinned to this site's own base path (never the bare github.io root, which shows GitHub's 404). */
 const PK='pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk';
 const FAPI='https://glad-gannet-8278.clerk.accounts.dev';
 const FLAG='mx_clerk';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const HOME=()=>location.origin+(window.__BASE||'/');
 let CU=null,real=null,started=false,busy=false,again=false,rt=0,prev='';
 const subs=[];
 let resolveReady;const ready=new Promise(r=>resolveReady=r);
@@ -31,7 +34,7 @@ function loadClerk(){
   s.src=FAPI+'/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
   s.onload=async()=>{
     try{
-      await window.Clerk.load({});
+      await window.Clerk.load({signInFallbackRedirectUrl:HOME(),signUpFallbackRedirectUrl:HOME(),afterSignOutUrl:HOME()});
       window.Clerk.addListener(()=>sync());
       await sync();
       /* stale marker from an abandoned sign-in: stop loading Clerk on every visit */
@@ -39,7 +42,7 @@ function loadClerk(){
     }catch(e){console.warn('Clerk',e)}
     resolveReady();
   };
-  s.onerror=()=>resolveReady();
+  s.onerror=()=>{started=false;resolveReady()};
   document.head.appendChild(s);
 }
 
@@ -54,7 +57,8 @@ function emit(ev,session){subs.slice().forEach(cb=>{try{cb(ev,session)}catch(e){
 async function setCU(u){
   CU=u;
   if(u){
-    flagOn();await setAuthRealtime();
+    /* realtime token is set in the background so the sign-in does not wait for it */
+    flagOn();setAuthRealtime();
     /* signed in from the login screen: go back to where the visitor came from */
     if(window.__lh&&/^#\/login/.test(window.__lh))window.__lh=prev||'#/profile';
     emit('SIGNED_IN',{user:u,access_token:'clerk',token_type:'bearer'});
@@ -138,11 +142,16 @@ window.__mkSb=function(url,key,opts){
 /* Returning Clerk user: start Clerk early so the session is restored */
 if(flagGet())loadClerk();
 
+/* Called when the sign-in screen opens (or the Google button is touched): download Clerk ahead of the click */
+window.__clerkWarm=function(){loadClerk()};
+
 /* "Continue with Google" */
 window.__clerkGoogle=async function(){
   flagOn();loadClerk();await Promise.race([ready,sleep(8000)]);
   const C=window.Clerk;
   if(!C||!C.loaded){say('Google sign-in is unavailable right now. Please try again.');return}
-  C.openSignIn({});
+  /* after Google, come back to the page the visitor was on, inside this site (never the bare github.io root) */
+  const back=HOME()+(prev||'#/profile').replace(/^#\/?/,'');
+  C.openSignIn({forceRedirectUrl:back,signUpForceRedirectUrl:back,fallbackRedirectUrl:back,signUpFallbackRedirectUrl:back});
 };
 })();
