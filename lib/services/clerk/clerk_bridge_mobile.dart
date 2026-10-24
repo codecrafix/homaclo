@@ -52,7 +52,9 @@ class ClerkBridge {
   static final ClerkAuthConfig _config = ClerkAuthConfig(
     publishableKey: _publishableKey,
     redirectionGenerator: _redirectFor,
-    deepLinkStream: AppLinks().allUriLinkStream.asyncMap(_filterDeepLink),
+    // uriLinkStream exists in every app_links 6.x/7.x release. The OAuth
+    // redirect arrives while the app is already running, so this is enough.
+    deepLinkStream: AppLinks().uriLinkStream.asyncMap(_filterDeepLink),
   );
 
   static Uri? _redirectFor(BuildContext context, clerk.Strategy strategy) {
