@@ -74,7 +74,7 @@ Deno.serve(async (request) => {
       })
       .map((n) => ({
         title: String(
-          n.headings?.en ?? Object.values(n.headings ?? {})[0] ?? "Maintix",
+          n.headings?.en ?? Object.values(n.headings ?? {})[0] ?? "Homaclo",
         ),
         body: String(n.contents?.en ?? Object.values(n.contents ?? {})[0]),
         onesignal_id: n.id,

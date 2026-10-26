@@ -32,7 +32,7 @@ begin
   values (p_user, 50, 'welcome', 'Welcome signup bonus');
 
   insert into public.notifications (user_id, title, body, type) values
-    (p_user, 'Welcome to Maintix! 🚰', 'Book your professional water tank cleaning slot today.', 'welcome'),
+    (p_user, 'Welcome to Homaclo! 🚰', 'Book your professional water tank cleaning slot today.', 'welcome'),
     (p_user, 'Welcome Bonus! 🪙', 'You received 50 Coins on signup! (Value ₹50)', 'welcome'),
     (p_user, 'Welcome Offer! 🎁', 'Get ₹100 Flat Discount on your first booking using code WEL100!', 'coupon');
 
