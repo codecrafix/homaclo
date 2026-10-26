@@ -265,7 +265,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: Text(
           appState.userName.isNotEmpty
               ? appState.userName[0].toUpperCase()
-              : 'M',
+              : 'H',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 32,
             fontWeight: FontWeight.w800,

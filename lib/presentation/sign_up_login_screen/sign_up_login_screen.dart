@@ -193,7 +193,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen>
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Maintix',
+                        'Homaclo',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 32,
                           fontWeight: FontWeight.w900,

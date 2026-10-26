@@ -278,7 +278,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Maintix needs your precise location to show nearby services, auto-fill your address, and provide accurate service estimates.',
+                    'Homaclo needs your precise location to show nearby services, auto-fill your address, and provide accurate service estimates.',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       color: Colors.white.withAlpha(179),
@@ -309,7 +309,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Location access is required to continue using Maintix.',
+                            'Location access is required to continue using Homaclo.',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               color: Colors.white.withAlpha(200),
