@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Maintix brand logo (new design) — rounded square tile.
+/// Homaclo brand logo (new design) — rounded square tile.
 ///
 /// Rendered from the vector asset `assets/images/maintix_logo.svg`
 /// (already covered by the `assets/images/` entry in pubspec.yaml), so it is
@@ -44,7 +44,7 @@ class MaintixLogo extends StatelessWidget {
             color: const Color(0xFF00A8CC),
             alignment: Alignment.center,
             child: const Text(
-              'M',
+              'H',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,

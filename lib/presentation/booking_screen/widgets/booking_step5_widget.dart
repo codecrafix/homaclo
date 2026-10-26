@@ -400,7 +400,7 @@ class _BookingStep5WidgetState extends State<BookingStep5Widget>
           ),
           const SizedBox(height: 4),
           Text(
-            '© 2026 Maintix. All Rights Reserved.',
+            '© 2026 Homaclo. All Rights Reserved.',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: AppTheme.textMuted,

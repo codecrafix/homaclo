@@ -56,7 +56,7 @@ class ProfileHeaderWidget extends StatelessWidget {
         ? appState.userName[0].toUpperCase()
         : (appState.userEmail.isNotEmpty
               ? appState.userEmail[0].toUpperCase()
-              : 'M');
+              : 'H');
     return Container(
       width: _avatarSize,
       height: _avatarSize,
@@ -207,7 +207,7 @@ class ProfileHeaderWidget extends StatelessWidget {
                     Text(
                       appState.userName.isNotEmpty
                           ? appState.userName
-                          : 'Maintix User',
+                          : 'Homaclo User',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.plusJakartaSans(
@@ -228,7 +228,7 @@ class ProfileHeaderWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'MAINTIX MEMBER',
+                          'HOMACLO MEMBER',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
