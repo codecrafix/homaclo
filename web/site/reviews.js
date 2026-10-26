@@ -9,10 +9,10 @@
   const TEAL='#06a9cc';
   const MOCK=[
     ['Rajesh Sharma','Civil Lines, Satna','2 weeks ago',5,'Excellent service! The team was professional and thorough. My 1000L tank was cleaned spotlessly. Water quality has improved significantly. Highly recommend to everyone in Satna!','1000L Cleaned','#3B82F6','RS'],
-    ['Ramesh Tiwari','Dawari, Satna','2 weeks ago',5,'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Maintix ki team bahut professional hai. Definitely recommend karunga.','1000L Tank Cleaned','#10B981','RT'],
+    ['Ramesh Tiwari','Dawari, Satna','2 weeks ago',5,'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Homaclo ki team bahut professional hai. Definitely recommend karunga.','1000L Tank Cleaned','#10B981','RT'],
     ['Priya Sharma','Pateri, Satna','3 weeks ago',4,'Good service, reasonable price. The technician was very professional and explained everything clearly. My family was worried about water quality but now we are fully satisfied.','750L Cleaned','#EC4899','PS'],
     ['Suresh Gupta','Birla Road, Satna','1 month ago',5,'Superb experience! Booked online and the team arrived exactly on time. Tank cleaning was done in under 2 hours. Very affordable pricing. Will definitely book again.','1500L Cleaned','#F59E0B','SG'],
-    ['Anita Verma','Maihar Bypass, Satna','3 weeks ago',5,'Excellent work by the Maintix team. They cleaned our 2000L overhead tank thoroughly. The water now tastes much better. Highly professional and courteous staff.','2000L Cleaned','#8B5CF6','AV'],
+    ['Anita Verma','Maihar Bypass, Satna','3 weeks ago',5,'Excellent work by the Homaclo team. They cleaned our 2000L overhead tank thoroughly. The water now tastes much better. Highly professional and courteous staff.','2000L Cleaned','#8B5CF6','AV'],
     ['Mohan Patel','Jawahar Nagar, Satna','1 month ago',4,'Very good service at a fair price. The team was punctual and cleaned the tank properly. I noticed a clear improvement in water quality after the cleaning. Recommended!','500L Cleaned','#06B6D4','MP']
   ];
   let DB=[],loading=true,rate=5,busy=false;
@@ -126,7 +126,7 @@
     const body=list.length?list.map(r=>`<div style="padding:14px;border-radius:12px;background:var(--bg);margin-bottom:12px">
       <div style="display:flex;align-items:center"><span class="stars" style="letter-spacing:1px">${stars5(Math.round(r.rating))}</span><span style="flex:1"></span><button data-rv="my-del" data-id="${h(r.id)}" aria-label="Delete review" style="border:0;background:none;color:var(--err);cursor:pointer;font-size:1rem">🗑</button></div>
       <p class="muted small" style="margin:6px 0 4px">${h(r.review_text)}</p>
-      <div class="muted" style="font-size:.72rem">${h(ago(r.created_at))}  •  ${r.is_approved?'✅ Live':'⏳ Approval pending'}</div></div>`).join('')
+      <div class="muted" style="font-size:.72rem">${h(ago(r.created_at))}  •  ${r.is_approved?'✅ Live':'⏳ Approval pending'}</div></div>`).join('')
       :`<div class="c" style="padding:34px 0"><div style="font-size:2.6rem;color:var(--mut)">☆</div><b class="muted" style="display:block;margin:8px 0 4px">No reviews yet</b><span class="muted small">Complete a booking to write your first review</span></div>`;
     d.innerHTML=`<div style="display:flex;align-items:center;margin-bottom:12px"><h3 style="font-size:1.15rem">My Reviews</h3><span style="flex:1"></span><span style="padding:4px 10px;border-radius:12px;background:color-mix(in srgb,${TEAL} 14%,transparent);color:${TEAL};font-size:.76rem;font-weight:600">${list.length} review${list.length!==1?'s':''}</span></div>
       <div style="max-height:55vh;overflow-y:auto">${body}</div><button class="btn ghost block" style="margin-top:12px" data-act="close">Close</button>`;
