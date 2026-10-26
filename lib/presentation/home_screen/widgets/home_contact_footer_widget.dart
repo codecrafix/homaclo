@@ -9,7 +9,7 @@ class HomeContactFooterWidget extends StatelessWidget {
 
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse(
-      'https://wa.me/916262262913?text=Hi%20Maintix%2C%20I%20need%20help',
+      'https://wa.me/916262262913?text=Hi%20Homaclo%2C%20I%20need%20help',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -40,7 +40,7 @@ class HomeContactFooterWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              // New Maintix logo — vector, rounded square (sharp at any size).
+              // New Homaclo logo — vector, rounded square (sharp at any size).
               const MaintixLogo(
                 width: 64,
                 height: 64,
@@ -154,7 +154,7 @@ class HomeContactFooterWidget extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            '© 2026 Maintix. All Rights Reserved.',
+            '© 2026 Homaclo. All Rights Reserved.',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: Colors.white.withAlpha(115),

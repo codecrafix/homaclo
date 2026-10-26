@@ -10,7 +10,7 @@ class HomeServicesWidget extends StatelessWidget {
 
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse(
-      'https://wa.me/916262262913?text=Hi%20Maintix%2C%20I%20want%20to%20enquire%20about%20Solar%20Maintenance',
+      'https://wa.me/916262262913?text=Hi%20Homaclo%2C%20I%20want%20to%20enquire%20about%20Solar%20Maintenance',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
