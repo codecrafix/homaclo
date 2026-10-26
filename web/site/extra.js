@@ -5,7 +5,7 @@ function proof(){
   const hr=$('#hrev');if(!hr||$('#proof'))return;
   const s=document.createElement('section');s.id='proof';s.className='sec alt';
   s.innerHTML=`<div class="wrap"><div class="head c"><h2>Real work proof</h2><p>Drag the slider: muddy tank before, hygienic tank after.</p></div>
-  <div class="ba"><img class="after" src="img/after.png" alt="Tank after Maintix cleaning" loading="lazy"><img class="before" src="img/before.png" alt="Tank before cleaning" loading="lazy"><span class="tg b">BEFORE</span><span class="tg a">AFTER ✨</span><input type="range" min="0" max="100" value="50" aria-label="Before and after slider"></div>
+  <div class="ba"><img class="after" src="img/after.png" alt="Tank after Homaclo cleaning" loading="lazy"><img class="before" src="img/before.png" alt="Tank before cleaning" loading="lazy"><span class="tg b">BEFORE</span><span class="tg a">AFTER ✨</span><input type="range" min="0" max="100" value="50" aria-label="Before and after slider"></div>
   <div class="head" style="margin:56px 0 24px"><h2>Why tank cleaning matters</h2></div>
   <div class="rb"><div class="rk"><h4>✕ Dirty water risks</h4><ul>${L(['Hair fall and scalp damage from minerals and bacteria','Skin allergies and rashes','Typhoid, jaundice and stomach illness risk','Bad odour and limescale on taps'])}</ul></div>
   <div class="bn"><h4>✓ Clean water benefits</h4><ul>${L(['Healthier hair and skin','Safe, bacteria-free drinking water','Longer plumbing life, less clogging','Fresh taste, zero foul odour'])}</ul></div></div></div>`;
