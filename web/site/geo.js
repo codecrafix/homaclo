@@ -1,5 +1,5 @@
 'use strict';
-/* Maintix geolocation: post-login permission gate, auto-fill everywhere.
+/* Homaclo geolocation: post-login permission gate, auto-fill everywhere.
    Reverse-geocode chain mirrors the app: Mappls -> LocationIQ -> BigDataCloud.
    Also: closes open dialogs on route change, and polishes the sign-in page layout on larger screens. */
 (function(){
@@ -118,7 +118,7 @@
   /* ---- permission-denied / location-off dialog ---- */
   const help=e=>{
     if(e&&e.code===-1)return {t:'Location not supported',b:'Your browser does not support location access. Please type your address manually.'};
-    if(e&&e.code===1)return {t:'Location access is blocked',b:'<p>Maintix needs your location to auto-fill your service address. To allow it:</p><ol style="margin:10px 0 0 18px"><li>Tap the 🔒 / ⚙ icon at the left of the address bar</li><li>Open <b>Site settings</b> → <b>Location</b></li><li>Choose <b>Allow</b>, then press <b>Try again</b> below</li></ol>'};
+    if(e&&e.code===1)return {t:'Location access is blocked',b:'<p>Homaclo needs your location to auto-fill your service address. To allow it:</p><ol style="margin:10px 0 0 18px"><li>Tap the 🔒 / ⚙ icon at the left of the address bar</li><li>Open <b>Site settings</b> → <b>Location</b></li><li>Choose <b>Allow</b>, then press <b>Try again</b> below</li></ol>'};
     return {t:'Turn on your device location',b:'<p>We could not get your location. Please switch on <b>Location / GPS</b> in your device settings, then press <b>Try again</b>.</p>'};
   };
   function showDialog(e){
