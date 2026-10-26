@@ -7,13 +7,13 @@ const plain=x=>x.replace(/<[^>]+>/g,'');
 /* ---------- FAQ content (mirrors the website + app Terms, Privacy & Refund policy) ---------- */
 function faqData(){return [
 {c:'Booking & Services',i:[
- ['svc','What services does Maintix offer?','Maintix provides professional water tank cleaning for homes and businesses in Satna, including disinfection and sanitization with food-grade, eco-friendly cleaning agents. You can book 500L, 750L, 1000L, 1500L and 2000L tanks online.'],
+ ['svc','What services does Homaclo offer?','Homaclo provides professional water tank cleaning for homes and businesses in Satna, including disinfection and sanitization with food-grade, eco-friendly cleaning agents. You can book 500L, 750L, 1000L, 1500L and 2000L tanks online.'],
  ['price','How much does tank cleaning cost?','Pricing is fixed by tank size: '+Object.entries(PRICES).map(([k,p])=>k+' '+inr(p)).join(', ')+'. Prices include applicable GST and there are no hidden charges.'],
  ['book','How do I book a cleaning?','Choose your tank size and quantity, pick a date and a 2-hour time slot, enter your address and phone number, then review and pay securely online. You sign in with your email using a one-time code, so no password is needed. '+A('#/book','Book now')],
  ['prep','What should I arrange before the visit?','Please make sure the technician can reach the tank and has access to water, and that you or a responsible adult is present. Our team contacts you 1–2 hours before the scheduled service.']
 ]},
 {c:'Payments & Offers',i:[
- ['pay','Which payment methods are accepted?','Payments are processed securely by Razorpay. You can pay with UPI, debit or credit card, or netbanking. Maintix does not store your card details.'],
+ ['pay','Which payment methods are accepted?','Payments are processed securely by Razorpay. You can pay with UPI, debit or credit card, or netbanking. Homaclo does not store your card details.'],
  ['wel','How do I use the WEL100 coupon?','WEL100 gives ₹100 off your first booking. Copy it from the Offers section, then enter it in the Coupon code box on the Review & pay step. If you copied it on this device, it is applied for you automatically.'],
  ['bulk','Is there a discount for multiple tanks?','Yes. Book 3 or more tanks and ₹500 is taken off automatically at checkout. No code is needed.'],
  ['coins','How do reward coins work?','You receive 50 bonus coins when you sign up, 10 coins for every review you submit, and a monthly bonus of 50 coins. Each coin is worth ₹1, and you can redeem up to 50 coins per booking at checkout.'],
@@ -21,21 +21,21 @@ function faqData(){return [
 ]},
 {c:'Cancellation & Refunds',i:[
  ['cancel','Can I cancel a booking?','All confirmed bookings are final and non-cancellable, and refunds for a change of mind are not offered. For any special situation, please contact our support team. '+A('#/refund','Read the full policy')],
- ['refund','When will I get a refund?','Refunds are issued when Maintix is unable to deliver the scheduled service (for example due to operational issues, technician unavailability, severe weather or unforeseen technical failures), and for accidental double or failed payments. Approved refunds are credited to your original payment source within 5–7 business days.'],
+ ['refund','When will I get a refund?','Refunds are issued when Homaclo is unable to deliver the scheduled service (for example due to operational issues, technician unavailability, severe weather or unforeseen technical failures), and for accidental double or failed payments. Approved refunds are credited to your original payment source within 5–7 business days.'],
  ['quality','What if I am not satisfied with the cleaning?','Report it within 24 hours through the app or by email. We will re-inspect and re-service at no additional cost. The guarantee does not cover pre-existing tank damage or structural issues.']
 ]},
 {c:'Account & Privacy',i:[
  ['login','How do I sign in?','Enter your email and we send you a one-time code. Enter the code and you are signed in. No password is required, and your account is created automatically on first sign-in.'],
  ['rev','Who can write a review?','Customers with a completed booking can write one review per booking and earn 10 coins. Reviews appear publicly after approval.'],
  ['data','Is my personal data safe?','We never sell or rent your personal information. Data is encrypted in transit and at rest, and shared only as needed for your service, such as technician details for an active booking. You can request access or deletion by emailing maintix.help@gmail.com. '+A('#/privacy','Privacy Policy')],
- ['contact','How can I contact Maintix?','Email maintix.help@gmail.com or call +91 62622 62913. You can also reach us on WhatsApp from the footer. We are based in Satna, Madhya Pradesh.']
+ ['contact','How can I contact Homaclo?','Email maintix.help@gmail.com or call +91 62622 62913. You can also reach us on WhatsApp from the footer. We are based in Satna, Madhya Pradesh.']
 ]}
 ]}
 const item=x=>`<details class="fq"><summary>${x[1]}</summary><div class="fa">${x[2]}</div></details>`;
 const HOME=['svc','price','book','pay','cancel','refund'];
 
 function faqPage(){
-  setTimeout(()=>{document.title='FAQs · Maintix'},0);
+  setTimeout(()=>{document.title='FAQs · Homaclo'},0);
   return `<div class="page"><div class="wrap fade" style="max-width:900px"><div class="head c"><span class="fq-k">HELP CENTRE</span><h1>Frequently asked questions</h1><p>Everything about booking, payments, offers and our policies.</p></div>
   <div class="fq-s"><input id="fq-q" type="search" placeholder="Search questions…" aria-label="Search FAQs"></div>
   ${faqData().map(g=>`<section class="fq-g"><h2>${h(g.c)}</h2>${g.i.map(item).join('')}</section>`).join('')}
@@ -83,7 +83,7 @@ homeAfter=async function(){
 /* ---------- Reviews page: premium layout (ids/handlers unchanged, reviews.js still renders the feed) ---------- */
 window.reviewsView=function(){
   return `<div class="page"><div class="wrap fade rvp">
-  <div class="rv-hero"><div><span class="fq-k">CUSTOMER REVIEWS</span><h1>Trusted by families across Satna</h1><p>Real feedback from customers who booked a Maintix tank cleaning.</p></div>
+  <div class="rv-hero"><div><span class="fq-k">CUSTOMER REVIEWS</span><h1>Trusted by families across Satna</h1><p>Real feedback from customers who booked a Homaclo tank cleaning.</p></div>
   <div class="rv-score"><div class="rv-n"><b id="rv-avg">5.0</b><span>★</span></div><div class="rv-st">★★★★★</div><small>Average rating</small></div></div>
   <div class="rv-stats"><div><b>500+</b><span>Happy customers</span></div><div><b>5.0</b><span>Average rating</span></div><div><b>100%</b><span>Satisfaction rate</span></div></div>
   <div class="rv-bar"><h2>What customers say</h2><button class="btn" data-rv="write">✍️ Write a review</button></div>
