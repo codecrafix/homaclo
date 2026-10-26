@@ -1,4 +1,4 @@
-/* Maintix service worker: fast images (stale-while-revalidate) + notification taps.
+/* Homaclo service worker: fast images (stale-while-revalidate) + notification taps.
    Bump C whenever the pictures in /img are replaced (and IMG_V in router.js): old caches are deleted on activate. */
 const C='mx-img-v3';
 self.addEventListener('install',()=>self.skipWaiting());
