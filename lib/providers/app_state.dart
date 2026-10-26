@@ -98,7 +98,7 @@ class CartState {
 }
 
 class AppState extends ChangeNotifier {
-  // ─── Theme ────────────────────────────────────────────────────────────────
+  // ─── Theme ─────────────────────────────────────────────────────────────────────
   ThemeMode _themeMode = ThemeMode.light;
   ThemeMode get themeMode => _themeMode;
 
@@ -128,7 +128,7 @@ class AppState extends ChangeNotifier {
   int _coinBalance = 0;
   int get coinBalance => _coinBalance;
 
-  // ─── Live location ────────────────────────────────────────────────────────
+  // ─── Live location ────────────────────────────────────────────────────────────
   String _liveLocation = '';
   String get liveLocation => _liveLocation;
   bool _locationLoading = false;
@@ -140,7 +140,7 @@ class AppState extends ChangeNotifier {
   double? _locationLongitude;
   double? get locationLongitude => _locationLongitude;
 
-  // ─── Supabase-backed bookings ─────────────────────────────────────────────
+  // ─── Supabase-backed bookings ─────────────────────────────────────────────────
   final List<BookingModel> _bookingHistory = [];
   List<BookingModel> get bookingHistory => List.unmodifiable(_bookingHistory);
 
@@ -149,7 +149,7 @@ class AppState extends ChangeNotifier {
   bool _bookingsLoading = false;
   bool get bookingsLoading => _bookingsLoading;
 
-  // ─── Reviews (Supabase-backed) ────────────────────────────────────────────
+  // ─── Reviews (Supabase-backed) ────────────────────────────────────────────────
   List<ReviewModel> _userReviews = [];
   List<ReviewModel> get userReviews => List.unmodifiable(_userReviews);
   List<ReviewModel> _myReviews = [];
@@ -180,7 +180,7 @@ class AppState extends ChangeNotifier {
     return !_reviewSubmittedAfterLastBooking;
   }
 
-  // ─── Profile stats ────────────────────────────────────────────────────────
+  // ─── Profile stats ────────────────────────────────────────────────────────────
   int _totalBookingsCount = 0;
   int get totalBookingsCount => _totalBookingsCount;
 
@@ -195,7 +195,7 @@ class AppState extends ChangeNotifier {
   // ─── Login mutex — prevents concurrent loginWithSupabase() calls ──────────
   bool _loginInProgress = false;
 
-  // ─── Unread notification count ────────────────────────────────────────────
+  // ─── Unread notification count ──────────────────────────────────────────
   int _unreadNotificationCount = 0;
   int get unreadNotificationCount => _unreadNotificationCount;
 
@@ -231,7 +231,7 @@ class AppState extends ChangeNotifier {
   final CartState _cartState = CartState();
   CartState get cartState => _cartState;
 
-  // ─── Auth & Profile ───────────────────────────────────────────────────────
+  // ─── Auth & Profile ──────────────────────────────────────────────────────────
   bool _isLoggedIn = false;
   bool get isLoggedIn => _isLoggedIn;
 
@@ -277,7 +277,7 @@ class AppState extends ChangeNotifier {
       )
       .length;
 
-  // ─── Auth methods ─────────────────────────────────────────────────────────
+  // ─── Auth methods ───────────────────────────────────────────────────────────────
 
   Future<void> loginWithSupabase() async {
     // ── Mutex guard: prevent concurrent calls (race between OTP screen & auth listener) ──
@@ -332,7 +332,7 @@ class AppState extends ChangeNotifier {
 
       await NotificationService.instance.triggerNotification(
         userId: userId,
-        title: 'Welcome to Maintix! 🚰',
+        title: 'Welcome to Homaclo! 🚰',
         body: 'Book your professional water tank cleaning slot today.',
         type: 'welcome',
         localId: 10,
@@ -386,7 +386,7 @@ class AppState extends ChangeNotifier {
       // Welcome notification (only once — new user)
       await NotificationService.instance.triggerNotification(
         userId: userId,
-        title: 'Welcome to Maintix! 🚰',
+        title: 'Welcome to Homaclo! 🚰',
         body: 'Book your professional water tank cleaning slot today.',
         type: 'welcome',
         localId: 10,
@@ -617,7 +617,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Profile update (Supabase-backed) ────────────────────────────────────
+  // ─── Profile update (Supabase-backed) ─────────────────────────────────────────────
 
   Future<bool> saveProfileToSupabase({
     required String name,
@@ -671,7 +671,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Bookings (Supabase DB) ───────────────────────────────────────────────
+  // ─── Bookings (Supabase DB) ────────────────────────────────────────────────────
 
   Future<void> loadDbBookings() async {
     _bookingsLoading = true;
@@ -694,7 +694,7 @@ class AppState extends ChangeNotifier {
     return success;
   }
 
-  // ─── Reviews (Supabase DB) ────────────────────────────────────────────────
+  // ─── Reviews (Supabase DB) ────────────────────────────────────────────────────
 
   Future<void> loadDbReviews() async {
     _reviewsLoading = true;
@@ -813,7 +813,7 @@ class AppState extends ChangeNotifier {
     return success;
   }
 
-  // ─── Coins (Supabase-backed) ──────────────────────────────────────────────
+  // ─── Coins (Supabase-backed) ──────────────────────────────────────────────────────
 
   Future<bool> addCoinsToSupabase({
     required int amount,
@@ -844,7 +844,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  // ─── Coupon validation ────────────────────────────────────────────────────
+  // ─── Coupon validation ───────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> validateCoupon(String code) async {
     final cart = _cartState;
@@ -862,7 +862,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Local bookings (cart flow) ───────────────────────────────────────────
+  // ─── Local bookings (cart flow) ───────────────────────────────────────────────
 
   void addBooking(BookingModel booking) {
     _bookingHistory.insert(0, booking);
@@ -938,7 +938,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ─── Razorpay-confirmed booking ───────────────────────────────────────────
+  // ─── Razorpay-confirmed booking ──────────────────────────────────────────────────────
 
   /// Creates a booking in Supabase with CONFIRMED status after successful payment.
   /// Returns the booking ID string or null.
@@ -972,9 +972,9 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
-  // ─── Location methods ─────────────────────────────────────────────────────
+  // ─── Location methods ───────────────────────────────────────────────────────────
 
-  // ─── GPS enforcement state ────────────────────────────────────────────────
+  // ─── GPS enforcement state ──────────────────────────────────────────────────
   bool _gpsServiceDisabled = false;
   bool get gpsServiceDisabled => _gpsServiceDisabled;
 
@@ -1073,7 +1073,7 @@ class AppState extends ChangeNotifier {
     await Future.wait(jobs);
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  // ─── Helpers ─────────────────────────────────────────────────────────────────────
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
