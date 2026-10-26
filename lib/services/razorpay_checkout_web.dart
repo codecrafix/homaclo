@@ -42,7 +42,7 @@ Future<void> launchRazorpayCheckout({
             amount: $amountInPaise,
             currency: "INR",
             order_id: "$orderId",
-            name: "Maintix",
+            name: "Homaclo",
             description: "Water Tank Cleaning Service",
             prefill: {
               email: "$email",

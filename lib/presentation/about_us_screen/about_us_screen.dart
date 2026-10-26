@@ -78,7 +78,7 @@ class AboutUsScreen extends StatelessWidget {
                   iconColor: AppTheme.tealAccent,
                   title: 'Our Mission',
                   content:
-                      'At Maintix, our mission is to deliver safe, hygienic, and affordable water tank cleaning services to every household and business. We believe clean water storage is a fundamental right, not a luxury — and we\'re here to make it accessible to all.',
+                      'At Homaclo, our mission is to deliver safe, hygienic, and affordable water tank cleaning services to every household and business. We believe clean water storage is a fundamental right, not a luxury — and we\'re here to make it accessible to all.',
                 ),
                 const SizedBox(height: 16),
 
@@ -88,15 +88,15 @@ class AboutUsScreen extends StatelessWidget {
                   iconColor: const Color(0xFF6C63FF),
                   title: 'Our Vision',
                   content:
-                      'We envision a future where every family in India has access to professionally maintained water storage systems. By 2030, Maintix aims to serve 1 million households across Madhya Pradesh and beyond, setting the gold standard for home maintenance services.',
+                      'We envision a future where every family in India has access to professionally maintained water storage systems. By 2030, Homaclo aims to serve 1 million households across Madhya Pradesh and beyond, setting the gold standard for home maintenance services.',
                 ),
                 const SizedBox(height: 16),
 
-                // Why Maintix
+                // Why Homaclo
                 _sectionCard(
                   icon: Icons.star_rounded,
                   iconColor: AppTheme.warning,
-                  title: 'Why Choose Maintix?',
+                  title: 'Why Choose Homaclo?',
                   content: null,
                   children: [
                     _bulletPoint(
@@ -192,7 +192,7 @@ class AboutUsScreen extends StatelessWidget {
                       _infoRow(
                         Icons.verified_rounded,
                         'Version',
-                        'Maintix App v1.0.0 (2026)',
+                        'Homaclo App v1.0.0 (2026)',
                       ),
                     ],
                   ),
