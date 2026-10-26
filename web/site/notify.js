@@ -17,8 +17,8 @@ async function sys(n){
   const o={body:n.body||'',tag:String(n.id||Date.now()),data:{url:location.href.split('#')[0]+'#/notifications'}};
   try{
     const reg='serviceWorker' in navigator?await navigator.serviceWorker.getRegistration():null;
-    if(reg){await reg.showNotification(n.title||'Maintix',o);return}
-    new Notification(n.title||'Maintix',o);
+    if(reg){await reg.showNotification(n.title||'Homaclo',o);return}
+    new Notification(n.title||'Homaclo',o);
   }catch(e){}
 }
 
@@ -45,7 +45,7 @@ async function onLogin(u){
     if(w&&w.length)return;
     const since=new Date(Date.now()-7*864e5).toISOString();
     const {data:c}=await sb.from('coin_transactions').select('id').eq('user_id',u.id).eq('type','welcome').gte('created_at',since).limit(1);
-    const rows=[{title:'Welcome to Maintix! 🚰',body:'Book your professional water tank cleaning slot today.',type:'welcome'}];
+    const rows=[{title:'Welcome to Homaclo! 🚰',body:'Book your professional water tank cleaning slot today.',type:'welcome'}];
     if(c&&c.length)rows.push({title:'Welcome Bonus! 🪙',body:'You received 50 Coins on signup! (Value ₹50)',type:'welcome'},{title:'Welcome Offer! 🎁',body:'Get ₹100 Flat Discount on your first booking using code WEL100!',type:'coupon'});
     await push(u.id,rows);
     if(window.mxUnread)window.mxUnread();
