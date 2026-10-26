@@ -18,7 +18,7 @@ import './widgets/global_tap_effect.dart';
 import 'core/app_export.dart';
 
 /// OneSignal App ID — from OneSignal dashboard (Settings > Keys & IDs) for
-/// the "Maintix App". Safe to keep in source; it is a public identifier,
+/// the "Homaclo App". Safe to keep in source; it is a public identifier,
 /// not a secret (unlike the REST API key, which only ever lives server-side
 /// in the Supabase Edge Function).
 const String _oneSignalAppId = 'a791ea02-af27-4af4-9a9e-a8c062f960eb';
@@ -467,7 +467,7 @@ class _MyAppState extends State<MyApp> {
                 builder: (context, appState, _) {
                   AppTheme.applySystemUI(appState.themeMode);
                   return MaterialApp.router(
-                    title: 'Maintix',
+                    title: 'Homaclo',
                     theme: AppTheme.lightTheme,
                     darkTheme: AppTheme.darkTheme,
                     themeMode: appState.themeMode,
