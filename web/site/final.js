@@ -30,7 +30,7 @@ sb.auth.onAuthStateChange((ev,session)=>{
       if(show){
         mark(u.id);
         await refreshCoins();
-        toast('Welcome to Maintix! 50 bonus coins added 🪙');
+        toast('Welcome to Homaclo! 50 bonus coins added 🪙');
         route();
       }
       // Monthly +50 coins (same 30-day rule as the app, enforced server-side so it can't double-credit).
