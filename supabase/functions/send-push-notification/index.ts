@@ -4,8 +4,8 @@
 // notified even when the app is closed or killed.
 //
 // Required Edge Function secrets (set via `supabase secrets set`):
-//   ONESIGNAL_APP_ID          - Maintix App's OneSignal App ID
-//   ONESIGNAL_REST_API_KEY    - Maintix App's OneSignal REST API Key (secret)
+//   ONESIGNAL_APP_ID          - Homaclo App's OneSignal App ID
+//   ONESIGNAL_REST_API_KEY    - Homaclo App's OneSignal REST API Key (secret)
 //   PUSH_WEBHOOK_SECRET       - shared secret; must match the header sent by
 //                               the DB trigger, so this public endpoint can't
 //                               be spammed by outsiders.
@@ -70,7 +70,7 @@ Deno.serve(async (request) => {
       return json({ skipped: true });
     }
 
-    const title = String(record.title ?? "Maintix");
+    const title = String(record.title ?? "Homaclo");
     const body = String(record.body ?? "");
     if (!body) {
       return json({ skipped: true, reason: "empty body" });

@@ -147,8 +147,8 @@ class _GpsDisabledOverlay extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   permissionDenied
-                      ? 'Allow location access in Settings so Maintix can provide accurate service location and booking.'
-                      : 'Maintix requires your device GPS to be turned on to provide accurate service location and booking.',
+                      ? 'Allow location access in Settings so Homaclo can provide accurate service location and booking.'
+                      : 'Homaclo requires your device GPS to be turned on to provide accurate service location and booking.',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     color: AppTheme.textSecondary,
