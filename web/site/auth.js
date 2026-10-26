@@ -4,9 +4,9 @@
 const $=(s,e=document)=>e.querySelector(s);
 let step='email',email='',ret='',left=0,tm=0,busy=false,msg='';
 const COPY={
-  profile:['Your Maintix account','Sign in to manage your profile, wallet coins and bookings.'],
+  profile:['Your Homaclo account','Sign in to manage your profile, wallet coins and bookings.'],
   bookings:['See all your bookings','Sign in to view and track every tank cleaning in one place.'],
-  login:['Welcome to Maintix','Sign in or create your account in seconds. No password needed.']
+  login:['Welcome to Homaclo','Sign in or create your account in seconds. No password needed.']
 };
 const BEN=[
   ['🪙','Get 50 Welcome Coins','Free when you sign up, use them on a booking'],
@@ -41,7 +41,7 @@ function authScreen(ctx){
   const c=COPY[ctx]||COPY.login;
   return `<div class="au"><i class="au-o a"></i><i class="au-o b"></i><div class="au-in fade">
   <div class="au-l">
-    <div class="au-top"><span class="au-brand"><span class="drop"></span>Maintix</span><h1>${h(c[0])}</h1><p class="lead">${h(c[1])}</p></div>
+    <div class="au-top"><span class="au-brand"><span class="drop"></span>Homaclo</span><h1>${h(c[0])}</h1><p class="lead">${h(c[1])}</p></div>
     <ul class="au-bn">${BEN.map(b=>`<li><span class="ic">${b[0]}</span><div><b>${h(b[1])}</b><small>${h(b[2])}</small></div></li>`).join('')}</ul>
   </div>
   <div class="au-card" id="au-card">${stepHtml()}</div>
