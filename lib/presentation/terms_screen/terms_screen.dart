@@ -67,7 +67,7 @@ class TermsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Effective: January 1, 2026 · Maintix Service Agreement',
+                        'Effective: January 1, 2026 · Homaclo Service Agreement',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           color: Colors.white.withAlpha(153),
@@ -80,12 +80,12 @@ class TermsScreen extends StatelessWidget {
 
                 _termsSection(
                   '1. Acceptance of Terms',
-                  'By downloading, installing, or using the Maintix mobile application ("App"), you agree to be bound by these Terms & Conditions ("Terms"). These Terms constitute a legally binding agreement between you ("User") and Maintix ("Company"). If you do not agree to these Terms, do not use the App or our services.',
+                  'By downloading, installing, or using the Homaclo mobile application ("App"), you agree to be bound by these Terms & Conditions ("Terms"). These Terms constitute a legally binding agreement between you ("User") and Homaclo ("Company"). If you do not agree to these Terms, do not use the App or our services.',
                 ),
 
                 _termsSection(
                   '2. Service Description',
-                  'Maintix provides professional water tank cleaning and maintenance services. Our services include:\n\n• Overhead water tank cleaning (500L – 2000L capacity)\n• Underground sump cleaning\n• Tank disinfection and sanitization\n• Post-cleaning water quality inspection\n\nAll services are performed by trained and verified Maintix technicians.',
+                  'Homaclo provides professional water tank cleaning and maintenance services. Our services include:\n\n• Overhead water tank cleaning (500L – 2000L capacity)\n• Underground sump cleaning\n• Tank disinfection and sanitization\n• Post-cleaning water quality inspection\n\nAll services are performed by trained and verified Homaclo technicians.',
                 ),
 
                 _termsSection(
@@ -110,10 +110,10 @@ class TermsScreen extends StatelessWidget {
                     _highlightBox('🚫 Bookings are non-cancellable', AppTheme.warning),
                     const SizedBox(height: 10),
                     _bulletList([
-                      'All service requests (including Tank Cleaning, Solar Maintenance, and Home Services) submitted through the Maintix app are final once confirmed',
+                      'All service requests (including Tank Cleaning, Solar Maintenance, and Home Services) submitted through the Homaclo app are final once confirmed',
                       'Once a booking is confirmed, you must allow the assigned technician to carry out the service',
                       'Cancellation or refund requests due to change of mind are not entertained',
-                      'If Maintix is unable to deliver the scheduled service, you are eligible for a refund — see the Refund Policy below and section 10 of our Privacy & Refund Policy',
+                      'If Homaclo is unable to deliver the scheduled service, you are eligible for a refund — see the Refund Policy below and section 10 of our Privacy & Refund Policy',
                     ]),
                   ],
                 ),
@@ -133,7 +133,7 @@ class TermsScreen extends StatelessWidget {
                       '• Price revisions, if any, will be communicated 30 days in advance',
                     ]),
                     _subSection('Refund Policy', [
-                      '• Refunds are issued only when Maintix is unable to deliver the scheduled service (operational issues, technician unavailability, severe weather, or unforeseen technical failures)',
+                      '• Refunds are issued only when Homaclo is unable to deliver the scheduled service (operational issues, technician unavailability, severe weather, or unforeseen technical failures)',
                       '• An accidental double payment, or money debited without a booking being created, is fully refundable',
                       '• Approved refunds are credited to the original payment source within 5–7 business days',
                       '• Full details: Privacy & Refund Policy, section 10',
@@ -159,17 +159,17 @@ class TermsScreen extends StatelessWidget {
 
                 _termsSection(
                   '7. Service Quality Guarantee',
-                  'Maintix guarantees professional-grade cleaning using food-safe, eco-friendly agents. If you are unsatisfied with the service quality:\n\n• Report within 24 hours via the app or email\n• We will re-inspect and re-service at no additional cost\n• If the issue persists, our support team will review it and resolve it with you\n\nThis guarantee does not cover pre-existing tank damage or structural issues.',
+                  'Homaclo guarantees professional-grade cleaning using food-safe, eco-friendly agents. If you are unsatisfied with the service quality:\n\n• Report within 24 hours via the app or email\n• We will re-inspect and re-service at no additional cost\n• If the issue persists, our support team will review it and resolve it with you\n\nThis guarantee does not cover pre-existing tank damage or structural issues.',
                 ),
 
                 _termsSection(
                   '8. Limitation of Liability',
-                  'Maintix shall not be liable for:\n\n• Indirect, incidental, or consequential damages arising from service use\n• Pre-existing damage to tanks, pipes, or water systems\n• Delays caused by factors beyond our control (weather, emergencies)\n• Data loss due to device failure or third-party service outages\n\nOur maximum liability is limited to the amount paid for the specific service in question.',
+                  'Homaclo shall not be liable for:\n\n• Indirect, incidental, or consequential damages arising from service use\n• Pre-existing damage to tanks, pipes, or water systems\n• Delays caused by factors beyond our control (weather, emergencies)\n• Data loss due to device failure or third-party service outages\n\nOur maximum liability is limited to the amount paid for the specific service in question.',
                 ),
 
                 _termsSection(
                   '9. Intellectual Property',
-                  'All content within the Maintix app — including logos, text, graphics, and software — is the exclusive property of Maintix and protected under Indian copyright law. Unauthorized reproduction, distribution, or modification is strictly prohibited.',
+                  'All content within the Homaclo app — including logos, text, graphics, and software — is the exclusive property of Homaclo and protected under Indian copyright law. Unauthorized reproduction, distribution, or modification is strictly prohibited.',
                 ),
 
                 _termsSection(
@@ -179,7 +179,7 @@ class TermsScreen extends StatelessWidget {
 
                 _termsSection(
                   '11. Amendments',
-                  'Maintix reserves the right to modify these Terms at any time. Updated Terms will be posted in the app with a revised effective date. Continued use of the app after changes constitutes acceptance of the new Terms.',
+                  'Homaclo reserves the right to modify these Terms at any time. Updated Terms will be posted in the app with a revised effective date. Continued use of the app after changes constitutes acceptance of the new Terms.',
                 ),
 
                 _termsSection(
