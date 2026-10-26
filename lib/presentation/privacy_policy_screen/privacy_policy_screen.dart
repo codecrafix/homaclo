@@ -67,7 +67,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Last updated: January 1, 2026 · Maintix v1.0.0',
+                        'Last updated: January 1, 2026 · Homaclo v1.0.0',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           color: Colors.white.withAlpha(153),
@@ -80,7 +80,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
                 _policySection(
                   '1. Introduction',
-                  'Maintix ("we", "our", or "us") is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services. Please read this policy carefully. If you disagree with its terms, please discontinue use of our app.',
+                  'Homaclo ("we", "our", or "us") is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services. Please read this policy carefully. If you disagree with its terms, please discontinue use of our app.',
                 ),
 
                 _policySection(
@@ -116,7 +116,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                       '• API communications use HTTPS exclusively — no plain HTTP connections',
                     ]),
                     _subSection('Access Controls', [
-                      '• Only authorized Maintix personnel can access user data',
+                      '• Only authorized Homaclo personnel can access user data',
                       '• Role-based access control (RBAC) limits data visibility by job function',
                       '• All data access is logged and audited regularly',
                     ]),
@@ -180,7 +180,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
                 _policySection(
                   '8. Children\'s Privacy',
-                  'Maintix services are not directed to individuals under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a child under 18 has provided us with personal data, we will delete it immediately.',
+                  'Homaclo services are not directed to individuals under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a child under 18 has provided us with personal data, we will delete it immediately.',
                 ),
 
                 _policySection(
@@ -190,10 +190,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 _policySection(
                     '10. Cancellation & Refund Policy',
                       '🚫 CANCELLATION POLICY BY CUSTOMER:\n'
-                        '• Non-Cancellable Bookings: All service requests (including Tank Cleaning, Solar Maintenance, and Home Services) submitted through the Maintix application are final.\n'
+                        '• Non-Cancellable Bookings: All service requests (including Tank Cleaning, Solar Maintenance, and Home Services) submitted through the Homaclo application are final.\n'
                           '• Customer Obligations: Once a service booking is confirmed, customers are required to allow the assigned technician to execute the service. Requests for cash refunds or booking cancellations upon customer change of mind will not be entertained.\n\n'
                             '💰 REFUND ELIGIBILITY & CONDITIONS:\n'
-                              '• Service Non-Fulfillment: Refunds are strictly issued only under extraordinary circumstances where Maintix is unable to execute or deliver the scheduled service due to operational issues, technician unavailability, severe weather, or unforeseen technical failures.\n'
+                              '• Service Non-Fulfillment: Refunds are strictly issued only under extraordinary circumstances where Homaclo is unable to execute or deliver the scheduled service due to operational issues, technician unavailability, severe weather, or unforeseen technical failures.\n'
                                 '• Partial / Failed Transactions: In the event of an accidental double payment or money debited without booking generation, the excess amount is fully eligible for a refund.\n\n'
                                   '⏳ REFUND TIMELINE & PAYMENT MODE:\n'
                                     '• Processing Window: Upon verification of service non-fulfillment by our operations team, the refund process will be initiated immediately.\n'

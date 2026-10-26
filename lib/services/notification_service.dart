@@ -174,7 +174,7 @@ class NotificationService {
           table: 'admin_broadcasts',
           callback: (payload) {
             try {
-              final title = payload.newRecord['title'] as String? ?? 'Maintix';
+              final title = payload.newRecord['title'] as String? ?? 'Homaclo';
               final body = payload.newRecord['body'] as String? ?? '';
               onBroadcast(title, body);
             } catch (e) {
@@ -192,7 +192,7 @@ class NotificationService {
     _broadcastChannel = null;
   }
 
-  // ─── Admin: broadcast to all users ───────────────────────────────────────
+  // ─── Admin: broadcast to all users ────────────────────────────────────────
 
   Future<bool> broadcastToAllUsers({
     required String title,
