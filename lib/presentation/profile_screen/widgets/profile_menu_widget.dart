@@ -18,7 +18,7 @@ class ProfileMenuWidget extends StatelessWidget {
 
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse(
-      'https://wa.me/916262262913?text=Hi%20Maintix%2C%20I%20need%20help',
+      'https://wa.me/916262262913?text=Hi%20Homaclo%2C%20I%20need%20help',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -311,7 +311,7 @@ class ProfileMenuWidget extends StatelessWidget {
           ),
         ),
         content: Text(
-          'Are you sure you want to log out of your Maintix account?',
+          'Are you sure you want to log out of your Homaclo account?',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             color: AppTheme.textSecondary,
@@ -733,7 +733,7 @@ class ProfileMenuWidget extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // ── Theme Toggle ──────────────────────────────────────────────────
+        // ── Theme Toggle ───────────────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
@@ -839,7 +839,7 @@ class ProfileMenuWidget extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Maintix © 2026 · @maintix.in · v1.0.0',
+          'Homaclo © 2026 · @maintix.in · v1.0.0',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             color: AppTheme.textMuted,

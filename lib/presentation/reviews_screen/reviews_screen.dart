@@ -249,7 +249,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       'timeAgo': '2 weeks ago',
       'rating': 5,
       'review':
-          'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Maintix ki team bahut professional hai. Definitely recommend karunga.',
+          'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Homaclo ki team bahut professional hai. Definitely recommend karunga.',
       'tag': '1000L Tank Cleaned',
       'color': Color(0xFF10B981),
       'initials': 'RT',
@@ -282,7 +282,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       'timeAgo': '3 weeks ago',
       'rating': 5,
       'review':
-          'Excellent work by the Maintix team. They cleaned our 2000L overhead tank thoroughly. The water now tastes much better. Highly professional and courteous staff.',
+          'Excellent work by the Homaclo team. They cleaned our 2000L overhead tank thoroughly. The water now tastes much better. Highly professional and courteous staff.',
       'tag': '2000L Cleaned',
       'color': Color(0xFF8B5CF6),
       'initials': 'AV',
