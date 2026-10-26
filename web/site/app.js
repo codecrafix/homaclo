@@ -60,7 +60,7 @@ async function setup(){
       const {data:w}=await sb.from('coin_transactions').select('id').eq('user_id',u.id).eq('type','welcome').limit(1);
       if(!w?.length){
         await sb.from('profiles').update({signup_bonus_awarded:true}).eq('id',u.id);
-        if(await addCoins(50,'welcome','Welcome signup bonus'))toast('Welcome to Maintix! 50 bonus coins added 🪙');
+        if(await addCoins(50,'welcome','Welcome signup bonus'))toast('Welcome to Homaclo! 50 bonus coins added 🪙');
       }
     }
   }catch(e){console.warn('setup',e)}
@@ -82,7 +82,7 @@ sb.auth.onAuthStateChange((ev,session)=>{
 });
 function openLogin(email){
   const d=$('#dlg');
-  d.innerHTML=`<h3>Sign in to Maintix</h3><p class="muted small" style="margin:6px 0 4px">We’ll email you a one-time code. No password needed.</p>
+  d.innerHTML=`<h3>Sign in to Homaclo</h3><p class="muted small" style="margin:6px 0 4px">We’ll email you a one-time code. No password needed.</p>
   <form id="lf"><label>Email address</label><input id="em" type="email" required autocomplete="email" placeholder="you@example.com" value="${h(email||'')}">
   <button class="btn block" style="margin-top:18px">Send code</button></form>
   <button class="btn ghost block" style="margin-top:10px" data-act="close">Cancel</button>`;
@@ -194,7 +194,7 @@ async function pay(){
     S.paying=false;successDialog(r.razorpay_payment_id,r.razorpay_order_id||oid);finishFlow();route();
   };
   try{
-    const rz=new Razorpay({key:order.key||RZP_FALLBACK,amount:t.total*100,currency:'INR',order_id:oid,name:'Maintix',description:'Water Tank Cleaning Service',prefill:{email:S.user.email||'',contact:c.phone},theme:{color:'#072654'},retry:{enabled:true,max_count:1},timeout:300,handler:onPaid,modal:{ondismiss:onFail}});
+    const rz=new Razorpay({key:order.key||RZP_FALLBACK,amount:t.total*100,currency:'INR',order_id:oid,name:'Homaclo',description:'Water Tank Cleaning Service',prefill:{email:S.user.email||'',contact:c.phone},theme:{color:'#072654'},retry:{enabled:true,max_count:1},timeout:300,handler:onPaid,modal:{ondismiss:onFail}});
     rz.on('payment.failed',onFail);rz.open();
   }catch(e){S.paying=false;toast('Could not open payment window.');route()}
 }
@@ -217,7 +217,7 @@ function homeView(){
   <div class="wrap"><div class="stats"><div class="stat"><b>₹1,000</b><span class="muted">Starting price</span></div><div class="stat"><b>5</b><span class="muted">Tank sizes</span></div><div class="stat"><b id="st-r">—</b><span class="muted">Customer rating</span></div><div class="stat"><b>₹500</b><span class="muted">Off on 3+ tanks</span></div></div></div>
   <section class="sec"><div class="wrap"><div class="head c"><h2>How it works</h2><p>Four simple steps from tap to sparkling tank.</p></div><div class="grid" style="${AF}">
   ${[['Choose','Pick your tank size and quantity.'],['Schedule','Select a date and 2-hour time slot.'],['Pay securely','Pay online with UPI, card or netbanking.'],['We clean','Our trained team arrives and cleans.']].map((x,i)=>`<div class="card hov"><div class="num">${i+1}</div><h4>${x[0]}</h4><p class="muted small">${x[1]}</p></div>`).join('')}</div></div></section>
-  <section class="sec alt"><div class="wrap"><div class="head"><h2>Why families choose Maintix</h2></div><div class="grid g3">
+  <section class="sec alt"><div class="wrap"><div class="head"><h2>Why families choose Homaclo</h2></div><div class="grid g3">
   ${[['🧪','Eco-friendly, food-grade agents','Safe for drinking water storage and your family.'],['💰','Transparent pricing','Fixed price per tank size. What you see is what you pay.'],['📅','Same-day & scheduled slots','Pick the date and time that suits you.'],['🛡️','Trained professionals','Careful, hygienic cleaning at your doorstep.'],['🪙','Rewards wallet','Earn coins on signup and reviews, redeem on bookings.'],['📍','Local to Satna','A neighbourhood team, quick to reach you.']].map(x=>`<div class="card hov"><div style="font-size:1.8rem">${x[0]}</div><h4 style="margin:10px 0 6px">${x[1]}</h4><p class="muted small">${x[2]}</p></div>`).join('')}</div></div></section>
   <section class="sec"><div class="wrap"><div class="head"><h2>What customers say</h2></div><div class="grid g3" id="hrev"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></section>
   <section class="sec" style="padding-top:0"><div class="wrap"><div class="band"><h2>Ready for cleaner water?</h2><p>New here? Sign up and get 50 bonus coins plus ₹100 off with code WEL100 on your first booking.</p><a class="btn" href="#/book">Book now</a></div></div></section>`;
@@ -305,12 +305,12 @@ async function profileAfter(){
   el.innerHTML=data?.length?data.map(x=>`<div class="line"><span>${h(x.description)}</span><b class="${x.amount>0?'ok':'err'}">${x.amount>0?'+':''}${x.amount}</b></div>`).join(''):'No coin activity yet.';
 }
 function aboutView(){
-  return `<div class="page"><div class="wrap fade legal"><div class="head"><h1>About Maintix</h1><p>Trusted water tank cleaning services.</p></div><div class="grid g2"><div class="card"><h3>Our mission</h3><p>To deliver safe, hygienic and affordable water tank cleaning to every household and business. Clean water storage should be accessible to all.</p></div><div class="card"><h3>Our vision</h3><p>A future where every family in India has professionally maintained water storage, starting in Madhya Pradesh.</p></div></div>
+  return `<div class="page"><div class="wrap fade legal"><div class="head"><h1>About Homaclo</h1><p>Trusted water tank cleaning services.</p></div><div class="grid g2"><div class="card"><h3>Our mission</h3><p>To deliver safe, hygienic and affordable water tank cleaning to every household and business. Clean water storage should be accessible to all.</p></div><div class="card"><h3>Our vision</h3><p>A future where every family in India has professionally maintained water storage, starting in Madhya Pradesh.</p></div></div>
   <div class="card" style="margin-top:20px"><h3>Company details</h3><div class="line"><span class="muted">Headquarters</span><b>Satna, Madhya Pradesh, India</b></div><div class="line"><span class="muted">Email</span><b>maintix.help@gmail.com</b></div><div class="line"><span class="muted">Phone</span><b>+91 62622 62913</b></div><div class="line"><span class="muted">Founded</span><b>2024</b></div></div></div></div>`;
 }
 function legalView(kind){
-  if(kind==='privacy')return `<div class="page"><div class="wrap fade legal"><h1>Privacy Policy</h1><p>Maintix collects only the information needed to provide tank cleaning services: your email, name, phone number, address, booking details and, if you allow it, location. Payments are processed by Razorpay; we never see or store your card or UPI details.</p><h3>How we use data</h3><ul><li>To create and manage your account and bookings.</li><li>To contact you about your service.</li><li>To operate rewards, coupons and reviews.</li></ul><h3>Your choices</h3><p>You can edit your profile any time. To request deletion of your data, email maintix.help@gmail.com.</p></div></div>`;
-  return `<div class="page"><div class="wrap fade legal"><h1>Terms &amp; Conditions</h1><p>By booking with Maintix you agree to provide accurate address and contact details and to be available in the selected time slot.</p><h3>Pricing &amp; payment</h3><p>Prices are shown per tank size and are payable online through Razorpay. Discounts and coupons are applied as shown at checkout.</p><h3>Cancellations</h3><p>For changes or cancellations, contact us at maintix.help@gmail.com or +91 62622 62913 as early as possible.</p></div></div>`;
+  if(kind==='privacy')return `<div class="page"><div class="wrap fade legal"><h1>Privacy Policy</h1><p>Homaclo collects only the information needed to provide tank cleaning services: your email, name, phone number, address, booking details and, if you allow it, location. Payments are processed by Razorpay; we never see or store your card or UPI details.</p><h3>How we use data</h3><ul><li>To create and manage your account and bookings.</li><li>To contact you about your service.</li><li>To operate rewards, coupons and reviews.</li></ul><h3>Your choices</h3><p>You can edit your profile any time. To request deletion of your data, email maintix.help@gmail.com.</p></div></div>`;
+  return `<div class="page"><div class="wrap fade legal"><h1>Terms &amp; Conditions</h1><p>By booking with Homaclo you agree to provide accurate address and contact details and to be available in the selected time slot.</p><h3>Pricing &amp; payment</h3><p>Prices are shown per tank size and are payable online through Razorpay. Discounts and coupons are applied as shown at checkout.</p><h3>Cancellations</h3><p>For changes or cancellations, contact us at maintix.help@gmail.com or +91 62622 62913 as early as possible.</p></div></div>`;
 }
 
 /* ---------- router ---------- */
@@ -333,7 +333,7 @@ function route(){
   }
   const y=scrollY;$('#app').innerHTML=html;scrollTo(0,(r===lastR&&r==='book')?y:0);lastR=r;
   if(after)after();
-  document.title=r==='home'?'Maintix — Professional Water Tank Cleaning in Satna':`${r[0].toUpperCase()+r.slice(1)} · Maintix`;
+  document.title=r==='home'?'Homaclo — Professional Water Tank Cleaning in Satna':`${r[0].toUpperCase()+r.slice(1)} · Homaclo`;
 }
 window.addEventListener('hashchange',route);
 
