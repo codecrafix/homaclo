@@ -1,0 +1,7 @@
+/* Footer social icons (Instagram / YouTube) */
+.foot .soc{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.foot .soc a.sb{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;margin:0;padding:0;border-radius:12px;border:1px solid rgba(127,127,127,.35);background:rgba(127,127,127,.10);color:inherit;line-height:0;transition:transform .2s ease,background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease}
+.foot .soc a.sb svg{width:20px;height:20px;display:block}
+.foot .soc a.sb:hover,.foot .soc a.sb:focus-visible{transform:translateY(-2px);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(0,0,0,.22)}
+.foot .soc a.ig:hover,.foot .soc a.ig:focus-visible{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)}
+.foot .soc a.yt:hover,.foot .soc a.yt:focus-visible{background:#ff0000}
