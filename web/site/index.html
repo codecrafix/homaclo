@@ -28,6 +28,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://glad-gannet-8278.clerk.accounts.dev" crossorigin>
+<link rel="preload" as="fetch" href="app.js" crossorigin>
+<link rel="preload" as="fetch" href="extra.js" crossorigin>
+<link rel="preload" as="fetch" href="media.js" crossorigin>
+<link rel="preload" as="fetch" href="final.js" crossorigin>
+<link rel="preload" as="fetch" href="legal.js" crossorigin>
+<link rel="preload" as="fetch" href="auth.js" crossorigin>
+<link rel="preload" as="fetch" href="geo.js" crossorigin>
+<link rel="preload" as="fetch" href="reviews.js" crossorigin>
+<link rel="preload" as="fetch" href="promo.js" crossorigin>
+<link rel="preload" as="fetch" href="polish.js" crossorigin>
+<link rel="preload" as="fetch" href="notify.js" crossorigin>
+<link rel="preload" as="fetch" href="bookings.js" crossorigin>
+<link rel="preload" as="fetch" href="home-fix.js" crossorigin>
+<link rel="preload" as="fetch" href="clerk-ui.js" crossorigin>
+<link rel="preload" as="fetch" href="onesignal.js" crossorigin>
+<link rel="preload" as="fetch" href="contact.js" crossorigin>
 <script>try{if(localStorage.getItem('mx_clerk')){var l=document.createElement('link');l.rel='preload';l.as='script';l.crossOrigin='anonymous';l.href='https://glad-gannet-8278.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js';document.head.appendChild(l)}}catch(e){}</script>
 <link rel="preload" as="image" href="img/maintix-8.png?v=20261023" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -81,8 +97,8 @@
 <dialog id="dlg"></dialog>
 <div id="toast" role="status"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="rzp-upi.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<script src="rzp-upi.js" defer></script>
 <script src="clerk-auth.js"></script>
 <script src="router.js"></script>
 <script src="seo.js" defer></script>
