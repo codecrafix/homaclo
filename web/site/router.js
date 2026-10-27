@@ -9,10 +9,12 @@
    4) supabase.createClient(...) is routed through clerk-auth.js (Google sign-in via Clerk).
    5) Clerk's own return hash (#/sso-callback ...) is left untouched so Google sign-in can finish.
    6) After a successful payment the booking is created only once: Razorpay's webhook may already have created it
-      (payments.booking_id), in which case that booking is reused instead of inserting a second one. */
+      (payments.booking_id), in which case that booking is reused instead of inserting a second one.
+   7) The public contact e-mail is set in one place (see MAIL below) and applied to every script. */
 const IMG_V='20261023';
+const MAIL='homaclo.official@gmail.com';
 const B=window.__BASE,R=window.__ROUTES;
-const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','clerk-ui.js','onesignal.js'];
+const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','clerk-ui.js','onesignal.js','contact.js'];
 
 /* same call shape as sb.from('bookings').insert(row).select().maybeSingle(), but reuses a booking the webhook already made */
 window.__bookOnce=(orderId,row)=>({select:()=>({maybeSingle:async()=>{
@@ -65,6 +67,8 @@ document.addEventListener('click',e=>{
 /* ---------- load the site scripts ---------- */
 const Q='?v='+IMG_V;
 const fix=s=>s
+  .replace(/maintix\\\.help@gmail\\\.com/g,()=>MAIL.replace(/\./g,'\\.'))
+  .replace(/maintix\.help@gmail\.com/g,MAIL)
   .replace(/location\.href\.split\('#'\)\[0\]\+'#\/notifications'/g,"document.baseURI+'notifications'")
   .replace(/location\.hash/g,'window.__lh')
   .replace(/supabase\.createClient\(/g,'(window.__mkSb||supabase.createClient)(')
