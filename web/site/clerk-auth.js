@@ -7,16 +7,20 @@
    - The site code still talks to "sb" exactly as before; this file lends it the Clerk session.
    Clerk itself is only downloaded for people who use Google sign-in (keeps the site fast for everyone else).
    It is warmed up as soon as the sign-in screen opens, so the Google button reacts instantly.
-   All Clerk redirects are pinned to this site's own base path (never the bare github.io root, which shows GitHub's 404).
+   "Continue with Google" goes straight to Google's account chooser (no Clerk pop-up in between). Google then returns to
+   this site's /login page, where the sign-in is finished and the visitor is sent back to the page they came from.
    Auth events match the email login: a fresh Google sign-in emits SIGNED_IN (location + notification prompts, welcome
    messages), a restored session emits INITIAL_SESSION (no repeated prompts on every page load). */
 const PK='pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk';
 const FAPI='https://glad-gannet-8278.clerk.accounts.dev';
 const FLAG='mx_clerk';
 const FRESH='mx_gsi';
+const PREV='mx_gprev';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const HOME=()=>location.origin+(window.__BASE||'/');
-let CU=null,real=null,started=false,busy=false,again=false,rt=0,prev='';
+/* the page the visitor was on before the login screen survives the trip to Google */
+const prevLoad=()=>{try{const v=sessionStorage.getItem(PREV)||'';sessionStorage.removeItem(PREV);return v}catch(e){return ''}};
+let CU=null,real=null,started=false,busy=false,again=false,rt=0,prev=prevLoad();
 const subs=[];
 let resolveReady;const ready=new Promise(r=>resolveReady=r);
 
@@ -25,11 +29,29 @@ const flagOn=()=>{try{localStorage.setItem(FLAG,String(Date.now()))}catch(e){}};
 const flagOff=()=>{try{localStorage.removeItem(FLAG)}catch(e){}};
 const say=m=>{try{if(typeof toast==='function')toast(m)}catch(e){}};
 /* true only right after the visitor pressed "Continue with Google" (also survives the redirect back to the site) */
-const freshTake=()=>{try{const t=Number(sessionStorage.getItem(FRESH))||0;sessionStorage.removeItem(FRESH);return t>0&&Date.now()-t<10*60*1000}catch(e){return false}};
+const freshPeek=()=>{try{const t=Number(sessionStorage.getItem(FRESH))||0;return t>0&&Date.now()-t<10*60*1000}catch(e){return false}};
+const freshTake=()=>{const f=freshPeek();try{sessionStorage.removeItem(FRESH)}catch(e){}return f};
 
 /* remember the page the visitor was on before the login screen (to return there after Google sign-in) */
 const track=()=>{const h=window.__lh||'';if(h&&!/^#\/login/.test(h))prev=h};
 addEventListener('hashchange',track);setTimeout(track,0);
+
+/* Back from Google: finish the sign-in that Google/Clerk started (existing account, or a brand-new one) */
+async function finishRedirect(C){
+  try{
+    if(C.user||C.session||!freshPeek())return;
+    const si=C.client&&C.client.signIn,su=C.client&&C.client.signUp;
+    if(si&&si.firstFactorVerification&&si.firstFactorVerification.status==='transferable'){
+      const r=await su.create({transfer:true});
+      if(r.status==='complete'&&r.createdSessionId)await C.setActive({session:r.createdSessionId});
+      else C.openSignUp({forceRedirectUrl:HOME(),fallbackRedirectUrl:HOME()});
+    }else if(si&&si.status==='complete'&&si.createdSessionId){
+      await C.setActive({session:si.createdSessionId});
+    }else if(su&&su.status==='complete'&&su.createdSessionId){
+      await C.setActive({session:su.createdSessionId});
+    }
+  }catch(e){console.warn('Clerk redirect',e)}
+}
 
 function loadClerk(){
   if(started)return;started=true;
@@ -40,6 +62,7 @@ function loadClerk(){
   s.onload=async()=>{
     try{
       await window.Clerk.load({signInFallbackRedirectUrl:HOME(),signUpFallbackRedirectUrl:HOME(),afterSignOutUrl:HOME()});
+      await finishRedirect(window.Clerk);
       window.Clerk.addListener(()=>sync());
       await sync();
       /* stale marker from an abandoned sign-in: stop loading Clerk on every visit */
@@ -151,14 +174,20 @@ if(flagGet())loadClerk();
 /* Called when the sign-in screen opens (or the Google button is touched): download Clerk ahead of the click */
 window.__clerkWarm=function(){loadClerk()};
 
-/* "Continue with Google" */
+/* "Continue with Google": straight to Google, no Clerk pop-up */
 window.__clerkGoogle=async function(){
   flagOn();loadClerk();await Promise.race([ready,sleep(8000)]);
   const C=window.Clerk;
   if(!C||!C.loaded){say('Google sign-in is unavailable right now. Please try again.');return}
   /* after Google, come back to the page the visitor was on, inside this site (never the bare github.io root) */
   const back=HOME()+(prev||'#/profile').replace(/^#\/?/,'');
-  try{sessionStorage.setItem(FRESH,String(Date.now()))}catch(e){}
+  const ret=HOME()+'login';
+  try{sessionStorage.setItem(FRESH,String(Date.now()));sessionStorage.setItem(PREV,prev||'')}catch(e){}
+  try{
+    await C.client.signIn.authenticateWithRedirect({strategy:'oauth_google',redirectUrl:ret,redirectUrlComplete:ret});
+    return;
+  }catch(e){console.warn('Google redirect',e)}
+  /* fallback: the old pop-up, only if the direct redirect could not start */
   C.openSignIn({forceRedirectUrl:back,signUpForceRedirectUrl:back,fallbackRedirectUrl:back,signUpFallbackRedirectUrl:back});
 };
 })();
