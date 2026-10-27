@@ -111,7 +111,9 @@ sb.auth.onAuthStateChange((ev,session)=>{
   },0);
 });
 
-/* Faster images: hero first, rest lazy + async decode; warm the cache when idle on a good connection */
+/* Faster images: hero first, rest lazy + async decode. (The old "download every picture in the background after load"
+   step was removed: it pulled about 3.7 MB on every visit and slowed the site on mobile data. The service worker
+   still caches each picture the first time it is shown.) */
 function perf(){
   $$('img').forEach(i=>{
     i.decoding='async';
@@ -122,10 +124,4 @@ function perf(){
 let q=0;
 new MutationObserver(()=>{cancelAnimationFrame(q);q=requestAnimationFrame(perf)}).observe($('#app'),{childList:true,subtree:true});
 perf();
-addEventListener('load',()=>{
-  const c=navigator.connection;if(c&&(c.saveData||c.effectiveType!=='4g'))return;
-  (window.requestIdleCallback||(f=>setTimeout(f,2500)))(()=>{
-    ['maintix-8','maintix-7','maintix-9','maintix-1','maintix-2','maintix-3','maintix-4','maintix-5','maintix-6','maintix-10','before','after'].forEach(n=>{new Image().src='img/'+n+'.png'});
-  });
-});
 })();
