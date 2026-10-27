@@ -46,7 +46,8 @@
 <link rel="preload" as="fetch" href="contact.js" crossorigin>
 <script>try{if(localStorage.getItem('mx_clerk')){var l=document.createElement('link');l.rel='preload';l.as='script';l.crossOrigin='anonymous';l.href='https://glad-gannet-8278.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js';document.head.appendChild(l)}}catch(e){}</script>
 <link rel="preload" as="image" href="img/maintix-8.png?v=20261023" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="extra.css">
 <link rel="stylesheet" href="media.css">
@@ -97,11 +98,35 @@
 <dialog id="dlg"></dialog>
 <div id="toast" role="status"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
-<script src="rzp-upi.js" defer></script>
 <script src="clerk-auth.js"></script>
 <script src="router.js"></script>
 <script src="seo.js" defer></script>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+/* Not needed to show the page: Razorpay (payment only) and OneSignal (push only) load after the page is on screen,
+   so they no longer compete with the site's own scripts for bandwidth on slow mobile networks. */
+(function(){
+  var rz=null;
+  function add(src,cb,er){var s=document.createElement('script');s.src=src;s.defer=true;if(cb)s.onload=cb;if(er)s.onerror=er;document.body.appendChild(s)}
+  window.__loadRzp=function(){
+    if(rz)return rz;
+    rz=new Promise(function(res){
+      if(window.Razorpay){res();return}
+      add('https://checkout.razorpay.com/v1/checkout.js',function(){add('rzp-upi.js',res,res)},function(){rz=null;res()});
+    });
+    return rz;
+  };
+  function later(fn,ms){
+    var go=function(){setTimeout(function(){if(window.requestIdleCallback)requestIdleCallback(fn,{timeout:3000});else fn()},ms)};
+    if(document.readyState==='complete')go();else addEventListener('load',go);
+  }
+  later(window.__loadRzp,2500);
+  later(function(){add('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js')},4500);
+  /* booking screen or any tap towards booking: make sure payment is ready */
+  if(/(^|\/)book\/?$/.test(location.pathname))window.__loadRzp();
+  addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('[data-act="next"],[data-act="pay"],a[href*="book"]'))window.__loadRzp()},true);
+  /* service worker: caches the scripts/styles/images so repeat visits open almost instantly */
+  if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register((window.__BASE||'/')+'sw.js').catch(function(){})});
+})();
+</script>
 </body>
 </html>
