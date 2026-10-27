@@ -168,8 +168,8 @@ window.__mkSb=function(url,key,opts){
   return new Proxy(real,{get(t,p){if(p==='auth')return auth;const v=t[p];return typeof v==='function'?v.bind(t):v}});
 };
 
-/* Returning Clerk user: start Clerk early so the session is restored */
-if(flagGet())loadClerk();
+/* Returning Clerk user: Clerk is loaded on demand by getSession() (once the page scripts have arrived), not at page start,
+   so its big download no longer competes with the site's own files on slow connections. */
 
 /* Called when the sign-in screen opens (or the Google button is touched): download Clerk ahead of the click */
 window.__clerkWarm=function(){loadClerk()};
