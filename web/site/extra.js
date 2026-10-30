@@ -62,7 +62,7 @@ function hint(){
 
 function enhance(){
   proof();offers();autoApply();hint();
-  $$('#svc .card').forEach(c=>{if(!$('a[href="#/book"]',c)&&!$('.soon',c)){const b=$('.btn',c);if(b)b.outerHTML='<span class="soon">Coming soon</span>'}});
+  $$('#svc .card').forEach(c=>{if(!$('a[href^="#/book"]',c)&&!$('.soon',c)){const b=$('.btn',c);if(b)b.outerHTML='<span class="soon">Coming soon</span>'}});
   const rl=$('#ravg');if(rl&&!$('.trust')){const t=document.createElement('div');t.className='trust';t.innerHTML='<span class="bdg">⭐ Verified reviews</span><span class="bdg g">💯 100% Satisfaction Rate</span>';rl.closest('.head').after(t)}
   $$('#rl .card,#hrev .card').forEach(c=>{if(!$('.vb',c)&&$('p',c))c.insertAdjacentHTML('beforeend','<span class="vb">✔ Verified Satna customer</span>')});
   const s=$('.sum');if(s&&!s.classList.contains('dr')){s.classList.add('dr');const t=$('.line.t',s);const d=document.createElement('div');d.className='dh';d.innerHTML='<span>Order summary ▴</span><span>'+(t?t.lastElementChild.textContent:'')+'</span>';s.prepend(d);d.onclick=()=>s.classList.toggle('open')}
