@@ -14,7 +14,7 @@
 const IMG_V='20261023';
 const MAIL='homaclo.official@gmail.com';
 const B=window.__BASE,R=window.__ROUTES;
-const FILES=['app.js','extra.js','media.js','final.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','clerk-ui.js','onesignal.js','contact.js'];
+const FILES=['app.js','extra.js','media.js','final.js','repair.js','legal.js','auth.js','geo.js','reviews.js','promo.js','polish.js','notify.js','bookings.js','home-fix.js','clerk-ui.js','onesignal.js','contact.js'];
 
 /* same call shape as sb.from('bookings').insert(row).select().maybeSingle(), but reuses a booking the webhook already made */
 window.__bookOnce=(orderId,row)=>({select:()=>({maybeSingle:async()=>{
