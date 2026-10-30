@@ -61,6 +61,10 @@ jobs:
       - name: Build web release (app under /maintix/app/)
         run: flutter build web --release --base-href /maintix/app/
 
+      - name: Optimize website images (PNG to WebP)
+        continue-on-error: true
+        run: python3 tool/optimize_web.py
+
       - name: Assemble Pages output
         run: |
           mkdir -p public/app
