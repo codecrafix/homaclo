@@ -8,6 +8,7 @@ Run ONCE from the repo root (Replit shell / any PC), then commit + push:
 
 What it does
   0. (CI deploy) generates static SEO pages web/site/<route>.html via tool/gen_seo_pages.py
+     and adds the SEO keyword set via tool/seo_boost.py
   1. web/site/img/*.png  ->  *.webp  (max 1100px wide, quality 76; typically 80-90% smaller)
   2. rewrites img/xxx.png -> img/xxx.webp in web/site JS/CSS/HTML
      (og:image / twitter:image / seo.js / sw.js are left on PNG for social previews)
@@ -36,6 +37,10 @@ if os.environ.get("GITHUB_ACTIONS") == "true" and os.path.exists("tool/gen_seo_p
         print("SEO page generation skipped:", e)
     finally:
         open(_idx, "w", encoding="utf-8").write(_orig)
+    try:
+        subprocess.run([sys.executable, "tool/seo_boost.py"], check=True)
+    except Exception as e:
+        print("SEO keyword boost skipped:", e)
 
 saved_before = saved_after = 0
 for p in sorted(glob.glob(f"{IMG}/*.png")):
