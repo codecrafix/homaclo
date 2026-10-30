@@ -1,25 +1,37 @@
 'use strict';
 /* Reviews system — mirrors app: reviews_screen.dart, reviews_card_widget.dart, profile_menu_widget.dart (My Reviews), AppState review logic.
-   - Public feed = approved reviews only (newest first) + 6 Satna sample reviews; header avg = DB avg or 5.0
+   - Public feed = approved reviews only (newest first) + Satna sample reviews (water tank, solar cleaning, solar repair); header avg = DB avg or 5.0
    - Write a Review always visible: signed out -> sign-in prompt; no booking -> locked; latest review newer than latest booking -> locked
-   - Submit: insert (is_approved=false) + 10 coins, then locked until next booking
+   - Submit: insert (is_approved=false) + 10 coins, then locked until next booking. The review is saved for the service of the
+     user's latest booking (water tank / solar panel cleaning / solar maintenance & repair), with the matching service_category.
+   - Card tag icon follows the service: 💧 water tank, ☀️ solar panel cleaning, 🔧 solar maintenance & repair
    - Profile -> My Reviews: all of the user's reviews, ✅ Live / ⏳ Approval pending */
 (function(){
   const COLORS=['#3b82f6','#10b981','#ec4899','#f59e0b','#8b5cf6','#06b6d4','#0d9488'];
   const TEAL='#06a9cc';
+  /* name, location, time, rating, review, tag, colour, initials, icon */
   const MOCK=[
-    ['Rajesh Sharma','Civil Lines, Satna','2 weeks ago',5,'Excellent service! The team was professional and thorough. My 1000L tank was cleaned spotlessly. Water quality has improved significantly. Highly recommend to everyone in Satna!','1000L Cleaned','#3B82F6','RS'],
-    ['Ramesh Tiwari','Dawari, Satna','2 weeks ago',5,'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Homaclo ki team bahut professional hai. Definitely recommend karunga.','1000L Tank Cleaned','#10B981','RT'],
-    ['Priya Sharma','Pateri, Satna','3 weeks ago',4,'Good service, reasonable price. The technician was very professional and explained everything clearly. My family was worried about water quality but now we are fully satisfied.','750L Cleaned','#EC4899','PS'],
-    ['Suresh Gupta','Birla Road, Satna','1 month ago',5,'Superb experience! Booked online and the team arrived exactly on time. Tank cleaning was done in under 2 hours. Very affordable pricing. Will definitely book again.','1500L Cleaned','#F59E0B','SG'],
-    ['Anita Verma','Maihar Bypass, Satna','3 weeks ago',5,'Excellent work by the Homaclo team. They cleaned our 2000L overhead tank thoroughly. The water now tastes much better. Highly professional and courteous staff.','2000L Cleaned','#8B5CF6','AV'],
-    ['Mohan Patel','Jawahar Nagar, Satna','1 month ago',4,'Very good service at a fair price. The team was punctual and cleaned the tank properly. I noticed a clear improvement in water quality after the cleaning. Recommended!','500L Cleaned','#06B6D4','MP']
+    ['Rajesh Sharma','Civil Lines, Satna','2 weeks ago',5,'Excellent service! The team was professional and thorough. My 1000L tank was cleaned spotlessly. Water quality has improved significantly. Highly recommend to everyone in Satna!','1000L Cleaned','#3B82F6','RS','💧'],
+    ['Amit Mishra','Kothi Road, Satna','1 week ago',5,'Our solar panels were covered in dust and bird droppings. The team washed all 8 panels carefully with soft brushes and the generation went up noticeably the very next day. Neat work and a fair price.','Solar Panel Cleaning · 4kW','#F59E0B','AM','☀️'],
+    ['Manish Agrawal','Sindhi Camp, Satna','1 week ago',5,'The inverter kept showing a fault and the output was very low. The technician found a loose DC connection, fixed it on the spot and explained everything clearly. Output is back to normal now.','Solar Maintenance & Repair','#0D9488','MA','🔧'],
+    ['Ramesh Tiwari','Dawari, Satna','2 weeks ago',5,'Bahut achha service hai! Team time par aayi aur tank bilkul saaf kar diya. Paani ab zyada saaf aata hai. Homaclo ki team bahut professional hai. Definitely recommend karunga.','1000L Tank Cleaned','#10B981','RT','💧'],
+    ['Sunita Pandey','Panna Road, Satna','2 weeks ago',5,'Panel cleaning ke baad inverter ki reading me clear farak dikha. Team time par aayi aur paani ki vyavastha bhi khud ki. ₹100 per panel ka rate bilkul theek laga.','Solar Panel Cleaning · 3kW','#EC4899','SP','☀️'],
+    ['Kavita Soni','Dawari, Satna','2 weeks ago',5,'ACDB me problem aa rahi thi, bijli ban rahi thi par grid me nahi ja rahi thi. Technician ne check karke ek hi visit me theek kar diya. Bahut professional aur samajhdaar.','Solar Maintenance & Repair','#8B5CF6','KS','🔧'],
+    ['Priya Sharma','Pateri, Satna','3 weeks ago',4,'Good service, reasonable price. The technician was very professional and explained everything clearly. My family was worried about water quality but now we are fully satisfied.','750L Cleaned','#EC4899','PS','💧'],
+    ['Deepak Singh','Rewa Road, Satna','3 weeks ago',4,'Good job on our 10kW rooftop system. They used soft brushes and no harsh chemicals, and finished in about two hours. Will book again after the dusty season.','Solar Panel Cleaning · 10kW','#06B6D4','DS','☀️'],
+    ['Suresh Gupta','Birla Road, Satna','1 month ago',5,'Superb experience! Booked online and the team arrived exactly on time. Tank cleaning was done in under 2 hours. Very affordable pricing. Will definitely book again.','1500L Cleaned','#F59E0B','SG','💧'],
+    ['Rakesh Kushwaha','Maihar Bypass, Satna','1 month ago',4,'Voltage was dropping every afternoon. They checked the DCDB, wiring and earthing and fixed the issue. The ₹1,000 service charge was reasonable. Good service overall.','Solar Maintenance & Repair','#3B82F6','RK','🔧'],
+    ['Anita Verma','Maihar Bypass, Satna','3 weeks ago',5,'Excellent work by the Homaclo team. They cleaned our 2000L overhead tank thoroughly. The water now tastes much better. Highly professional and courteous staff.','2000L Cleaned','#8B5CF6','AV','💧'],
+    ['Mohan Patel','Jawahar Nagar, Satna','1 month ago',4,'Very good service at a fair price. The team was punctual and cleaned the tank properly. I noticed a clear improvement in water quality after the cleaning. Recommended!','500L Cleaned','#06B6D4','MP','💧']
   ];
   let DB=[],loading=true,rate=5,busy=false;
   const dlg=()=>document.getElementById('dlg');
   const say=m=>{if(typeof toast==='function')toast(m)};
   const stars5=n=>'★'.repeat(n)+'☆'.repeat(5-n);
   const ini=n=>n.split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'C';
+  /* service label shown on cards / in the form: drop the long problem text of repair bookings ("Solar Maintenance & Repair — Low voltage: ...") */
+  const cleanSvc=s=>String(s||'').split(' — ')[0].trim();
+  const iconFor=(tag,cat)=>/repair|maintenance/i.test(tag)?'🔧':(cat==='solar'||/solar/i.test(tag))?'☀️':'💧';
   function ago(iso){
     const d=(Date.now()-new Date(iso).getTime())/864e5;
     if(d>30)return Math.floor(d/30)+' month(s) ago';
@@ -33,22 +45,23 @@
         <div class="muted" style="font-size:.72rem">📍 ${h(o.location)}</div></div>
         <div style="text-align:right;flex:none"><div class="stars" style="font-size:.85rem;letter-spacing:1px">${stars5(o.rating)}</div><div class="muted" style="font-size:.66rem">${h(o.timeAgo)}</div></div></div>
       <p class="muted" style="margin:12px 0 10px;font-size:.88rem">${h(o.review)}</p>
-      <span style="display:inline-block;padding:4px 10px;border-radius:20px;background:color-mix(in srgb,${TEAL} 14%,transparent);color:${TEAL};font-size:.74rem;font-weight:600">💧 ${h(o.tag)}</span>
+      <span style="display:inline-block;padding:4px 10px;border-radius:20px;background:color-mix(in srgb,${TEAL} 14%,transparent);color:${TEAL};font-size:.74rem;font-weight:600">${o.icon||'💧'} ${h(o.tag)}</span>
       ${o.del?`<button data-rv="del" data-id="${h(o.del)}" aria-label="Delete review" style="position:absolute;bottom:10px;right:10px;border:0;border-radius:50%;width:30px;height:30px;cursor:pointer;background:color-mix(in srgb,var(--err) 12%,transparent);color:var(--err)">🗑</button>`:''}</div>`;
   }
   function dbCard(r){
     const own=S.user&&r.user_id===S.user.id;
     let name=(r.user_name||'').trim();
     if(!name)name=own&&S.profile&&S.profile.full_name?S.profile.full_name:'Customer';
+    const tag=cleanSvc(r.service_name)||'Tank Cleaning';
     return cardHtml({name,initials:ini(name),color:COLORS[name.charCodeAt(0)%COLORS.length],rating:Math.round(r.rating),review:r.review_text||'',
-      location:'Satna, MP',timeAgo:ago(r.created_at),tag:r.service_name||'Tank Cleaning',del:own?r.id:null});
+      location:'Satna, MP',timeAgo:ago(r.created_at),tag,icon:iconFor(tag,r.service_category),del:own?r.id:null});
   }
   function renderFeed(){
     const el=document.getElementById('rfeed');if(!el)return;
     const avg=document.getElementById('rv-avg');
     if(avg)avg.textContent=DB.length?(DB.reduce((s,r)=>s+Number(r.rating||0),0)/DB.length).toFixed(1):'5.0';
     el.innerHTML=loading?'<div class="sk"></div><div class="sk"></div><div class="sk"></div>'
-      :DB.map(dbCard).join('')+MOCK.map(m=>cardHtml({name:m[0],location:m[1],timeAgo:m[2],rating:m[3],review:m[4],tag:m[5],color:m[6],initials:m[7]})).join('');
+      :DB.map(dbCard).join('')+MOCK.map(m=>cardHtml({name:m[0],location:m[1],timeAgo:m[2],rating:m[3],review:m[4],tag:m[5],color:m[6],initials:m[7],icon:m[8]})).join('');
   }
   async function loadFeed(){
     try{const {data}=await sb.from('reviews').select('*').eq('is_approved',true).order('created_at',{ascending:false});DB=data||[]}catch(e){}
@@ -58,12 +71,13 @@
   /* ---- eligibility (same logic as AppState.checkReviewEligibility) ---- */
   async function eligibility(){
     if(!S.user)return {s:'anon'};
-    const {data:b}=await sb.from('bookings').select('created_at,service_name').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
+    const {data:b}=await sb.from('bookings').select('created_at,service_name,service_category').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
     if(!b||!b.length)return {s:'nobooking'};
-    const service=b[0].service_name||'Water Tank Cleaning';
+    const service=cleanSvc(b[0].service_name)||'Water Tank Cleaning';
+    const cat=b[0].service_category==='solar'?'solar':'water_tank';
     const {data:r}=await sb.from('reviews').select('created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
-    if(!r||!r.length)return {s:'ok',service};
-    return new Date(r[0].created_at)>new Date(b[0].created_at)?{s:'done'}:{s:'ok',service};
+    if(!r||!r.length)return {s:'ok',service,cat};
+    return new Date(r[0].created_at)>new Date(b[0].created_at)?{s:'done'}:{s:'ok',service,cat};
   }
 
   function info(icon,title,msg,primary){
@@ -101,7 +115,7 @@
     try{
       const e=await eligibility();
       if(e.s!=='ok'){dlg().close();busy=false;return info('🔒','Review Already Submitted','You have already submitted a review for your last booking. Complete another booking to write a new review!')}
-      const {error}=await sb.from('reviews').insert({user_id:S.user.id,user_name:(S.profile&&S.profile.full_name)||'',service_name:service,rating:rate,review_text:txt,is_approved:false});
+      const {error}=await sb.from('reviews').insert({user_id:S.user.id,user_name:(S.profile&&S.profile.full_name)||'',service_name:service,service_category:e.cat||'water_tank',rating:rate,review_text:txt,is_approved:false});
       if(error)throw error;
       const ok=await addCoins(10,'reward','Review submitted for '+service);
       dlg().close();say(ok?'🪙 Review submitted! +10 coins added.':'Review submitted!');
@@ -126,7 +140,7 @@
     const body=list.length?list.map(r=>`<div style="padding:14px;border-radius:12px;background:var(--bg);margin-bottom:12px">
       <div style="display:flex;align-items:center"><span class="stars" style="letter-spacing:1px">${stars5(Math.round(r.rating))}</span><span style="flex:1"></span><button data-rv="my-del" data-id="${h(r.id)}" aria-label="Delete review" style="border:0;background:none;color:var(--err);cursor:pointer;font-size:1rem">🗑</button></div>
       <p class="muted small" style="margin:6px 0 4px">${h(r.review_text)}</p>
-      <div class="muted" style="font-size:.72rem">${h(ago(r.created_at))}  •  ${r.is_approved?'✅ Live':'⏳ Approval pending'}</div></div>`).join('')
+      <div class="muted" style="font-size:.72rem">${iconFor(cleanSvc(r.service_name),r.service_category)} ${h(cleanSvc(r.service_name))}  •  ${h(ago(r.created_at))}  •  ${r.is_approved?'✅ Live':'⏳ Approval pending'}</div></div>`).join('')
       :`<div class="c" style="padding:34px 0"><div style="font-size:2.6rem;color:var(--mut)">☆</div><b class="muted" style="display:block;margin:8px 0 4px">No reviews yet</b><span class="muted small">Complete a booking to write your first review</span></div>`;
     d.innerHTML=`<div style="display:flex;align-items:center;margin-bottom:12px"><h3 style="font-size:1.15rem">My Reviews</h3><span style="flex:1"></span><span style="padding:4px 10px;border-radius:12px;background:color-mix(in srgb,${TEAL} 14%,transparent);color:${TEAL};font-size:.76rem;font-weight:600">${list.length} review${list.length!==1?'s':''}</span></div>
       <div style="max-height:55vh;overflow-y:auto">${body}</div><button class="btn ghost block" style="margin-top:12px" data-act="close">Close</button>`;
