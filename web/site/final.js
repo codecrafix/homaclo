@@ -179,7 +179,7 @@ document.addEventListener('change',async e=>{
 
 /* ===== Solar Panel Cleaning booking (3-30kW dropdown, panels x ₹100) + services button alignment ===== */
 (function(){
-const SOL={on:false,kw:3,panels:0},PP=100,MAXP=100;
+const SOL={on:false,kw:3,panels:0},PP=100,MAXP=500;
 window.SOL=SOL;
 const KWS=Array.from({length:28},(_,i)=>i+3);
 const st=document.createElement('style');
@@ -193,6 +193,7 @@ st.textContent=`
 .svt button.on{background:#06b6d4;color:#fff}
 .sel{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(128,128,128,.35);font:inherit;background:transparent;color:inherit}
 .sel option{color:#000}
+.qin{width:64px;text-align:center;padding:8px;border-radius:10px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font:inherit;font-weight:700}
 `;
 document.head.appendChild(st);
 const tgl=()=>`<div class="svt"><button type="button" data-act="smode" data-m="water" class="${SOL.on?'':'on'}">💧 Water Tank</button><button type="button" data-act="smode" data-m="solar" class="${SOL.on?'on':''}">☀️ Solar Panel</button></div>`;
@@ -217,12 +218,19 @@ bookView=function(){
   }
   if(S.step!==1)return _bv().replace('1. Tanks','1. Service');
   const ready=SOL.panels>0;
-  const body=`${tgl()}<h3>Solar panel cleaning</h3><p class="muted small" style="margin-bottom:14px">Choose your system size, then add the number of panels (${inr(PP)} per panel).</p>
+  const body=`${tgl()}<h3>Solar panel cleaning</h3><p class="muted small" style="margin-bottom:14px">Choose your system size, then add the number of panels (${inr(PP)} per panel). You can also type the number.</p>
   <label>Solar system size</label><select id="sol-kw" class="sel">${KWS.map(k=>`<option value="${k}" ${k===SOL.kw?'selected':''}>${k} kW</option>`).join('')}</select>
-  <div class="stack" style="margin-top:16px"><div class="card tank row ${ready?'on':''}"><div class="tk">☀️<br><b>Panels</b></div><div class="grow"><h4>Number of panels</h4><span class="price" style="font-size:1.1rem">${inr(PP)} / panel</span></div><div class="qty"><button data-act="sp" data-d="-1" aria-label="Less">−</button><b>${SOL.panels}</b><button data-act="sp" data-d="1" aria-label="More">+</button></div></div></div>
+  <div class="stack" style="margin-top:16px"><div class="card tank row ${ready?'on':''}"><div class="tk">☀️<br><b>Panels</b></div><div class="grow"><h4>Number of panels</h4><span class="price" style="font-size:1.1rem">${inr(PP)} / panel</span></div><div class="qty"><button data-act="sp" data-d="-1" aria-label="Less">−</button><input id="sol-n" class="qin" type="text" inputmode="numeric" maxlength="3" placeholder="0" value="${SOL.panels||''}" aria-label="Number of panels"><button data-act="sp" data-d="1" aria-label="More">+</button></div></div></div>
   <button class="btn block" style="margin-top:20px" data-act="snext" ${ready?'':'disabled'}>Next — choose date &amp; time →</button>`;
   return `<div class="page"><div class="wrap fade"><h1>Book a cleaning</h1><div class="steps"><span class="on">1. Service</span><span>2. Schedule</span><span>3. Address</span><span>4. Pay</span></div><div class="bk"><div class="card">${body}</div>${summaryBox()}</div></div></div>`;
 };
+/* Update the solar step in place (no full re-render => no blink) */
+function solUpd(){
+  const r=SOL.panels>0;
+  const tk=document.querySelector('.card.tank');if(tk)tk.classList.toggle('on',r);
+  const nb=document.querySelector('[data-act="snext"]');if(nb)nb.disabled=!r;
+  const sm=document.querySelector('.bk .sum');if(sm)sm.outerHTML=summaryBox();
+}
 const _ff=finishFlow;
 finishFlow=function(){_ff();SOL.on=false;SOL.kw=3;SOL.panels=0};
 const _pay=pay;
@@ -295,21 +303,37 @@ document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const act=el.dataset.act;
   if(act==='smode'){SOL.on=el.dataset.m==='solar';S.cart.coupon=null;S.cart.useCoins=false;route()}
-  else if(act==='sp'){SOL.panels=Math.max(0,Math.min(MAXP,SOL.panels+Number(el.dataset.d)));route()}
+  else if(act==='sp'){
+    SOL.panels=Math.max(0,Math.min(MAXP,SOL.panels+Number(el.dataset.d)));
+    const i=document.getElementById('sol-n');if(i)i.value=SOL.panels||'';
+    solUpd();
+  }
   else if(act==='snext'){if(SOL.panels){S.step=2;route()}}
   else if(act==='solbook'){SOL.on=true;S.step=1;S.cart.coupon=null}
 });
-document.addEventListener('change',e=>{if(e.target.id==='sol-kw'){SOL.kw=Number(e.target.value);route()}});
+/* manual panel count: type any number (1-500), updates instantly without re-rendering */
+document.addEventListener('input',e=>{
+  if(e.target.id!=='sol-n')return;
+  const v=e.target.value.replace(/\D/g,'').slice(0,3);
+  const n=v?Math.min(MAXP,Number(v)):0;
+  e.target.value=v?String(n):'';
+  SOL.panels=n;solUpd();
+});
+document.addEventListener('change',e=>{if(e.target.id==='sol-kw'){SOL.kw=Number(e.target.value);solUpd()}});
 
-/* Services page: make the Solar Panel Cleaning card bookable */
+/* Services page: replace "Coming soon" on Solar Panel Cleaning with a Book now button */
 function fixSvc(){
   document.querySelectorAll('#svc .card').forEach(c=>{
     const t=c.textContent;
     if(!(/solar/i.test(t)&&/cleaning/i.test(t))||/maintenance|repair/i.test(t))return;
     if(c.querySelector('[data-act="solbook"]'))return;
-    const b=[...c.querySelectorAll('.btn,button,a')].pop();
+    c.querySelectorAll('*').forEach(x=>{
+      if(x.children.length||!/^\s*coming\s*soon\s*$/i.test(x.textContent))return;
+      let n=x;while(n.parentElement&&n.parentElement!==c)n=n.parentElement;
+      n.remove();
+    });
     const a=document.createElement('a');a.className='btn sm';a.href='#/book?s=solar';a.dataset.act='solbook';a.textContent='Book now';
-    if(b)b.replaceWith(a);else c.appendChild(a);
+    c.appendChild(a);
   });
 }
 new MutationObserver(()=>requestAnimationFrame(fixSvc)).observe(document.getElementById('app'),{childList:true,subtree:true});
