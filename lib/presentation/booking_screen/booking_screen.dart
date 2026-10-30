@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 
 import '../../theme/app_theme.dart';
 import '../../providers/app_state.dart';
+import '../../services/solar_cart.dart';
 import './widgets/booking_progress_widget.dart';
 import './widgets/booking_step1_widget.dart';
+import './widgets/solar_step1_widget.dart';
 import './widgets/booking_step2_widget.dart';
 import './widgets/booking_step3_widget.dart';
 import './widgets/booking_step4_widget.dart';
@@ -33,6 +35,7 @@ class _BookingScreenState extends State<BookingScreen> {
     final cart = context.watch<AppState>().cartState;
     final allEmpty =
         cart.tankQuantities.values.every((q) => q == 0) &&
+        !SolarCart.instance.isSolar &&
         cart.selectedDate == null &&
         cart.selectedTimeSlot == null &&
         cart.address.isEmpty;
@@ -124,11 +127,16 @@ class _BookingScreenState extends State<BookingScreen> {
                         letterSpacing: 1.5,
                       ),
                     ),
-                    Text(
-                      'Water Tank Cleaning',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        color: Colors.white.withAlpha(179),
+                    ListenableBuilder(
+                      listenable: SolarCart.instance,
+                      builder: (context, _) => Text(
+                        SolarCart.instance.isSolar
+                            ? 'Solar Panel Cleaning'
+                            : 'Water Tank Cleaning',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          color: Colors.white.withAlpha(179),
+                        ),
                       ),
                     ),
                   ],
@@ -169,7 +177,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  BookingStep1Widget(onNext: _nextStep),
+                  _ServiceTypeStep(onNext: _nextStep),
                   BookingStep2Widget(onNext: _nextStep),
                   BookingStep3Widget(onNext: _nextStep),
                   BookingStep4Widget(onNext: _nextStep),
@@ -181,6 +189,96 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
       ),
      ),
+    );
+  }
+}
+
+/// Step 1: service toggle (Water Tank / Solar Panel) + the matching form.
+/// IndexedStack keeps both forms alive so nothing is lost when toggling.
+class _ServiceTypeStep extends StatelessWidget {
+  final VoidCallback onNext;
+  const _ServiceTypeStep({required this.onNext});
+
+  Widget _tab(String label, IconData icon, bool active, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 11),
+          decoration: BoxDecoration(
+            color: active ? AppTheme.tealAccent : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: active ? Colors.white : AppTheme.textMuted,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: active ? Colors.white : AppTheme.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: SolarCart.instance,
+      builder: (context, _) {
+        final solar = SolarCart.instance.isSolar;
+        return Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.divider),
+              ),
+              child: Row(
+                children: [
+                  _tab(
+                    'Water Tank',
+                    Icons.water_drop_rounded,
+                    !solar,
+                    () => SolarCart.instance.setSolar(false),
+                  ),
+                  _tab(
+                    'Solar Panel',
+                    Icons.wb_sunny_rounded,
+                    solar,
+                    () => SolarCart.instance.setSolar(true),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: IndexedStack(
+                index: solar ? 1 : 0,
+                children: [
+                  BookingStep1Widget(onNext: onNext),
+                  SolarStep1Widget(onNext: onNext),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

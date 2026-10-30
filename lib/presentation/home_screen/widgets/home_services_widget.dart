@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/solar_cart.dart';
 
 class HomeServicesWidget extends StatelessWidget {
   const HomeServicesWidget({super.key});
@@ -53,7 +54,10 @@ class HomeServicesWidget extends StatelessWidget {
           features: const ['5-Stage Clean', 'TDS Tested', 'Certified'],
           buttonLabel: 'Book Now',
           buttonColor: AppTheme.tealAccent,
-          onTap: () => context.go(AppRoutes.bookingScreen),
+          onTap: () {
+            SolarCart.instance.setSolar(false);
+            context.go(AppRoutes.bookingScreen);
+          },
         ),
         const SizedBox(height: 12),
         // Solar Maintenance
@@ -69,18 +73,20 @@ class HomeServicesWidget extends StatelessWidget {
           onTap: _openWhatsApp,
         ),
         const SizedBox(height: 12),
-        // Solar Panel Cleaning — Coming Soon
+        // Solar Panel Cleaning — now ACTIVE
         _ServiceCard(
           icon: Icons.wb_sunny_rounded,
-          iconColor: AppTheme.textMuted,
-          iconBg: AppTheme.divider,
+          iconColor: AppTheme.warning,
+          iconBg: AppTheme.warning.withAlpha(26),
           title: 'Solar Panel Cleaning',
-          subtitle: 'Professional dust & grime removal',
-          features: const [],
-          buttonLabel: 'Coming Soon',
-          buttonColor: AppTheme.textMuted,
-          onTap: null,
-          badge: 'COMING SOON',
+          subtitle: '3kW — 30kW • ₹100 per panel',
+          features: const ['Dust & Grime Removal', 'Any System Size'],
+          buttonLabel: 'Book Now',
+          buttonColor: AppTheme.tealAccent,
+          onTap: () {
+            SolarCart.instance.setSolar(true);
+            context.go(AppRoutes.bookingScreen);
+          },
         ),
       ],
     );
