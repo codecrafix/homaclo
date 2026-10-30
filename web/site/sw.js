@@ -2,7 +2,7 @@
    Bump C whenever the pictures in /img are replaced (and IMG_V in router.js): old caches are deleted on activate.
    Bump S if you ever need to force every visitor to drop the cached JS/CSS. */
 const C='mx-img-v3';
-const S='mx-static-v4';
+const S='mx-static-v5';
 const CDN=/^https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\//;
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(
