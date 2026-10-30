@@ -32,9 +32,21 @@ homeAfter=async function(){
   return _ha();
 };
 
+/* Home page only: no "Call to enquire" buttons on the service cards (Book now stays).
+   The Services page is not touched, because it lives outside #hsv. */
+function dropCall(){
+  document.querySelectorAll('#hsv #svc a,#hsv #svc button').forEach(x=>{
+    if(/^tel:/i.test(x.getAttribute('href')||'')||/call\s*to\s*enquire/i.test(x.textContent))x.remove();
+  });
+}
+const appEl=document.getElementById('app');
+if(appEl)new MutationObserver(()=>requestAnimationFrame(dropCall)).observe(appEl,{childList:true,subtree:true});
+dropCall();
+
 /* styles */
 const st=document.createElement('style');
 st.textContent=`
+#hsv #svc a[href^="tel:"]{display:none!important}
 .hsv-k{display:inline-block;padding:5px 13px;border-radius:99px;background:color-mix(in srgb,var(--teal) 14%,transparent);color:var(--teal);font-size:.74rem;font-weight:800;letter-spacing:.09em;margin-bottom:14px}
 .hsv-g{grid-template-columns:repeat(3,1fr);align-items:stretch}
 .hsv-c{padding:0;overflow:hidden;display:flex;flex-direction:column}
