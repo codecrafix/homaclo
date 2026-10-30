@@ -80,18 +80,38 @@ homeAfter=async function(){
   const e=$('#st-r');if(e&&e.textContent.trim()==='—')e.textContent='5.0 ★';
 };
 
-/* ---------- Reviews page: premium layout (ids/handlers unchanged, reviews.js still renders the feed) ---------- */
+/* ---------- Reviews page: compact layout, reviews grouped by service category (tabs) ----------
+   reviews.js still renders the feed (#rfeed); here each card is sorted into a category from its service tag icon
+   (💧 water tank, ☀️ solar cleaning, 🔧 solar repair) and only the chosen category is shown. Full review text is always visible. */
 window.reviewsView=function(){
   return `<div class="page"><div class="wrap fade rvp">
-  <div class="rv-hero"><div><span class="fq-k">CUSTOMER REVIEWS</span><h1>Trusted by families across Satna</h1><p>Real feedback from customers who booked a Homaclo tank cleaning.</p></div>
+  <div class="rv-hero"><div><span class="fq-k">CUSTOMER REVIEWS</span><h1>Trusted by families across Satna</h1><p>Real feedback from customers who booked Homaclo services.</p></div>
   <div class="rv-score"><div class="rv-n"><b id="rv-avg">5.0</b><span>★</span></div><div class="rv-st">★★★★★</div><small>Average rating</small></div></div>
   <div class="rv-stats"><div><b>500+</b><span>Happy customers</span></div><div><b>5.0</b><span>Average rating</span></div><div><b>100%</b><span>Satisfaction rate</span></div></div>
   <div class="rv-bar"><h2>What customers say</h2><button class="btn" data-rv="write">✍️ Write a review</button></div>
+  <div id="rtabs" class="rv-tabs" role="tablist" aria-label="Review categories"></div>
   <div id="rfeed" class="rv-grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></div>`;
 };
+let RC='water';
+const RCATS=[['water','💧','Water Tank'],['clean','☀️','Solar Cleaning'],['repair','🔧','Solar Repair']];
+function cardCat(c){
+  const tag=[...c.children].find(x=>x.tagName==='SPAN');
+  const t=tag?tag.textContent:'';
+  return t.indexOf('🔧')>-1?'repair':(t.indexOf('☀')>-1?'clean':'water');
+}
+function applyCat(){
+  const feed=$('#rfeed'),tabs=$('#rtabs');if(!feed||!tabs)return;
+  const cards=[...feed.children].filter(x=>!x.classList.contains('sk'));
+  if(!cards.length)return;
+  const n={water:0,clean:0,repair:0};
+  cards.forEach(c=>{const k=cardCat(c);n[k]++;c.style.display=k===RC?'':'none'});
+  const html=RCATS.map(x=>`<button type="button" role="tab" aria-selected="${x[0]===RC}" class="rv-tab${x[0]===RC?' on':''}" data-rc="${x[0]}">${x[1]} ${x[2]} <b>${n[x[0]]}</b></button>`).join('');
+  if(tabs.innerHTML!==html)tabs.innerHTML=html;
+}
 document.addEventListener('click',e=>{
-  const c=e.target.closest('#rfeed>div:not(.sk)');if(!c||e.target.closest('button'))return;
-  c.classList.toggle('open');
+  const t=e.target.closest&&e.target.closest('[data-rc]');
+  if(!t)return;
+  RC=t.dataset.rc;applyCat();
 });
 
 /* ---------- Count-up numbers (real values only; animation just counts up to them) ---------- */
@@ -117,7 +137,7 @@ function go(el){
 }
 
 let q=0;
-function run(){homeFaq();footLink();$$('#app .stat b,#app .rv-stats b,#app .rv-n b').forEach(arm)}
+function run(){homeFaq();footLink();applyCat();$$('#app .stat b,#app .rv-stats b,#app .rv-n b').forEach(arm)}
 new MutationObserver(()=>{cancelAnimationFrame(q);q=requestAnimationFrame(run)}).observe($('#app'),{childList:true,subtree:true,characterData:true});
 window.addEventListener('hashchange',()=>setTimeout(run,0));run();
 })();
