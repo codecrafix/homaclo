@@ -7,6 +7,7 @@ Run ONCE from the repo root (Replit shell / any PC), then commit + push:
     python3 tool/optimize_web.py
 
 What it does
+  0. (CI deploy) generates static SEO pages web/site/<route>.html via tool/gen_seo_pages.py
   1. web/site/img/*.png  ->  *.webp  (max 1100px wide, quality 76; typically 80-90% smaller)
   2. rewrites img/xxx.png -> img/xxx.webp in web/site JS/CSS/HTML
      (og:image / twitter:image / seo.js / sw.js are left on PNG for social previews)
@@ -16,11 +17,25 @@ The original PNGs are kept (used for social-share previews).
 import glob
 import os
 import re
+import subprocess
+import sys
 
 from PIL import Image
 
 SITE = "web/site"
 IMG = f"{SITE}/img"
+
+# Step 0: static, crawlable HTML for every public route (services.html, book.html, ...).
+# index.html is restored afterwards because it is also the SPA fallback (404.html) shell.
+if os.environ.get("GITHUB_ACTIONS") == "true" and os.path.exists("tool/gen_seo_pages.py"):
+    _idx = f"{SITE}/index.html"
+    _orig = open(_idx, encoding="utf-8").read()
+    try:
+        subprocess.run([sys.executable, "tool/gen_seo_pages.py", SITE], check=True)
+    except Exception as e:
+        print("SEO page generation skipped:", e)
+    finally:
+        open(_idx, "w", encoding="utf-8").write(_orig)
 
 saved_before = saved_after = 0
 for p in sorted(glob.glob(f"{IMG}/*.png")):
