@@ -1,32 +1,25 @@
 /* Solar Maintenance & Repair booking (loaded after final.js).
-   Flow: services card "Book now" -> booking page, step 1 = pick the solar problems (or type your own), then the same
-   schedule / address / pay steps as the other services. Flat service charge: Rs 1,000.
-   The problems are stored in the booking's service_name (the bookings table has no notes column) and the booking is
+   Flow: services card "Book now" -> booking page, step 1 = the user types their own solar problem (inverter, ACDB, DCDB,
+   solar not working properly, low voltage / output ...), then the same schedule / address / pay steps as the other
+   services. Flat service charge: Rs 1,000.
+   The problem text is stored in the booking's service_name (the bookings table has no notes column) and the booking is
    saved with service_category 'solar' (the only other value the database allows besides 'water_tank'). */
 (function(){
-const REP={on:false,sel:new Set(),note:''},PRICE=1000;
+const REP={on:false,note:''},PRICE=1000;
 window.REP=REP;
-const PROBS=[
-'Inverter not working','Inverter error / fault','ACDB problem','DCDB problem','Solar not working properly',
-'Low voltage','Low output / less generation','No output at all','Wiring / loose connection','Sparking / burning smell',
-'Panel damaged / hot-spot','Earthing / lightning arrestor','Monitoring / WiFi issue','General checkup & maintenance'];
 
 const st=document.createElement('style');
 st.textContent=`
 .svt button{padding:10px 4px;font-size:.86rem}
-.rchips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
-.rchip{padding:10px 14px;min-height:44px;border-radius:12px;border:1.5px solid rgba(128,128,128,.35);background:transparent;color:inherit;font:inherit;font-size:.88rem;text-align:left;cursor:pointer}
-.rchip.on{border-color:#06b6d4;background:color-mix(in srgb,#06b6d4 14%,transparent);font-weight:700}
-.rchip.on::before{content:'\\2713  ';color:#06b6d4}
+.rhint{margin:10px 0 0;font-size:.8rem;line-height:1.5}
 `;
 document.head.appendChild(st);
 
-const ready=()=>REP.sel.size>0||REP.note.trim().length>=5;
+const ready=()=>REP.note.trim().length>=5;
 const tabs=()=>`<div class="svt"><button type="button" data-act="smode" data-m="water">💧 Water Tank</button><button type="button" data-act="smode" data-m="solar">☀️ Solar Panel</button><button type="button" data-act="rmode" class="on">🔧 Solar Repair</button></div>`;
 function detailName(){
-  const l=[...REP.sel].sort((a,b)=>a-b).map(i=>PROBS[i]);
   const note=REP.note.trim().replace(/\s+/g,' ');
-  return ('Solar Maintenance & Repair — '+l.join(', ')+(note?(l.length?' | ':'')+'Other: '+note:'')).slice(0,300);
+  return ('Solar Maintenance & Repair — '+note).slice(0,300);
 }
 
 /* ---- price / summary ---- */
@@ -39,17 +32,17 @@ calc=function(){
 const _sb=summaryBox;
 summaryBox=function(){
   if(!REP.on)return _sb();
-  const c=S.cart,t=calc(),n=REP.sel.size;
-  const info=n||REP.note.trim()?`<p class="muted small" style="margin:6px 0">${n?n+' problem'+(n===1?'':'s')+' selected':''}${n&&REP.note.trim()?' + ':''}${REP.note.trim()?'your description':''}</p>`:'<p class="muted small" style="margin:6px 0">Select or describe your problem.</p>';
+  const c=S.cart,t=calc();
+  const info=REP.note.trim()?'<p class="muted small" style="margin:6px 0">Problem description added</p>':'<p class="muted small" style="margin:6px 0">Describe your solar problem.</p>';
   return `<div class="card sum"><h4 style="margin-bottom:10px">Order summary</h4><div class="line"><span>Solar maintenance &amp; repair</span><span>${inr(t.sub)}</span></div>${info}${t.cp?`<div class="line ok"><span>Coupon ${h(c.coupon.code)}</span><span>−${inr(t.cp)}</span></div>`:''}${t.coins?`<div class="line ok"><span>Wallet coins</span><span>−${inr(t.coins)}</span></div>`:''}<div class="line t"><span>Total</span><span>${inr(t.total)}</span></div>${S.step>1?`<p class="muted small" style="margin-top:10px">📅 ${h(c.date)}${c.slot?'<br>🕒 '+h(c.slot):''}</p>`:''}</div>`;
 };
 
 /* ---- booking page ---- */
 function stepOne(){
   const ok=ready();
-  const body=`${tabs()}<h3>Solar maintenance &amp; repair</h3><p class="muted small" style="margin-bottom:6px">Select every problem you are facing, or type it yourself below. Service charge: ${inr(PRICE)}.</p>
-  <div class="rchips">${PROBS.map((p,i)=>`<button type="button" class="rchip${REP.sel.has(i)?' on':''}" data-act="rpick" data-i="${i}" aria-pressed="${REP.sel.has(i)}">${h(p)}</button>`).join('')}</div>
-  <label>Other problem (type it yourself)</label><textarea id="rep-note" rows="3" maxlength="300" placeholder="Describe your solar problem in your own words…">${h(REP.note)}</textarea>
+  const body=`${tabs()}<h3>Solar maintenance &amp; repair</h3><p class="muted small" style="margin-bottom:6px">Tell us what is wrong with your solar system. Service charge: ${inr(PRICE)}.</p>
+  <label>Your solar problem</label><textarea id="rep-note" rows="6" maxlength="300" placeholder="Type your problem here, for example: inverter not working, ACDB / DCDB problem, solar not working properly, low voltage, low output…">${h(REP.note)}</textarea>
+  <p class="muted rhint">Write every problem you are facing (inverter, ACDB, DCDB, voltage, output, wiring etc.). Our technician will check it on the visit.</p>
   <button class="btn block" style="margin-top:20px" data-act="rnext" ${ok?'':'disabled'}>Next — choose date &amp; time →</button>`;
   return `<div class="page"><div class="wrap fade"><h1>Book a service</h1><div class="steps"><span class="on">1. Service</span><span>2. Schedule</span><span>3. Address</span><span>4. Pay</span></div><div class="bk"><div class="card">${body}</div>${summaryBox()}</div></div></div>`;
 }
@@ -62,13 +55,13 @@ bookView=function(){
   if(S.step!==1)return _bv().replace('1. Tanks','1. Service');
   return stepOne();
 };
-/* update the step in place while picking (no re-render, so no blink and typing is never interrupted) */
+/* update the step in place while typing (no re-render, so no blink and typing is never interrupted) */
 function rUpd(summary){
   const nb=document.querySelector('[data-act="rnext"]');if(nb)nb.disabled=!ready();
   if(summary){const sm=document.querySelector('.bk .sum');if(sm)sm.outerHTML=summaryBox()}
 }
 const _ff=finishFlow;
-finishFlow=function(){_ff();REP.on=false;REP.sel=new Set();REP.note=''};
+finishFlow=function(){_ff();REP.on=false;REP.note=''};
 const _pay=pay;
 pay=function(){return REP.on?repPay():_pay()};
 
@@ -151,11 +144,6 @@ document.addEventListener('click',e=>{
   if(act==='rbook'||act==='rmode'){
     REP.on=true;SOL.on=false;S.step=1;S.cart.coupon=null;S.cart.useCoins=false;
     if(act==='rmode')route();
-  }else if(act==='rpick'){
-    const i=Number(el.dataset.i);
-    if(REP.sel.has(i))REP.sel.delete(i);else REP.sel.add(i);
-    el.classList.toggle('on',REP.sel.has(i));el.setAttribute('aria-pressed',String(REP.sel.has(i)));
-    rUpd(true);
   }else if(act==='rnext'){
     const n=document.getElementById('rep-note');if(n)REP.note=n.value;
     if(ready()){S.step=2;route()}
