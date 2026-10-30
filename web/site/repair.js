@@ -1,11 +1,12 @@
 /* Solar Maintenance & Repair booking (loaded after final.js).
-   Flow: services card "Book now" -> booking page, step 1 = the user types their own solar problem (inverter, ACDB, DCDB,
-   solar not working properly, low voltage / output ...), then the same schedule / address / pay steps as the other
+   Flow: services card "Book now" -> booking page, step 1 = the user picks the problem type from a dropdown (inverter, ACDB,
+   DCDB, solar not working properly, low voltage / output ...) and describes it in their own words, then the same schedule / address / pay steps as the other
    services. Flat service charge: Rs 1,000.
    The problem text is stored in the booking's service_name (the bookings table has no notes column) and the booking is
    saved with service_category 'solar' (the only other value the database allows besides 'water_tank'). */
 (function(){
-const REP={on:false,note:''},PRICE=1000;
+const REP={on:false,cat:'',note:''},PRICE=1000;
+const CATS=['Inverter not working / error','ACDB problem','DCDB problem','Solar not working properly','Low voltage','Low output / less generation','No output at all','Wiring / loose connection / sparking','Panel damaged / hot-spot','Earthing / lightning arrestor','Monitoring / WiFi issue','General checkup & maintenance','Other problem'];
 window.REP=REP;
 
 const st=document.createElement('style');
@@ -15,11 +16,11 @@ st.textContent=`
 `;
 document.head.appendChild(st);
 
-const ready=()=>REP.note.trim().length>=5;
+const ready=()=>!!REP.cat&&REP.note.trim().length>=5;
 const tabs=()=>`<div class="svt"><button type="button" data-act="smode" data-m="water">💧 Water Tank</button><button type="button" data-act="smode" data-m="solar">☀️ Solar Panel</button><button type="button" data-act="rmode" class="on">🔧 Solar Repair</button></div>`;
 function detailName(){
   const note=REP.note.trim().replace(/\s+/g,' ');
-  return ('Solar Maintenance & Repair — '+note).slice(0,300);
+  return ('Solar Maintenance & Repair — '+REP.cat+': '+note).slice(0,300);
 }
 
 /* ---- price / summary ---- */
@@ -33,7 +34,7 @@ const _sb=summaryBox;
 summaryBox=function(){
   if(!REP.on)return _sb();
   const c=S.cart,t=calc();
-  const info=REP.note.trim()?'<p class="muted small" style="margin:6px 0">Problem description added</p>':'<p class="muted small" style="margin:6px 0">Describe your solar problem.</p>';
+  const info=REP.cat?`<p class="muted small" style="margin:6px 0">${h(REP.cat)}</p>`:'<p class="muted small" style="margin:6px 0">Select your problem type and describe it.</p>';
   return `<div class="card sum"><h4 style="margin-bottom:10px">Order summary</h4><div class="line"><span>Solar maintenance &amp; repair</span><span>${inr(t.sub)}</span></div>${info}${t.cp?`<div class="line ok"><span>Coupon ${h(c.coupon.code)}</span><span>−${inr(t.cp)}</span></div>`:''}${t.coins?`<div class="line ok"><span>Wallet coins</span><span>−${inr(t.coins)}</span></div>`:''}<div class="line t"><span>Total</span><span>${inr(t.total)}</span></div>${S.step>1?`<p class="muted small" style="margin-top:10px">📅 ${h(c.date)}${c.slot?'<br>🕒 '+h(c.slot):''}</p>`:''}</div>`;
 };
 
@@ -41,8 +42,9 @@ summaryBox=function(){
 function stepOne(){
   const ok=ready();
   const body=`${tabs()}<h3>Solar maintenance &amp; repair</h3><p class="muted small" style="margin-bottom:6px">Tell us what is wrong with your solar system. Service charge: ${inr(PRICE)}.</p>
-  <label>Your solar problem</label><textarea id="rep-note" rows="6" maxlength="300" placeholder="Type your problem here, for example: inverter not working, ACDB / DCDB problem, solar not working properly, low voltage, low output…">${h(REP.note)}</textarea>
-  <p class="muted rhint">Write every problem you are facing (inverter, ACDB, DCDB, voltage, output, wiring etc.). Our technician will check it on the visit.</p>
+  <label>What is the problem related to?</label><select id="rep-cat" class="sel"><option value="" ${REP.cat?'':'selected'}>Select problem type…</option>${CATS.map(c=>`<option value="${h(c)}" ${c===REP.cat?'selected':''}>${h(c)}</option>`).join('')}</select>
+  <label style="margin-top:14px;display:block">Describe the problem</label><textarea id="rep-note" rows="5" maxlength="300" placeholder="Explain in detail: since when it is happening, what you see (error / light on inverter, voltage or output reading), etc.">${h(REP.note)}</textarea>
+  <p class="muted rhint">First select the problem type, then describe it in your own words. Our technician will check everything on the visit.</p>
   <button class="btn block" style="margin-top:20px" data-act="rnext" ${ok?'':'disabled'}>Next — choose date &amp; time →</button>`;
   return `<div class="page"><div class="wrap fade"><h1>Book a service</h1><div class="steps"><span class="on">1. Service</span><span>2. Schedule</span><span>3. Address</span><span>4. Pay</span></div><div class="bk"><div class="card">${body}</div>${summaryBox()}</div></div></div>`;
 }
@@ -61,7 +63,7 @@ function rUpd(summary){
   if(summary){const sm=document.querySelector('.bk .sum');if(sm)sm.outerHTML=summaryBox()}
 }
 const _ff=finishFlow;
-finishFlow=function(){_ff();REP.on=false;REP.note=''};
+finishFlow=function(){_ff();REP.on=false;REP.cat='';REP.note=''};
 const _pay=pay;
 pay=function(){return REP.on?repPay():_pay()};
 
@@ -146,8 +148,13 @@ document.addEventListener('click',e=>{
     if(act==='rmode')route();
   }else if(act==='rnext'){
     const n=document.getElementById('rep-note');if(n)REP.note=n.value;
+    const k=document.getElementById('rep-cat');if(k)REP.cat=k.value;
     if(ready()){S.step=2;route()}
   }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id!=='rep-cat')return;
+  REP.cat=e.target.value;rUpd(true);
 });
 document.addEventListener('input',e=>{
   if(e.target.id!=='rep-note')return;
