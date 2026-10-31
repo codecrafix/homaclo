@@ -54,13 +54,18 @@ details p{margin:10px 0 0;color:var(--mut)}
 .rel{margin-top:40px}
 .art .rel h2{margin:0 0 14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-.card{display:block;background:var(--sf);border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;box-shadow:var(--sh);transition:transform .2s}
+.card{display:flex;flex-direction:column;background:var(--sf);border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;box-shadow:var(--sh);transition:transform .2s}
 .card:hover{transform:translateY(-4px)}
-.card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:linear-gradient(135deg,var(--navy),#0a3b66)}
-.card .cb{padding:16px 18px 20px}
+.card picture{display:block}
+.card img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:linear-gradient(135deg,var(--navy),#0a3b66)}
+.card .cb{padding:16px 18px 20px;flex:1}
 .card h3{font-size:1.1rem;margin:0 0 6px}
 .card p{margin:0;color:var(--mut);font-size:.9rem}
 .card .kk{margin-bottom:8px}
+/* blog home: 1 column on small phones, 2 on large phones/tablets, 4 on desktop */
+.w.wide>.grid{grid-template-columns:1fr}
+@media(min-width:560px){.w.wide>.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.w.wide>.grid{grid-template-columns:repeat(4,1fr)}}
 .bi{padding:36px 0 20px}
 .bi h1{margin-bottom:10px}
 .bf{border-top:1px solid var(--line);background:var(--sf);padding:34px 0 40px;text-align:center;color:var(--mut);font-size:.9rem}
