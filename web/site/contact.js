@@ -11,7 +11,8 @@ st.textContent=
 '.ct-form{padding:34px 30px}.ct-form h3{margin-bottom:4px}.ct-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.ct-form select{appearance:auto}'+
 '.ct-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}.ct-err{color:var(--err);font-size:.88rem;min-height:1.3em;margin:10px 0 4px}.ct-form .btn{margin-top:6px;min-height:52px}'+
 '.ct-done{text-align:center;padding:30px 10px}.ct-done .ok-ic{width:72px;height:72px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}.ct-done p{color:var(--mut);margin:8px 0 22px}'+
-'@media(max-width:520px){.ct-2{grid-template-columns:1fr}.ct-form{padding:26px 20px}}';
+'.ct-info{margin-top:20px;padding:24px 26px}.ct-info h3{margin-bottom:10px}.ct-info .line{align-items:flex-start}.ct-info .line b{text-align:right}.ct-info a{color:var(--teal);text-decoration:underline}'+
+'@media(max-width:520px){.ct-2{grid-template-columns:1fr}.ct-form{padding:26px 20px}.ct-info{padding:20px}}';
 document.head.appendChild(st);
 
 const TOPICS=['Booking enquiry','Pricing & services','Payment or refund','Feedback','Partnership','Other'];
@@ -31,7 +32,12 @@ function contactView(){
     <div class="ct-hp" aria-hidden="true"><label for="ct-hp">Leave empty</label><input id="ct-hp" tabindex="-1" autocomplete="off"></div>
     <p class="ct-err" role="alert"></p>
     <button class="btn block" id="ct-go" type="submit">Send message →</button>
-  </form></div></div></div>`;
+  </form>
+  <div class="ct-info card"><h3>Business details</h3>
+    <div class="line"><span class="muted">📧 Email</span><b><a href="mailto:${EMAIL}">${EMAIL}</a></b></div>
+    <div class="line"><span class="muted">📞 Phone</span><b><a href="tel:+916262262913">+91 62622 62913</a></b></div>
+    <div class="line"><span class="muted">📍 Address</span><b>Jawahar Nagar, Satna, Madhya Pradesh, India</b></div>
+  </div></div></div></div>`;
 }
 const _lv=legalView;
 legalView=function(k){return k==='contact'?contactView():_lv(k)};
