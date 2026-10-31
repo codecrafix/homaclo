@@ -38,3 +38,9 @@
 #rfeed.rv-grid>div:not(.sk){padding:12px 14px!important;border-radius:16px!important;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
 #rfeed.rv-grid>div p{display:block!important;overflow:visible!important;margin:8px 0!important;font-size:.84rem!important;line-height:1.55}
 @media(max-width:520px){.rv-hero{padding:16px}.rv-score{width:100%}}
+/* Mobile: all 3 review category tabs fit on one row (no sideways scrolling) */
+@media(max-width:640px){
+.rv-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible;padding:2px 0 10px}
+.rv-tab{flex:none;min-width:0;width:100%;flex-direction:column;justify-content:center;gap:3px;padding:8px 4px;border-radius:14px;font-size:.72rem;line-height:1.2;text-align:center;white-space:normal}
+.rv-tab b{min-width:18px;padding:0 6px;font-size:.7rem}
+}
