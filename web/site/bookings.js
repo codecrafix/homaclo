@@ -34,7 +34,8 @@ const sec=(t,l)=>l.length?`<h3 style="margin:18px 0 10px;font-size:1.05rem">${t}
 async function load(){
   if(!S.user||!$('#bl'))return;
   let data=null,err=null;
-  try{const r=await sb.from('bookings').select('*').eq('user_id',S.user.id).order('created_at',{ascending:false});data=r.data;err=r.error}catch(e){err=e}
+  /* hidden_by_user=false: removed bookings stay out of the list even for admin accounts (who can see every row) */
+  try{const r=await sb.from('bookings').select('*').eq('user_id',S.user.id).eq('hidden_by_user',false).order('created_at',{ascending:false});data=r.data;err=r.error}catch(e){err=e}
   const box=$('#bl');if(!box)return;
   if(err){box.innerHTML='<div class="card c"><p class="muted">Could not load your bookings.</p><button class="btn sm" style="margin-top:14px" data-bk="refresh">Try again</button></div>';return}
   if(!data||!data.length){box.innerHTML='<div class="card c"><p class="muted">No bookings yet.</p><a class="btn sm" style="margin-top:14px" href="#/book">Book your first cleaning</a></div>';return}
