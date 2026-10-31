@@ -102,6 +102,29 @@ document.addEventListener('click',async e=>{
   }catch(x){}
 });
 
+/* Clear all notifications (button appears above the list on the Notifications page) */
+function clr(){
+  const l=$('#nlist');
+  if(!l||!l.querySelector('.card')){const x=$('#nclr');if(x)x.remove();return}
+  if($('#nclr'))return;
+  const w=document.createElement('div');
+  w.id='nclr';w.className='row';w.style.cssText='justify-content:flex-end;margin:4px 0 8px';
+  w.innerHTML='<button class="btn ghost sm" data-nclr="1">🗑 Clear all</button>';
+  l.parentNode.insertBefore(w,l);
+}
+new MutationObserver(()=>requestAnimationFrame(clr)).observe($('#app'),{childList:true,subtree:true});
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-nclr]');if(!b||!S.user)return;
+  if(!confirm('Clear all notifications?'))return;
+  b.disabled=true;
+  const {error}=await sb.from('notifications').delete().eq('user_id',S.user.id);
+  if(error){b.disabled=false;toast('Could not clear. Try again.');return}
+  const l=$('#nlist');if(l)l.innerHTML='<p class="muted" style="margin:30px 0">No notifications yet.</p>';
+  const x=$('#nclr');if(x)x.remove();
+  if(window.mxUnread)window.mxUnread();
+  toast('All notifications cleared');
+});
+
 sb.auth.onAuthStateChange((ev,session)=>{
   const u=session&&session.user||null;
   setTimeout(()=>{
