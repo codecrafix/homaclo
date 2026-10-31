@@ -52,7 +52,8 @@ async function onLogin(u){
   }catch(e){done.delete(u.id)}
 }
 
-/* Booking confirmed + payment received + 3-tank offer (same as _handlePaymentSuccess) */
+/* 3-tank offer after a booking. "Booking Confirmed" and "Payment Received" notifications are created ONCE by the
+   database (server side) when the payment succeeds, so the website no longer adds them again (that caused duplicates). */
 async function threeTank(uid){
   try{
     const {data}=await sb.from('bookings').select('service_name,status').eq('user_id',uid);
@@ -69,7 +70,7 @@ const _sd=successDialog;
 successDialog=function(pid,oid){
   _sd(pid,oid);
   const u=S.user;if(!u)return;
-  push(u.id,[{title:'Booking Confirmed! 📅',body:'Your slot is successfully scheduled.',type:'booking'},{title:'Payment Received! 💳',body:'Service payment confirmed.',type:'payment'}]).then(()=>threeTank(u.id));
+  threeTank(u.id);
 };
 
 /* Monthly bonus notification (claim_monthly_bonus returns true only when coins were credited) */
