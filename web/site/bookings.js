@@ -28,7 +28,7 @@ function card(b){
   <div style="margin-top:10px">${row('📅','Service Date',sd)}${ts?row('🕒','Time Slot',ts):''}${bo?row('✅','Booked On',bo):''}${b.address?row('📍','Address',b.address):''}</div>
   <div class="line" style="margin-top:6px"><span class="muted">Total Paid</span><b class="price" style="font-size:1.3rem">${inr(b.price)}</b></div>
   <span class="pill g" style="margin-top:8px">${b.status==='CONFIRMED'?'💳 Paid via Razorpay':'💵 Cash on Service'}</span>
-  ${d?`<button class="btn ghost sm block" style="margin-top:12px" data-bk="del" data-id="${h(b.id)}">🗑 Remove from History</button>`:''}</div>`;
+  <button class="btn ghost sm block" style="margin-top:12px" data-bk="del" data-id="${h(b.id)}">🗑 Remove from History</button></div>`;
 }
 const sec=(t,l)=>l.length?`<h3 style="margin:18px 0 10px;font-size:1.05rem">${t} <span class="pill g">${l.length}</span></h3><div class="stack">${l.map(card).join('')}</div>`:'';
 async function load(){
@@ -42,18 +42,31 @@ async function load(){
 }
 bookingsAfter=load;
 
+/* WEL100 is for the first booking only: also count bookings the user removed from My Bookings (server-side check) */
+const _vc=validateCoupon;
+validateCoupon=async function(code){
+  const r=await _vc(code);
+  if(r&&r.valid&&r.code==='WEL100'&&S.user){
+    try{
+      const {data}=await sb.rpc('current_user_has_booking');
+      if(data===true)return {valid:false,message:'WEL100 is only valid on your first booking'};
+    }catch(e){}
+  }
+  return r;
+};
+
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-bk]');if(!el)return;
   const a=el.dataset.bk;
   if(a==='refresh'){const b=$('#bl');if(b)b.innerHTML='<div class="sk"></div><div class="sk"></div>';load()}
   else if(a==='del'){
     const d=$('#dlg');
-    d.innerHTML=`<h3>Remove Booking?</h3><p class="muted small" style="margin:8px 0 18px">This booking will be permanently removed from your history. This action cannot be undone.</p><div class="row"><button class="btn ghost grow" data-act="close">Cancel</button><button class="btn grow" style="background:var(--err);color:#fff;box-shadow:none" data-bk="del-ok" data-id="${h(el.dataset.id)}">Delete</button></div>`;
+    d.innerHTML=`<h3>Remove Booking?</h3><p class="muted small" style="margin:8px 0 18px">This booking will be removed from your My Bookings list. Old bookings are also removed automatically after 7 days.</p><div class="row"><button class="btn ghost grow" data-act="close">Cancel</button><button class="btn grow" style="background:var(--err);color:#fff;box-shadow:none" data-bk="del-ok" data-id="${h(el.dataset.id)}">Delete</button></div>`;
     if(!d.open)d.showModal();
   }else if(a==='del-ok'&&S.user){
     el.disabled=true;
     let good=false;
-    try{const r=await sb.from('bookings').delete().eq('id',el.dataset.id).eq('user_id',S.user.id).select('id');good=!r.error&&!!(r.data&&r.data.length)}catch(x){}
+    try{const r=await sb.rpc('hide_my_booking',{p_booking_id:el.dataset.id});good=!r.error&&r.data===true}catch(x){}
     const d=$('#dlg');if(d&&d.open)d.close();
     if(!good)toast('Failed to delete booking. Try again.');
     load();
