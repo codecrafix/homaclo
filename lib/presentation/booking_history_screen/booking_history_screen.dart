@@ -81,7 +81,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
           ),
         ),
         content: Text(
-          'This booking will be permanently removed from your history. This action cannot be undone.',
+          'This booking will be removed from your My Bookings list. Old bookings are also removed automatically after 7 days.',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             color: AppTheme.textSecondary,
@@ -501,8 +501,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
             ],
           ),
 
-          // Delete button for completed bookings
-          if (isCompleted) ...[
+          // Manual remove button (shown on every booking)
+          ...[
             const SizedBox(height: 12),
             Divider(height: 1, color: AppTheme.divider),
             const SizedBox(height: 10),
