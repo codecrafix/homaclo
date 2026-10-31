@@ -992,13 +992,22 @@ Future<void> sendOtp(String email) async {
         };
       }
 
-      // For WEL100 — only valid on first booking
+      // For WEL100 — only valid on first booking.
+      // Uses a server-side check that also counts bookings the user has
+      // removed from "My Bookings" (hidden bookings still count).
       if (upperCode == 'WEL100') {
-        final bookingCount = await client
-            .from('bookings')
-            .select('id')
-            .eq('user_id', userId);
-        if ((bookingCount as List).isNotEmpty) {
+        bool hasBooking;
+        try {
+          final res = await client.rpc('current_user_has_booking');
+          hasBooking = res == true;
+        } catch (_) {
+          final bookingCount = await client
+              .from('bookings')
+              .select('id')
+              .eq('user_id', userId);
+          hasBooking = (bookingCount as List).isNotEmpty;
+        }
+        if (hasBooking) {
           return {
             'valid': false,
             'discount': 0,
