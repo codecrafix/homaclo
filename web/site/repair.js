@@ -16,6 +16,15 @@ st.textContent=`
 `;
 document.head.appendChild(st);
 
+/* Update an element in place: only the parts whose content changed are touched (no re-created nodes => no blink while typing) */
+function sync(el,html){
+  const t=document.createElement('div');t.innerHTML=html;
+  const n=t.firstElementChild;if(!n){return}
+  const same=el.children.length===n.children.length&&[...el.children].every((c,i)=>c.tagName===n.children[i].tagName&&c.className===n.children[i].className);
+  if(!same){el.innerHTML=n.innerHTML;return}
+  [...el.children].forEach((c,i)=>{if(c.innerHTML!==n.children[i].innerHTML)c.innerHTML=n.children[i].innerHTML});
+}
+
 const ready=()=>!!REP.cat&&REP.note.trim().length>=5;
 const tabs=()=>`<div class="svt"><button type="button" data-act="smode" data-m="water">💧 Water Tank</button><button type="button" data-act="smode" data-m="solar">☀️ Solar Panel</button><button type="button" data-act="rmode" class="on">🔧 Solar Repair</button></div>`;
 function detailName(){
@@ -60,7 +69,7 @@ bookView=function(){
 /* update the step in place while typing (no re-render, so no blink and typing is never interrupted) */
 function rUpd(summary){
   const nb=document.querySelector('[data-act="rnext"]');if(nb)nb.disabled=!ready();
-  if(summary){const sm=document.querySelector('.bk .sum');if(sm)sm.outerHTML=summaryBox()}
+  if(summary){const sm=document.querySelector('.bk .sum');if(sm)sync(sm,summaryBox())}
 }
 const _ff=finishFlow;
 finishFlow=function(){_ff();REP.on=false;REP.cat='';REP.note=''};
@@ -156,10 +165,25 @@ document.addEventListener('change',e=>{
   if(e.target.id!=='rep-cat')return;
   REP.cat=e.target.value;rUpd(true);
 });
+/* typing the description only enables/disables the Next button; the summary does not depend on it, so it is left untouched (no blink) */
 document.addEventListener('input',e=>{
   if(e.target.id!=='rep-note')return;
-  REP.note=e.target.value;rUpd(true);
+  REP.note=e.target.value;rUpd(false);
 });
+
+/* Solar panel count typing: same in-place update (capture phase, replaces the older handler that re-created the summary on every key) */
+document.addEventListener('input',e=>{
+  if(e.target.id!=='sol-n'||!window.SOL)return;
+  e.stopPropagation();
+  const v=e.target.value.replace(/\D/g,'').slice(0,3);
+  const n=v?Math.min(500,Number(v)):0;
+  e.target.value=v?String(n):'';
+  SOL.panels=n;
+  const r=n>0;
+  const tk=document.querySelector('.card.tank');if(tk)tk.classList.toggle('on',r);
+  const nb=document.querySelector('[data-act="snext"]');if(nb)nb.disabled=!r;
+  const sm=document.querySelector('.bk .sum');if(sm)sync(sm,summaryBox());
+},true);
 
 /* ---- services page: Solar Maintenance & Repair card gets a Book now button (instead of Coming soon) and the Rs 1,000 price ---- */
 function fixRep(){
