@@ -5,3 +5,9 @@
 .foot .soc a.sb:hover,.foot .soc a.sb:focus-visible{transform:translateY(-2px);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(0,0,0,.22)}
 .foot .soc a.ig:hover,.foot .soc a.ig:focus-visible{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)}
 .foot .soc a.yt:hover,.foot .soc a.yt:focus-visible{background:#ff0000}
+
+/* Header side spacing in desktop-site mode on phones/tablets (600-1024px): a little margin on both sides,
+   same as the page content (22px). Mobile view (<600px) and large desktop (>1024px) are not touched. */
+@media (min-width:600px) and (max-width:1024px){
+  .nav{padding-left:22px;padding-right:22px}
+}
