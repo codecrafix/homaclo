@@ -11,8 +11,10 @@
    this site's /login page, where the sign-in is finished and the visitor is sent back to the page they came from.
    Auth events match the email login: a fresh Google sign-in emits SIGNED_IN (location + notification prompts, welcome
    messages), a restored session emits INITIAL_SESSION (no repeated prompts on every page load). */
-const PK='pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk';
-const FAPI='https://glad-gannet-8278.clerk.accounts.dev';
+/* Clerk PRODUCTION instance (clerk.homaclo.in). The old development keys were:
+   pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk / https://glad-gannet-8278.clerk.accounts.dev */
+const PK='pk_live_Y2xlcmsuaG9tYWNsby5pbiQ';
+const FAPI='https://clerk.homaclo.in';
 const FLAG='mx_clerk';
 const FRESH='mx_gsi';
 const PREV='mx_gprev';
@@ -49,11 +51,9 @@ async function finishRedirect(C){
         const up={};
         const mf=r.missingFields;
         if(mf.indexOf('legal_accepted')>-1)up.legalAccepted=true;
-        const ea=r.verifications&&r.verifications.externalAccount;
         if(mf.indexOf('first_name')>-1&&r.firstName)up.firstName=r.firstName;
         if(mf.indexOf('last_name')>-1&&r.lastName)up.lastName=r.lastName;
         if(Object.keys(up).length){try{r=await su.update(up)}catch(e){console.warn('Clerk signUp.update',e)}}
-        void ea;
       }
       if(r.status==='complete'&&r.createdSessionId)await C.setActive({session:r.createdSessionId});
       else{
