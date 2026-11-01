@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -334,6 +335,42 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     return null;
   }
 
+  /// Notifications are not needed to show the success screen, so they run in
+  /// the background (in parallel) after the user already sees "Payment
+  /// Successful".
+  Future<void> _sendPostPaymentNotifications({
+    required String userId,
+    required AppState appState,
+    required bool bookingAlreadyCreated,
+    required bool isSolar,
+  }) async {
+    try {
+      await Future.wait([
+        // The webhook already sends these when it creates the booking.
+        if (!bookingAlreadyCreated)
+          NotificationService.instance.triggerNotification(
+            userId: userId,
+            title: 'Booking Confirmed! 📅',
+            body: 'Your slot is successfully scheduled.',
+            type: 'booking',
+            localId: 1,
+          ),
+        if (!bookingAlreadyCreated)
+          NotificationService.instance.triggerNotification(
+            userId: userId,
+            title: 'Payment Received! 💳',
+            body: 'Service payment confirmed.',
+            type: 'payment',
+            localId: 2,
+          ),
+        // 3-tank offer only makes sense for water tank bookings
+        if (!isSolar) appState.scheduleThreeTankOfferIfNeeded(userId),
+      ]);
+    } catch (e) {
+      debugPrint('_sendPostPaymentNotifications error: $e');
+    }
+  }
+
   Future<void> _handlePaymentSuccess(
     BuildContext context,
     AppState appState,
@@ -343,21 +380,25 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
   ) async {
     final cart = appState.cartState;
     final serviceName = _serviceName(cart);
+    final userId = appState.currentUserId;
+    final bool isSolar = SolarCart.instance.isSolar;
+    final String? usedCouponId = (_couponValid && _couponId != null)
+        ? _couponId
+        : null;
 
-    // Deduct coins from Supabase immediately if coins were used
-    if (_useCoins && _coinsUsed > 0) {
-      await appState.deductCoinsFromSupabase(
-        amount: _coinsUsed,
-        description: 'Coins redeemed for booking',
-      );
-    }
+    // Coins are deducted in parallel with the booking lookup/creation below
+    // (previously these ran one after the other).
+    final Future<bool> coinsFuture = (_useCoins && _coinsUsed > 0)
+        ? appState.deductCoinsFromSupabase(
+            amount: _coinsUsed,
+            description: 'Coins redeemed for booking',
+          )
+        : Future<bool>.value(true);
 
     // Create the booking only once: reuse the one the webhook may have created.
     String? bookingId = await _findWebhookBooking(orderId);
     final bool bookingAlreadyCreated = bookingId != null;
-    if (bookingAlreadyCreated) {
-      await appState.loadDbBookings();
-    } else {
+    if (!bookingAlreadyCreated) {
       bookingId = await appState.createConfirmedBooking(
         serviceName: serviceName,
         cart: cart,
@@ -365,48 +406,22 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
       );
     }
 
-    // Solar: store service_category, solar_kw, solar_panel_count
-    await _saveSolarMeta(bookingId);
-
-    await RazorpayService.instance.recordPaymentSuccess(
-      razorpayOrderId: orderId,
-      razorpayPaymentId: paymentId,
-      amountInPaise: amountInPaise,
-      bookingId: bookingId,
-    );
-
-    // Mark coupon as used if applied
-    if (_couponValid && _couponId != null) {
-      try {
-        await SupabaseService.instance.markCouponUsed(_couponId!);
-      } catch (_) {}
-    }
-
-    final userId = appState.currentUserId;
-    if (userId != null) {
-      // The webhook already sends these notifications when it creates the booking.
-      if (!bookingAlreadyCreated) {
-        await NotificationService.instance.triggerNotification(
-          userId: userId,
-          title: 'Booking Confirmed! 📅',
-          body: 'Your slot is successfully scheduled.',
-          type: 'booking',
-          localId: 1,
-        );
-        await NotificationService.instance.triggerNotification(
-          userId: userId,
-          title: 'Payment Received! 💳',
-          body: 'Service payment confirmed.',
-          type: 'payment',
-          localId: 2,
-        );
-      }
-
-      // 3-tank offer only makes sense for water tank bookings
-      if (!SolarCart.instance.isSolar) {
-        await appState.scheduleThreeTankOfferIfNeeded(userId);
-      }
-    }
+    // Everything below is independent of each other -> run together.
+    await Future.wait([
+      coinsFuture,
+      if (bookingAlreadyCreated) appState.loadDbBookings(),
+      // Solar: store service_category, solar_kw, solar_panel_count
+      _saveSolarMeta(bookingId),
+      RazorpayService.instance.recordPaymentSuccess(
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        amountInPaise: amountInPaise,
+        bookingId: bookingId,
+      ),
+      // Mark coupon as used if applied (markCouponUsed handles its own errors)
+      if (usedCouponId != null)
+        SupabaseService.instance.markCouponUsed(usedCouponId).catchError((_) {}),
+    ]);
 
     // Show the success screen BEFORE resetting the cart (see note above).
     if (mounted) {
@@ -414,6 +429,18 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     }
     SolarCart.instance.reset();
     appState.resetCart();
+
+    // Notifications no longer block the success screen.
+    if (userId != null) {
+      unawaited(
+        _sendPostPaymentNotifications(
+          userId: userId,
+          appState: appState,
+          bookingAlreadyCreated: bookingAlreadyCreated,
+          isSolar: isSolar,
+        ),
+      );
+    }
   }
 
   void _showPaymentSuccessModal(
