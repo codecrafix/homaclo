@@ -2,17 +2,20 @@
 'use strict';
 /* Google sign-in through Clerk, side by side with the existing email-code login.
    - Old users and old app builds keep working (Supabase Auth is untouched).
-   - A Clerk user is mapped to the same app user id that bookings/wallet use (public.ensure_clerk_profile in Supabase,
-     which links an existing profile by the Clerk-verified e-mail or creates a new one).
+   - A Clerk user is mapped to the same app user id that bookings/wallet use (public.ensure_clerk_profile in Supabase).
+     One account per e-mail, in every order: e-mail code first then Google, Google first then e-mail code (the e-mail-code
+     sign-up adopts the Google account in the database), or Google again from another device / a new Clerk identity.
    - The site code still talks to "sb" exactly as before; this file lends it the Clerk session.
    Clerk itself is only downloaded for people who use Google sign-in (keeps the site fast for everyone else).
    It is warmed up as soon as the sign-in screen opens, so the Google button reacts instantly.
    "Continue with Google" goes straight to Google's account chooser (no Clerk pop-up in between). Google then returns to
    this site's /login page, where the sign-in is finished and the visitor is sent back to the page they came from.
+   No sign-in screen flash: while a Clerk session may still be restored (returning Google user, or just back from Google),
+   the "signed out" event of the base client is held back until Clerk has answered, so the page shows its loader and then
+   goes straight to the signed-in page.
    Auth events match the email login: a fresh Google sign-in emits SIGNED_IN (location + notification prompts, welcome
    messages), a restored session emits INITIAL_SESSION (no repeated prompts on every page load). */
-/* Clerk PRODUCTION instance (clerk.homaclo.in). The old development keys were:
-   pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk / https://glad-gannet-8278.clerk.accounts.dev */
+/* Clerk PRODUCTION instance (clerk.homaclo.in). */
 const PK='pk_live_Y2xlcmsuaG9tYWNsby5pbiQ';
 const FAPI='https://clerk.homaclo.in';
 const FLAG='mx_clerk';
@@ -24,6 +27,8 @@ const HOME=()=>location.origin+(window.__BASE||'/');
 const prevLoad=()=>{try{const v=sessionStorage.getItem(PREV)||'';sessionStorage.removeItem(PREV);return v}catch(e){return ''}};
 let CU=null,real=null,started=false,busy=false,again=false,rt=0,prev=prevLoad();
 const subs=[];
+const held=[];
+let cpend=false;
 let resolveReady;const ready=new Promise(r=>resolveReady=r);
 
 const flagGet=()=>{try{return Number(localStorage.getItem(FLAG))||0}catch(e){return 0}};
@@ -33,6 +38,25 @@ const say=m=>{try{if(typeof toast==='function')toast(m)}catch(e){}};
 /* true only right after the visitor pressed "Continue with Google" (also survives the redirect back to the site) */
 const freshPeek=()=>{try{const t=Number(sessionStorage.getItem(FRESH))||0;return t>0&&Date.now()-t<10*60*1000}catch(e){return false}};
 const freshTake=()=>{const f=freshPeek();try{sessionStorage.removeItem(FRESH)}catch(e){}return f};
+/* the visitor may still have (or be finishing) a Clerk session: do not show the signed-out screens yet */
+cpend=flagGet()>0||freshPeek();
+window.__clerkPending=()=>cpend;
+/* Clerk has answered (or failed / timed out): tell the site, once, if nobody is signed in */
+function release(){
+  if(!cpend)return;
+  cpend=false;
+  const w=held.splice(0);
+  if(!CU)w.forEach(cb=>{try{cb('INITIAL_SESSION',null)}catch(e){console.error(e)}});
+}
+
+/* the connection to Clerk and Google is opened early, so the first tap on "Continue with Google" has less to wait for */
+(function(){
+  try{
+    ['https://clerk.homaclo.in','https://accounts.google.com'].forEach(u=>{
+      const l=document.createElement('link');l.rel='preconnect';l.href=u;l.crossOrigin='anonymous';document.head.appendChild(l);
+    });
+  }catch(e){}
+})();
 
 /* remember the page the visitor was on before the login screen (to return there after Google sign-in) */
 const track=()=>{const h=window.__lh||'';if(h&&!/^#\/login/.test(h))prev=h};
@@ -43,7 +67,9 @@ addEventListener('hashchange',track);setTimeout(track,0);
    the ones we can answer ourselves (terms accepted, name from Google) are filled in; the sign-up pop-up never opens. */
 async function finishRedirect(C){
   try{
-    if(C.user||C.session||!freshPeek())return;
+    /* normally the "just pressed Google" marker is there; /login with an unfinished Clerk sign-in counts too
+       (marker lost, e.g. Google opened in another tab or an in-app browser) */
+    if(C.user||C.session||!(freshPeek()||/\/login\/?$/.test(location.pathname)))return;
     const si=C.client&&C.client.signIn,su=C.client&&C.client.signUp;
     if(si&&si.firstFactorVerification&&si.firstFactorVerification.status==='transferable'){
       let r=await su.create({transfer:true});
@@ -83,9 +109,10 @@ function loadClerk(){
       /* stale marker from an abandoned sign-in: stop loading Clerk on every visit */
       if(!CU&&!window.Clerk.session&&Date.now()-flagGet()>10*60*1000)flagOff();
     }catch(e){console.warn('Clerk',e)}
+    release();
     resolveReady();
   };
-  s.onerror=()=>{started=false;resolveReady()};
+  s.onerror=()=>{started=false;release();resolveReady()};
   document.head.appendChild(s);
 }
 
@@ -102,7 +129,7 @@ async function setCU(u){
   if(u){
     flagOn();
     /* the realtime token is ready before listeners start (notification channel needs it), but never waits long */
-    await Promise.race([setAuthRealtime(),sleep(1500)]);
+    await Promise.race([setAuthRealtime(),sleep(900)]);
     /* signed in from the login screen: go back to where the visitor came from */
     if(window.__lh&&/^#\/login/.test(window.__lh))window.__lh=prev||'#/profile';
     emit(freshTake()?'SIGNED_IN':'INITIAL_SESSION',{user:u,access_token:'clerk',token_type:'bearer'});
@@ -170,8 +197,13 @@ window.__mkSb=function(url,key,opts){
     };
     if(p==='onAuthStateChange')return cb=>{
       subs.push(cb);
-      const r=A.onAuthStateChange((ev,s)=>{if(CU&&ev!=='SIGNED_OUT')return;cb(ev,s)});
-      return {data:{subscription:{unsubscribe(){const i=subs.indexOf(cb);if(i>-1)subs.splice(i,1);try{r.data.subscription.unsubscribe()}catch(e){}}}}};
+      const r=A.onAuthStateChange((ev,s)=>{
+        if(CU&&ev!=='SIGNED_OUT')return;
+        /* "nobody is signed in" from the base client is not final while Clerk may still restore the session */
+        if(cpend&&!s&&ev==='INITIAL_SESSION'){if(held.indexOf(cb)<0)held.push(cb);return}
+        cb(ev,s);
+      });
+      return {data:{subscription:{unsubscribe(){const i=subs.indexOf(cb);if(i>-1)subs.splice(i,1);const j=held.indexOf(cb);if(j>-1)held.splice(j,1);try{r.data.subscription.unsubscribe()}catch(e){}}}}};
     };
     if(p==='getUser')return async jwt=>CU?{data:{user:CU},error:null}:A.getUser(jwt);
     if(p==='signOut')return async o=>{
@@ -185,6 +217,8 @@ window.__mkSb=function(url,key,opts){
 
 /* Returning Clerk user: start Clerk early so the session is restored */
 if(flagGet())loadClerk();
+/* never keep the signed-out screens back for more than a few seconds, whatever happens to Clerk */
+if(cpend)setTimeout(release,7000);
 
 /* Called when the sign-in screen opens (or the Google button is touched): download Clerk ahead of the click */
 window.__clerkWarm=function(){loadClerk()};
