@@ -6,15 +6,16 @@ class RazorpayService {
   static RazorpayService get instance => _instance ??= RazorpayService._();
   RazorpayService._();
 
-  /// Fallback public Razorpay key, used only if the server does not return
-  /// one. Prefer the `key` returned by [createOrder] — it is guaranteed to
-  /// match the account/mode that actually created the order, which avoids
-  /// "Payment could not be completed" errors caused by a key mismatch
-  /// between order creation (server) and checkout (client).
-  static const String keyId = String.fromEnvironment(
-    'RAZORPAY_KEY_ID',
-    defaultValue: 'rzp_test_TVv2X2c32eqwCg',
-  );
+  /// Optional fallback public Razorpay key (build-time `RAZORPAY_KEY_ID`),
+  /// used only if the server does not return one. Prefer the `key` returned
+  /// by [createOrder] — it is guaranteed to match the account/mode that
+  /// actually created the order, which avoids "Payment could not be
+  /// completed" errors caused by a key mismatch between order creation
+  /// (server) and checkout (client).
+  ///
+  /// There is intentionally no hardcoded default: a live build must never
+  /// silently fall back to a test key.
+  static const String keyId = String.fromEnvironment('RAZORPAY_KEY_ID');
 
   /// Step 1: Create a Razorpay order through the Supabase Edge Function.
   ///
@@ -58,14 +59,18 @@ class RazorpayService {
           : <String, dynamic>{};
       final orderId = body['id'] as String?;
       final serverKey = body['key'] as String?;
+      final checkoutKey = (serverKey != null && serverKey.isNotEmpty)
+          ? serverKey
+          : keyId;
       if (orderId != null && orderId.isNotEmpty) {
+        if (checkoutKey.isEmpty) {
+          debugPrint(
+            '[Razorpay] Order $orderId created but no Razorpay key is available for checkout',
+          );
+          return null;
+        }
         debugPrint('[Razorpay] Order created: $orderId');
-        return {
-          'id': orderId,
-          'key': (serverKey != null && serverKey.isNotEmpty)
-              ? serverKey
-              : keyId,
-        };
+        return {'id': orderId, 'key': checkoutKey};
       }
       debugPrint('[Razorpay] Edge Function returned no order id: $data');
     } catch (e) {
