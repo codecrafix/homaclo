@@ -26,7 +26,10 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-gs]');if(!b)return;
   e.preventDefault();
   if(b.dataset.busy||!window.__clerkGoogle)return;
+  /* instant feedback: the page leaves for Google's account chooser a moment later */
+  const t=b.lastChild,old=t&&t.nodeType===3?t.textContent:null;
   b.dataset.busy='1';b.style.opacity='.7';
-  try{await window.__clerkGoogle()}finally{delete b.dataset.busy;b.style.opacity=''}
+  if(old!==null)t.textContent=' Opening Google…';
+  try{await window.__clerkGoogle()}finally{delete b.dataset.busy;b.style.opacity='';if(old!==null&&t.parentNode)t.textContent=old}
 });
 })();
