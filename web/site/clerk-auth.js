@@ -36,15 +36,30 @@ const freshTake=()=>{const f=freshPeek();try{sessionStorage.removeItem(FRESH)}ca
 const track=()=>{const h=window.__lh||'';if(h&&!/^#\/login/.test(h))prev=h};
 addEventListener('hashchange',track);setTimeout(track,0);
 
-/* Back from Google: finish the sign-in that Google/Clerk started (existing account, or a brand-new one) */
+/* Back from Google: finish the sign-in that Google/Clerk started (existing account, or a brand-new one).
+   A brand-new Google account is turned into a Clerk sign-up silently (transfer). If Clerk still asks for extra fields,
+   the ones we can answer ourselves (terms accepted, name from Google) are filled in; the sign-up pop-up never opens. */
 async function finishRedirect(C){
   try{
     if(C.user||C.session||!freshPeek())return;
     const si=C.client&&C.client.signIn,su=C.client&&C.client.signUp;
     if(si&&si.firstFactorVerification&&si.firstFactorVerification.status==='transferable'){
-      const r=await su.create({transfer:true});
+      let r=await su.create({transfer:true});
+      if(r.status!=='complete'&&r.missingFields&&r.missingFields.length){
+        const up={};
+        const mf=r.missingFields;
+        if(mf.indexOf('legal_accepted')>-1)up.legalAccepted=true;
+        const ea=r.verifications&&r.verifications.externalAccount;
+        if(mf.indexOf('first_name')>-1&&r.firstName)up.firstName=r.firstName;
+        if(mf.indexOf('last_name')>-1&&r.lastName)up.lastName=r.lastName;
+        if(Object.keys(up).length){try{r=await su.update(up)}catch(e){console.warn('Clerk signUp.update',e)}}
+        void ea;
+      }
       if(r.status==='complete'&&r.createdSessionId)await C.setActive({session:r.createdSessionId});
-      else C.openSignUp({forceRedirectUrl:HOME(),fallbackRedirectUrl:HOME()});
+      else{
+        console.warn('Clerk sign-up incomplete, missing fields:',r.missingFields);
+        say('Google sign-in setup incomplete. Please use the email code for now.');
+      }
     }else if(si&&si.status==='complete'&&si.createdSessionId){
       await C.setActive({session:si.createdSessionId});
     }else if(su&&su.status==='complete'&&su.createdSessionId){
