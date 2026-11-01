@@ -1,9 +1,12 @@
 'use strict';
 /* Reviews system — mirrors app: reviews_screen.dart, reviews_card_widget.dart, profile_menu_widget.dart (My Reviews), AppState review logic.
    - Public feed = approved reviews only (newest first) + Satna sample reviews (water tank, solar cleaning, solar repair); header avg = DB avg or 5.0
-   - Write a Review always visible: signed out -> sign-in prompt; no booking -> locked; latest review newer than latest booking -> locked
-   - Submit: insert (is_approved=false) + 10 coins, then locked until next booking. The review is saved for the service of the
-     user's latest booking (water tank / solar panel cleaning / solar maintenance & repair), with the matching service_category.
+   - Write a Review always visible: signed out -> sign-in prompt; no booking -> locked; latest booking already reviewed -> locked
+   - ONE review and ONE +10 coin reward per booking, enforced by the database (public.review_locks + triggers): deleting a review
+     never frees the slot again, a double tap can never write two reviews, and the coins are credited by the server (not by this page).
+     The next booking unlocks the next review.
+   - The review is saved for the service of the user's latest booking (water tank / solar panel cleaning / solar maintenance & repair),
+     with the matching service_category.
    - Card tag icon follows the service: 💧 water tank, ☀️ solar panel cleaning, 🔧 solar maintenance & repair
    - Profile -> My Reviews: all of the user's reviews, ✅ Live / ⏳ Approval pending */
 (function(){
@@ -68,13 +71,18 @@
     loading=false;renderFeed();
   }
 
-  /* ---- eligibility (same logic as AppState.checkReviewEligibility) ---- */
+  /* ---- eligibility: one review per booking; a deleted review keeps the booking locked (public.review_locks) ---- */
   async function eligibility(){
     if(!S.user)return {s:'anon'};
-    const {data:b}=await sb.from('bookings').select('created_at,service_name,service_category').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
+    const {data:b}=await sb.from('bookings').select('id,created_at,service_name,service_category').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
     if(!b||!b.length)return {s:'nobooking'};
     const service=cleanSvc(b[0].service_name)||'Water Tank Cleaning';
     const cat=b[0].service_category==='solar'?'solar':'water_tank';
+    /* locked for good once this booking has been reviewed (even if the review was deleted afterwards) */
+    try{
+      const {data:lk}=await sb.from('review_locks').select('booking_id').eq('booking_id',b[0].id).limit(1);
+      if(lk&&lk.length)return {s:'done'};
+    }catch(e){}
     const {data:r}=await sb.from('reviews').select('created_at').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(1);
     if(!r||!r.length)return {s:'ok',service,cat};
     return new Date(r[0].created_at)>new Date(b[0].created_at)?{s:'done'}:{s:'ok',service,cat};
@@ -86,6 +94,7 @@
       ${primary?`<button class="btn block" data-rv="${primary[1]}">${primary[0]}</button><button class="btn ghost block" style="margin-top:10px" data-act="close">Cancel</button>`:'<button class="btn navy block" data-act="close">Got it</button>'}`;
     if(!d.open)d.showModal();
   }
+  const doneInfo=()=>info('🔒','Review Already Submitted','You have already reviewed your last booking (one review and one reward per booking). Complete another booking to write a new review!');
   function form(service){
     const d=dlg();
     d.innerHTML=`<h3>Write a Review</h3><p class="muted small" style="margin:4px 0 6px">Share your experience to earn +10 coins</p>
@@ -102,7 +111,7 @@
     let e;try{e=await eligibility()}catch(x){e={s:'err'}}
     btn.disabled=false;btn.innerHTML=o;
     if(e.s==='nobooking')return info('🔒','Booking Required','Please complete a service booking first to unlock verified customer reviews!');
-    if(e.s==='done')return info('🔒','Review Already Submitted','You have already submitted a review for your last booking. Complete another booking to write a new review!');
+    if(e.s==='done')return doneInfo();
     if(e.s!=='ok')return say('Could not check review eligibility. Try again.');
     rate=5;form(e.service);
   }
@@ -114,18 +123,22 @@
     const service=document.getElementById('rv-svc').value.trim()||'Water Tank Cleaning';
     try{
       const e=await eligibility();
-      if(e.s!=='ok'){dlg().close();busy=false;return info('🔒','Review Already Submitted','You have already submitted a review for your last booking. Complete another booking to write a new review!')}
+      if(e.s!=='ok'){dlg().close();busy=false;return doneInfo()}
       const {error}=await sb.from('reviews').insert({user_id:S.user.id,user_name:(S.profile&&S.profile.full_name)||'',service_name:service,service_category:e.cat||'water_tank',rating:rate,review_text:txt,is_approved:false});
       if(error)throw error;
-      const ok=await addCoins(10,'reward','Review submitted for '+service);
-      dlg().close();say(ok?'🪙 Review submitted! +10 coins added.':'Review submitted!');
+      /* the +10 coins are credited by the server, exactly once per booking */
+      try{if(typeof refreshCoins==='function')await refreshCoins()}catch(x){}
+      dlg().close();say('🪙 Review submitted! +10 coins added.');
       await loadFeed();
-    }catch(x){btn.disabled=false;btn.textContent='Submit Review (+10 🪙)';say('Could not submit review. Please try again.')}
+    }catch(x){
+      if(/review_already_submitted|review_requires_booking/.test((x&&x.message)||'')){dlg().close();busy=false;return doneInfo()}
+      btn.disabled=false;btn.textContent='Submit Review (+10 🪙)';say('Could not submit review. Please try again.');
+    }
     busy=false;
   }
   function confirmDel(id){
     const d=dlg();
-    d.innerHTML=`<h3>Delete Review?</h3><p class="muted small" style="margin:8px 0 18px">This review will be permanently deleted.</p>
+    d.innerHTML=`<h3>Delete Review?</h3><p class="muted small" style="margin:8px 0 18px">This review will be permanently deleted. You will not be able to write another review for the same booking.</p>
       <div class="row"><button class="btn ghost grow" data-act="close">Cancel</button><button class="btn grow" style="background:var(--err);color:#fff;box-shadow:none" data-rv="del-ok" data-id="${h(id)}">Delete</button></div>`;
     if(!d.open)d.showModal();
   }
