@@ -30,6 +30,9 @@ const subs=[];
 const held=[];
 let cpend=false;
 let resolveReady;const ready=new Promise(r=>resolveReady=r);
+/* the Supabase client of the site exists (set in __mkSb) / the sync that is running right now */
+let realOk;const realReady=new Promise(r=>realOk=r);
+let syncP=Promise.resolve();
 
 const flagGet=()=>{try{return Number(localStorage.getItem(FLAG))||0}catch(e){return 0}};
 const flagOn=()=>{try{localStorage.setItem(FLAG,String(Date.now()))}catch(e){}};
@@ -105,6 +108,7 @@ function loadClerk(){
       await window.Clerk.load({signInFallbackRedirectUrl:HOME(),signUpFallbackRedirectUrl:HOME(),afterSignOutUrl:HOME()});
       await finishRedirect(window.Clerk);
       window.Clerk.addListener(()=>sync());
+      /* waits until the Clerk session is really mapped to the app user (see sync), so the sign-in screen never flashes */
       await sync();
       /* stale marker from an abandoned sign-in: stop loading Clerk on every visit */
       if(!CU&&!window.Clerk.session&&Date.now()-flagGet()>10*60*1000)flagOff();
@@ -131,19 +135,32 @@ async function setCU(u){
     /* the realtime token is ready before listeners start (notification channel needs it), but never waits long */
     await Promise.race([setAuthRealtime(),sleep(900)]);
     /* signed in from the login screen: go back to where the visitor came from */
-    if(window.__lh&&/^#\/login/.test(window.__lh))window.__lh=prev||'#/profile';
+    const fromLogin=!!(window.__lh&&/^#\/login/.test(window.__lh));
+    /* the site is told first (it starts loading the account), THEN the page changes: the profile page then shows its
+       loader while the account loads, instead of an empty profile that fills in a moment later */
     emit(freshTake()?'SIGNED_IN':'INITIAL_SESSION',{user:u,access_token:'clerk',token_type:'bearer'});
+    if(fromLogin)window.__lh=prev||'#/profile';
   }else{
     clearInterval(rt);flagOff();emit('SIGNED_OUT',null);
   }
 }
 
-async function sync(){
-  const C=window.Clerk;
-  if(!C||!C.loaded||!real)return;
-  if(busy){again=true;return}
+/* One sync at a time. A caller that arrives while a sync is running gets that same promise back, so "await sync()"
+   really means "the Clerk session has been mapped to the app user". (Before, it returned at once while the first sync
+   was still running: the sign-in form was shown for a moment, and only then the signed-in page.) */
+function sync(){
+  if(busy){again=true;return syncP}
   busy=true;
+  syncP=runSync();
+  return syncP;
+}
+async function runSync(){
   try{
+    const C=window.Clerk;
+    if(!C||!C.loaded)return;
+    /* Clerk can be ready before the site's own scripts have created the Supabase client: wait for it, never skip */
+    if(!real)await Promise.race([realReady,sleep(6000)]);
+    if(!real)return;
     do{
       again=false;
       if(C.user&&C.session){
@@ -163,7 +180,8 @@ async function sync(){
         await setCU(null);
       }
     }while(again);
-  }finally{busy=false}
+  }catch(e){console.warn('Clerk sync',e)}
+  finally{busy=false}
 }
 
 /* Supabase requests carry the Clerk session token while a Clerk session is active */
@@ -186,6 +204,7 @@ async function wrapFetch(input,init){
 window.__mkSb=function(url,key,opts){
   opts=opts||{};
   real=supabase.createClient(url,key,Object.assign({},opts,{global:Object.assign({},opts.global,{fetch:wrapFetch})}));
+  realOk();
   const A=real.auth;
   const auth=new Proxy(A,{get(t,p){
     if(p==='getSession')return async()=>{
@@ -217,8 +236,9 @@ window.__mkSb=function(url,key,opts){
 
 /* Returning Clerk user: start Clerk early so the session is restored */
 if(flagGet())loadClerk();
-/* never keep the signed-out screens back for more than a few seconds, whatever happens to Clerk */
-if(cpend)setTimeout(release,7000);
+/* never keep the signed-out screens back for more than a few seconds, whatever happens to Clerk
+   (a little longer right after "Continue with Google", because Clerk has more to finish on a slow connection) */
+if(cpend)setTimeout(release,freshPeek()?15000:7000);
 
 /* Called when the sign-in screen opens (or the Google button is touched): download Clerk ahead of the click */
 window.__clerkWarm=function(){loadClerk()};

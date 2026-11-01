@@ -89,7 +89,12 @@ document.addEventListener('input',e=>{if(e.target.id==='au-cd'){e.target.value=e
 
 /* route hooks */
 const _pv=profileView,_bv=bookingsView,_lv=legalView;
-profileView=function(){return S.user?_pv():authScreen('profile')};
+/* signed in but the account (profile, coins) is still loading: show the loader, not an empty profile that fills in later */
+profileView=function(){
+  if(!S.user)return authScreen('profile');
+  if(!S.profile&&S.busy)return LOADER;
+  return _pv();
+};
 bookingsView=function(){return S.user?_bv():authScreen('bookings')};
 legalView=function(k){
   if(k==='login'){
