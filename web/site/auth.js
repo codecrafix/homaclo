@@ -14,6 +14,10 @@ const BEN=[
   ['🏷️','₹100 off your first booking','Apply code WEL100 at checkout'],
   ['🔒','No password, fully secure','Just a one-time code sent to your email']
 ];
+/* shown instead of the sign-in screen while a sign-in is being finished (no flash of the form) */
+const LOADER='<div class="boot" style="flex-direction:column;gap:14px;text-align:center"><span></span><p class="muted small" style="margin:0">Signing you in…</p></div>';
+/* a Google / Clerk session may still be restored: do not show the sign-in form yet */
+const pend=()=>{try{return !!(window.__clerkPending&&window.__clerkPending())}catch(e){return false}};
 const stepHtml=()=>step==='email'?`
   <h2>Continue with email</h2>
   <p class="au-s">We’ll email you a one-time code. New here? Your account is created automatically.</p>
@@ -38,6 +42,7 @@ function rs(){return left>0?`Resend code in <b>${left}</b>s`:`Didn’t get it? <
 function paint(focus){const c=$('#au-card');if(!c)return;c.innerHTML=stepHtml();if(focus)setTimeout(()=>{const f=$('#au-em')||$('#au-cd');f&&f.focus()},60)}
 function timer(n){clearInterval(tm);left=n;tm=setInterval(()=>{left--;const el=$('#au-rs');if(el)el.innerHTML=rs();if(left<=0)clearInterval(tm)},1000)}
 function authScreen(ctx){
+  if(pend())return LOADER;
   const c=COPY[ctx]||COPY.login;
   return `<div class="au"><i class="au-o a"></i><i class="au-o b"></i><div class="au-in fade">
   <div class="au-l">
@@ -67,6 +72,8 @@ async function verify(){
   busy=false;
   if(error){msg='That code is invalid or has expired. Please try again.';paint(1);return}
   clearInterval(tm);step='email';msg='';toast('Signed in successfully ✅');
+  /* no sign-in form flash while the account loads: show a loader until the page changes */
+  const card=$('#au-card');if(card)card.innerHTML=LOADER;
   if(/^#\/login/.test(location.hash)){const r=ret||'#/profile';ret='';location.hash=r}
 }
 document.addEventListener('submit',e=>{
