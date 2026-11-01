@@ -177,10 +177,11 @@ document.addEventListener('change',async e=>{
 });
 })();
 
-/* ===== Solar Panel Cleaning booking (3-30kW dropdown, panels x ₹100) + services button alignment ===== */
+/* ===== Solar Panel Cleaning booking (3-30kW dropdown, panels x ₹100, minimum 5 panels) + services button alignment ===== */
 (function(){
-const SOL={on:false,kw:3,panels:0},PP=100,MAXP=500;
+const MINP=5,SOL={on:false,kw:3,panels:0},PP=100,MAXP=500;
 window.SOL=SOL;
+window.SOL_MIN=MINP;
 const KWS=Array.from({length:28},(_,i)=>i+3);
 const st=document.createElement('style');
 st.textContent=`
@@ -197,6 +198,15 @@ st.textContent=`
 `;
 document.head.appendChild(st);
 const tgl=()=>`<div class="svt"><button type="button" data-act="smode" data-m="water" class="${SOL.on?'':'on'}">💧 Water Tank</button><button type="button" data-act="smode" data-m="solar" class="${SOL.on?'on':''}">☀️ Solar Panel</button></div>`;
+
+/* Update an element in place: only the parts whose content changed are touched (no re-created nodes => no blink while typing) */
+function sync(el,html){
+  const t=document.createElement('div');t.innerHTML=html;
+  const n=t.firstElementChild;if(!n)return;
+  const same=el.children.length===n.children.length&&[...el.children].every((c,i)=>c.tagName===n.children[i].tagName&&c.className===n.children[i].className);
+  if(!same){el.innerHTML=n.innerHTML;return}
+  [...el.children].forEach((c,i)=>{if(c.innerHTML!==n.children[i].innerHTML)c.innerHTML=n.children[i].innerHTML});
+}
 
 const _calc=calc;
 calc=function(){
@@ -217,20 +227,24 @@ bookView=function(){
     return S.step===1?html.replace('<h3>Select tank size &amp; quantity</h3>',tgl()+'<h3>Select tank size &amp; quantity</h3>'):html;
   }
   if(S.step!==1)return _bv().replace('1. Tanks','1. Service');
-  const ready=SOL.panels>0;
-  const body=`${tgl()}<h3>Solar panel cleaning</h3><p class="muted small" style="margin-bottom:14px">Choose your system size, then add the number of panels (${inr(PP)} per panel). You can also type the number.</p>
+  if(SOL.panels<MINP&&SOL.panels===0)SOL.panels=MINP;
+  const ready=SOL.panels>=MINP;
+  const body=`${tgl()}<h3>Solar panel cleaning</h3><p class="muted small" style="margin-bottom:14px">Choose your system size, then add the number of panels (${inr(PP)} per panel, minimum ${MINP} panels). You can also type the number.</p>
   <label>Solar system size</label><select id="sol-kw" class="sel">${KWS.map(k=>`<option value="${k}" ${k===SOL.kw?'selected':''}>${k} kW</option>`).join('')}</select>
-  <div class="stack" style="margin-top:16px"><div class="card tank row ${ready?'on':''}"><div class="tk">☀️<br><b>Panels</b></div><div class="grow"><h4>Number of panels</h4><span class="price" style="font-size:1.1rem">${inr(PP)} / panel</span></div><div class="qty"><button data-act="sp" data-d="-1" aria-label="Less">−</button><input id="sol-n" class="qin" type="text" inputmode="numeric" maxlength="3" placeholder="0" value="${SOL.panels||''}" aria-label="Number of panels"><button data-act="sp" data-d="1" aria-label="More">+</button></div></div></div>
-  <button class="btn block" style="margin-top:20px" data-act="snext" ${ready?'':'disabled'}>Next — choose date &amp; time →</button>`;
+  <div class="stack" style="margin-top:16px"><div class="card tank row ${ready?'on':''}"><div class="tk">☀️<br><b>Panels</b></div><div class="grow"><h4>Number of panels</h4><span class="price" style="font-size:1.1rem">${inr(PP)} / panel</span></div><div class="qty"><button data-act="sp" data-d="-1" aria-label="Less">−</button><input id="sol-n" class="qin" type="text" inputmode="numeric" maxlength="3" placeholder="${MINP}" value="${SOL.panels||''}" aria-label="Number of panels"><button data-act="sp" data-d="1" aria-label="More">+</button></div></div></div>
+  <p id="sol-min" class="muted small" style="margin-top:10px;${ready?'':'color:#e5484d'}">Minimum ${MINP} panels per booking.</p>
+  <button class="btn block" style="margin-top:14px" data-act="snext" ${ready?'':'disabled'}>Next — choose date &amp; time →</button>`;
   return `<div class="page"><div class="wrap fade"><h1>Book a cleaning</h1><div class="steps"><span class="on">1. Service</span><span>2. Schedule</span><span>3. Address</span><span>4. Pay</span></div><div class="bk"><div class="card">${body}</div>${summaryBox()}</div></div></div>`;
 };
 /* Update the solar step in place (no full re-render => no blink) */
 function solUpd(){
-  const r=SOL.panels>0;
+  const r=SOL.panels>=MINP;
   const tk=document.querySelector('.card.tank');if(tk)tk.classList.toggle('on',r);
   const nb=document.querySelector('[data-act="snext"]');if(nb)nb.disabled=!r;
-  const sm=document.querySelector('.bk .sum');if(sm)sm.outerHTML=summaryBox();
+  const mn=document.getElementById('sol-min');if(mn)mn.style.color=r?'':'#e5484d';
+  const sm=document.querySelector('.bk .sum');if(sm)sync(sm,summaryBox());
 }
+window.solUpd=solUpd;
 const _ff=finishFlow;
 finishFlow=function(){_ff();SOL.on=false;SOL.kw=3;SOL.panels=0};
 const _pay=pay;
@@ -252,6 +266,7 @@ async function solPay(){
   const M={service_category:'solar',solar_kw:SOL.kw,solar_panel_count:SOL.panels};
   const serviceName=`Solar Panel Cleaning (${SOL.kw}kW × ${SOL.panels} panel${SOL.panels===1?'':'s'})`;
   if(!S.user)return openLogin();
+  if(SOL.panels<MINP)return toast('Minimum '+MINP+' panels required');
   if(t.total<1)return toast('Total payable must be at least ₹1');
   if(typeof Razorpay==='undefined')return toast('Payment SDK failed to load. Please refresh and try again.');
   S.paying=true;const btn=$('#payBtn');if(btn){btn.disabled=true;btn.textContent='Preparing secure payment…'}
@@ -302,24 +317,35 @@ document.addEventListener('click',e=>{
   if(a&&SOL.on&&!/^#\/book/.test(location.hash))SOL.on=false;
   const el=e.target.closest('[data-act]');if(!el)return;
   const act=el.dataset.act;
-  if(act==='smode'){SOL.on=el.dataset.m==='solar';S.cart.coupon=null;S.cart.useCoins=false;route()}
+  if(act==='smode'){SOL.on=el.dataset.m==='solar';if(SOL.on&&SOL.panels<MINP)SOL.panels=MINP;S.cart.coupon=null;S.cart.useCoins=false;route()}
   else if(act==='sp'){
-    SOL.panels=Math.max(0,Math.min(MAXP,SOL.panels+Number(el.dataset.d)));
+    const d=Number(el.dataset.d);
+    let n=SOL.panels+d;
+    if(n<MINP)n=(d>0||SOL.panels>0)?MINP:0;
+    SOL.panels=Math.min(MAXP,n);
     const i=document.getElementById('sol-n');if(i)i.value=SOL.panels||'';
     solUpd();
   }
-  else if(act==='snext'){if(SOL.panels){S.step=2;route()}}
-  else if(act==='solbook'){SOL.on=true;S.step=1;S.cart.coupon=null}
+  else if(act==='snext'){if(SOL.panels>=MINP){S.step=2;route()}else toast('Minimum '+MINP+' panels required')}
+  else if(act==='solbook'){SOL.on=true;if(SOL.panels<MINP)SOL.panels=MINP;S.step=1;S.cart.coupon=null}
 });
-/* manual panel count: type any number (1-500), updates instantly without re-rendering */
+/* manual panel count: type any number (up to 500); the step updates in place without re-rendering.
+   Registered in the capture phase so it replaces any older handler for this field. Fewer than 5 panels keeps Next disabled. */
 document.addEventListener('input',e=>{
   if(e.target.id!=='sol-n')return;
+  e.stopImmediatePropagation();e.stopPropagation();
   const v=e.target.value.replace(/\D/g,'').slice(0,3);
   const n=v?Math.min(MAXP,Number(v)):0;
   e.target.value=v?String(n):'';
   SOL.panels=n;solUpd();
+},true);
+/* leaving the field with fewer than 5 panels: raise to the minimum */
+document.addEventListener('change',e=>{
+  if(e.target.id==='sol-n'){
+    if(SOL.panels>0&&SOL.panels<MINP){SOL.panels=MINP;e.target.value=MINP;solUpd()}
+  }
+  if(e.target.id==='sol-kw'){SOL.kw=Number(e.target.value);solUpd()}
 });
-document.addEventListener('change',e=>{if(e.target.id==='sol-kw'){SOL.kw=Number(e.target.value);solUpd()}});
 
 /* Services page: replace "Coming soon" on Solar Panel Cleaning with a Book now button */
 function fixSvc(){
