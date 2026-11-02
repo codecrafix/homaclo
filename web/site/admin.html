@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; img-src data:; connect-src https://hudlucmsjyjilkjpviva.supabase.co wss://hudlucmsjyjilkjpviva.supabase.co; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Homaclo Admin Console</title>
 <meta name="robots" content="noindex,nofollow">
@@ -16,18 +17,18 @@ html,body{margin:0}
 body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100%}
 [hidden]{display:none!important}
 .mu{color:var(--mu)}.grow{flex:1}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;box-shadow:0 1px 2px #0f172a0d}
 input,select,textarea{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
 select{width:auto;max-width:100%;padding:6px 8px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--pr);outline-offset:1px}
-.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 16px;background:var(--pr);color:#fff;cursor:pointer}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 16px;background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;cursor:pointer}
 .btn.sm{padding:6px 10px;font-size:13px}
 .btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
 .btn.er{color:var(--er)}
 .btn:disabled{opacity:.6;cursor:wait}
-#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+#login{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 0,#0d948833,transparent 50%),var(--bg)}
 .lg{width:100%;max-width:380px;display:grid;gap:12px;padding:28px}
-.logo{width:44px;height:44px;border-radius:12px;background:var(--pr);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px}
+.logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px}
 .lg h1{margin:0;font-size:22px}.lg p{margin:0}
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:var(--card);border-bottom:1px solid var(--bd)}
 #mb{font-size:20px;background:none;border:0;color:var(--tx);cursor:pointer;padding:4px 8px}
@@ -37,15 +38,19 @@ nav.open{transform:none}
 nav .br{color:#fff;font-weight:800;font-size:18px;padding:4px 10px 16px}
 nav a{display:block;color:#cbd5e1;text-decoration:none;padding:10px 12px;border-radius:10px;margin-bottom:2px}
 nav a.on,nav a:hover{background:#1e293b;color:#fff}
+nav a.on{box-shadow:inset 3px 0 0 #14b8a6}
 main{padding:16px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));max-width:1280px}
 @media (min-width:900px){nav{transform:none}header,main{margin-left:240px}#mb{display:none}}
 .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.kpi{border-top:3px solid var(--pr)}
 .kpi b{display:block;font-size:26px;line-height:1.2}.kpi span{color:var(--mu);font-size:13px}
+.ch{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:12px}
+.ch i{flex:1;min-width:4px;background:linear-gradient(#14b8a6,#0d9488);border-radius:6px 6px 2px 2px}
 .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .bar input{max-width:340px}
 .fm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
 .fm.w textarea{grid-column:1/-1;min-height:90px}
-.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:14px}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:16px}
 table{border-collapse:collapse;width:100%}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top;font-size:14px}
 th{color:var(--mu);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
@@ -112,18 +117,20 @@ function sel(t,id,f,val,opts){
   const o=opts.indexOf(val)<0&&val?opts.concat([val]):opts;
   return '<select data-a="st" data-t="'+t+'" data-f="'+f+'" data-id="'+esc(id)+'">'+o.map(x=>'<option'+(x===val?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
 }
-const btn=(a,id,txt,x,cls)=>'<button class="btn sm '+(cls||'ghost')+'" data-a="'+a+'" data-id="'+esc(id)+'" '+(x||'')+'>'+txt+'</button> ';
+const btn=(a,id,txt,x,cls)=>'<button class="btn sm '+(cls===undefined?'ghost':cls)+'" data-a="'+a+'" data-id="'+esc(id)+'" '+(x||'')+'>'+txt+'</button> ';
 
 /* ---------- list definitions ---------- */
 const L={
  bookings:{t:'bookings',o:'created_at',s:['service_name','address'],cols:[
   ['Service',r=>esc(r.service_name)],['Customer',r=>who(r.user_id)],
-  ['Service date',r=>esc(((r.booking_date||r.date||'—')+' '+(r.booking_time||'')).trim())],
+  ['Service date',r=>esc(((r.date||r.booking_date||'—')+' '+(r.booking_time||'')).trim())],
   ['Address',r=>esc(r.address||'—')],['Price',r=>inr(r.price)],
-  ['Status',r=>sel('bookings',r.id,'status',r.status,['CONFIRMED','In Progress','Completed'])],['Booked',r=>dt(r.created_at)]]},
+  ['Status',r=>sel('bookings',r.id,'status',r.status,['CONFIRMED','In Progress','Completed'])],['Booked',r=>dt(r.created_at)],
+  ['',r=>btn('bedit',r.id,'Edit','data-d="'+esc(r.date||r.booking_date||'')+'" data-tm="'+esc(r.booking_time||'')+'" data-ad="'+esc(r.address||'')+'" data-p="'+esc(r.price)+'"')]]},
  customers:{t:'profiles',o:'updated_at',s:['full_name','email','phone_number'],coins:1,cols:[
   ['Name',r=>esc(r.full_name||'—')+(r.is_admin?' <span class="pill ok">admin</span>':'')],['Email',r=>esc(r.email||'—')],
-  ['Phone',r=>esc(r.phone_number||'—')],['Coins',r=>CM[r.id]||0],['',r=>btn('coins',r.id,'Adjust coins')]]},
+  ['Phone',r=>esc(r.phone_number||'—')],['Coins',r=>CM[r.id]||0],
+  ['',r=>btn('coins',r.id,'Coins')+btn('note',r.id,'Notify')+(me&&r.id===me.id?'':btn('adm',r.id,r.is_admin?'Remove admin':'Make admin','data-v="'+!r.is_admin+'"','er'))]]},
  payments:{t:'payments',o:'created_at',cols:[
   ['Customer',r=>who(r.user_id)],['Amount',r=>inr(r.amount/100)],['Status',r=>pill(r.status)],
   ['Razorpay',r=>esc(r.razorpay_payment_id||r.razorpay_order_id||'—')],['Date',r=>dt(r.created_at)]]},
@@ -134,7 +141,8 @@ const L={
   ['',r=>btn('appr',r.id,r.is_approved?'Unapprove':'Approve','data-v="'+!r.is_approved+'"','')+btn('del',r.id,'Delete','data-t="reviews"','er')]]},
  tickets:{t:'support_tickets',o:'created_at',cols:[
   ['Customer',r=>who(r.user_id)],['Subject',r=>esc(r.subject)],['Message',r=>esc(r.message)],
-  ['Status',r=>sel('support_tickets',r.id,'status',r.status,['open','in_progress','resolved'])],['Date',r=>dt(r.created_at)]]},
+  ['Status',r=>sel('support_tickets',r.id,'status',r.status,['open','in_progress','resolved'])],['Date',r=>dt(r.created_at)],
+  ['',r=>btn('note',r.user_id,'Reply by notification')]]},
  messages:{t:'contact_messages',o:'created_at',s:['name','email','subject'],cols:[
   ['Name',r=>esc(r.name)],['Email',r=>esc(r.email)],['Phone',r=>esc(r.phone||'—')],['Subject',r=>esc(r.subject)],['Message',r=>esc(r.message)],
   ['Status',r=>sel('contact_messages',r.id,'status',r.status,['new','read','resolved'])],['Date',r=>dt(r.created_at)]]},
@@ -151,7 +159,7 @@ const L={
   form:'<div class="fm w"><input id="bt" placeholder="Title" maxlength="80"><textarea id="bb" placeholder="Message to all customers" maxlength="400"></textarea><button class="btn" data-a="bsend">Send to all customers</button></div>',
   cols:[['Title',r=>esc(r.title)],['Message',r=>esc(r.body)],['Sent',r=>dt(r.created_at)]]}
 };
-const NAV=[['overview','Overview'],['bookings','Bookings'],['customers','Customers'],['payments','Payments'],['reviews','Reviews'],['tickets','Support tickets'],['messages','Contact messages'],['coupons','Coupons'],['services','Services & pricing'],['broadcast','Broadcasts']];
+const NAV=[['overview','Overview','📊'],['bookings','Bookings','📅'],['customers','Customers','👥'],['payments','Payments','💳'],['reviews','Reviews','⭐'],['tickets','Support tickets','🎧'],['messages','Contact messages','✉️'],['coupons','Coupons','🏷️'],['services','Services & pricing','🛠️'],['broadcast','Broadcasts','📣']];
 
 /* ---------- rendering ---------- */
 function tbl(cols,rows){
@@ -175,7 +183,7 @@ async function lv(k){
   $('#lst').innerHTML=tbl(c.cols,r.data)+'<div class="pg"><span class="mu">'+(r.count||0)+' total · page '+(st.p+1)+' of '+pages+'</span>'+
    '<button class="btn ghost sm" data-a="pg" data-d="-1"'+(st.p<=0?' disabled':'')+'>Prev</button><button class="btn ghost sm" data-a="pg" data-d="1"'+(st.p+1>=pages?' disabled':'')+'>Next</button></div>';
 }
-const cnt=(t,f)=>{let q=sb.from(t).select('*',{count:'exact',head:true});if(f)q=f(q);return q.then(r=>{if(r.error)throw r.error;return r.count||0})};
+const cnt=(t,f)=>{let q=sb.from(t).select('*',{count:'exact',head:true});if(f)q=f(q);return q.then(r=>{if(r.error)throw new Error(r.error.message||('Cannot read '+t+' (permission or network)'));return r.count||0})};
 async function ov(){
   const [tb,ab,cu,ot,pr,nm,pay,rec]=await Promise.all([
    cnt('bookings'),cnt('bookings',q=>q.not('status','ilike','completed')),cnt('profiles'),
@@ -185,8 +193,13 @@ async function ov(){
   if(pay.error)throw pay.error;if(rec.error)throw rec.error;
   const ms=new Date();ms.setDate(1);ms.setHours(0,0,0,0);
   const tot=pay.data.reduce((s,p)=>s+p.amount,0)/100,mon=pay.data.filter(p=>new Date(p.created_at)>=ms).reduce((s,p)=>s+p.amount,0)/100;
+  const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push([d,0])}
+  pay.data.forEach(p=>{const t=new Date(p.created_at);t.setHours(0,0,0,0);const x=days.find(y=>y[0].getTime()===t.getTime());if(x)x[1]+=p.amount/100});
+  const mx=Math.max(1,...days.map(y=>y[1]));
   const K2=[['Revenue (paid)',inr(tot)],['This month',inr(mon)],['Total bookings',tb],['Active bookings',ab],['Customers',cu],['Open tickets',ot],['Reviews to approve',pr],['New messages',nm]];
-  $('#v').innerHTML='<div class="kpis">'+K2.map(k=>'<div class="card kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('')+'</div><h3>Recent bookings</h3>'+tbl(L.bookings.cols,rec.data);
+  $('#v').innerHTML='<div class="kpis">'+K2.map(k=>'<div class="card kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('')+'</div>'+
+   '<div class="card" style="margin-bottom:16px"><b>Revenue, last 14 days</b><div class="ch">'+days.map(y=>'<i title="'+y[0].toLocaleDateString('en-IN',{day:'numeric',month:'short'})+': '+inr(y[1])+'" style="height:'+Math.max(3,y[1]/mx*100)+'%"></i>').join('')+'</div></div>'+
+   '<h3>Recent bookings</h3>'+tbl(L.bookings.cols,rec.data);
 }
 async function route(){
   const h=(location.hash||'#overview').slice(1);
@@ -200,11 +213,11 @@ async function route(){
     if(!PM.__ok){await loadPM();PM.__ok=1}
     if(k==='overview')return await ov();
     const c=L[k];
-    $('#v').innerHTML=(c.form?'<div class="card" style="margin-bottom:14px">'+c.form+'</div>':'')+(c.s?'<div class="bar"><input id="sq" type="search" placeholder="Search…" value="'+esc(st.q)+'"></div>':'')+'<div id="lst"><div class="sk"></div></div>';
+    $('#v').innerHTML=(c.form?'<div class="card" style="margin-bottom:14px">'+c.form+'</div>':'')+'<div class="bar">'+(c.s?'<input id="sq" type="search" placeholder="Search…" value="'+esc(st.q)+'">':'')+'<button class="btn ghost sm" data-a="csv">Export CSV</button></div><div id="lst"><div class="sk"></div></div>';
     await lv(k);
-  }catch(e){$('#v').innerHTML='<div class="card"><b>Could not load this section.</b><p class="mu">'+esc(e.message||e)+'</p><button class="btn sm" data-a="retry">Try again</button></div>'}
+  }catch(e){$('#v').innerHTML='<div class="card"><b>Could not load this section.</b><p class="mu">'+esc(e.message||e.code||'Unknown error')+'</p><button class="btn sm" data-a="retry">Try again</button></div>'}
 }
-const refresh=()=>lv(st.k).catch(e=>toast(e.message||'Refresh failed'));
+const refresh=()=>(st.k==='overview'?route():lv(st.k)).catch(e=>toast(e.message||'Refresh failed'));
 
 /* ---------- writes (every write checks that a row really changed) ---------- */
 async function upd(t,id,patch){
@@ -230,6 +243,16 @@ async function ins(t,row,ok){
   if(r.error||!r.data.length){toast(r.error?r.error.message:'Not saved');return false}
   toast(ok);return true;
 }
+async function csv(){
+  const c=L[st.k];if(!c)return;
+  const r=await sb.from(c.t).select('*').order(c.o,{ascending:!!c.asc,nullsFirst:false}).limit(1000);
+  if(r.error||!r.data.length)return toast(r.error?r.error.message:'No data to export');
+  const ks=Object.keys(r.data[0]);
+  const f=v=>{v=v==null?'':typeof v==='object'?JSON.stringify(v):String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+  const s=[ks.map(f).join(',')].concat(r.data.map(x=>ks.map(k=>f(x[k])).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+s],{type:'text/csv'}));
+  a.download=st.k+'-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
 document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-a]');if(!b||b.tagName==='SELECT')return;
   const a=b.dataset.a,id=b.dataset.id;
@@ -246,6 +269,26 @@ document.addEventListener('click',async e=>{
     if(r.error||!r.data.length)toast(r.error?r.error.message:'Not deleted');else{toast('Deleted');refresh()}
    }
    else if(a==='coins')await coins(id);
+   else if(a==='csv')await csv();
+   else if(a==='note'){
+    const title=prompt('Notification title');if(!title||!title.trim())return;
+    const body=prompt('Notification message');if(!body||!body.trim())return;
+    await ins('notifications',{user_id:id,title:title.trim().slice(0,80),body:body.trim().slice(0,400),type:'general'},'Notification sent');
+   }
+   else if(a==='adm'){
+    const v=b.dataset.v==='true';
+    if(id===me.id)return toast('You cannot change your own admin access');
+    if(!confirm((v?'Give ADMIN access to this user?':'Remove admin access from this user?')+' They can '+(v?'control everything in this panel.':'no longer use this panel.')))return;
+    if(await upd('profiles',id,{is_admin:v}))refresh();
+   }
+   else if(a==='bedit'){
+    const d=prompt('Service date',b.dataset.d);if(d===null)return;
+    const t=prompt('Time slot',b.dataset.tm);if(t===null)return;
+    const ad=prompt('Address',b.dataset.ad);if(ad===null)return;
+    const pv=prompt('Price in ₹',b.dataset.p);if(pv===null)return;
+    const p=parseInt(pv,10);if(!(p>=0))return toast('Enter a valid price');
+    if(await upd('bookings',id,{date:d.trim(),booking_date:d.trim(),booking_time:t.trim(),address:ad.trim(),price:p}))refresh();
+   }
    else if(a==='svc'){
     const p=prompt('New price in ₹ for '+b.dataset.n,b.dataset.p);if(p===null)return;
     const n=Number(p);if(!isFinite(n)||n<0||p.trim()==='')return toast('Enter a valid price');
@@ -308,7 +351,7 @@ $('#ver').onclick=async()=>{
 $('#out').onclick=async()=>{clearTimeout(idleT);me=null;await sb.auth.signOut();show('login');lm('Signed out.')};
 $('#mb').onclick=()=>$('#nav').classList.toggle('open');
 $('#v').addEventListener('click',()=>$('#nav').classList.remove('open'));
-$('#nav').innerHTML='<div class="br">Homaclo Admin</div>'+NAV.map(n=>'<a href="#'+n[0]+'">'+n[1]+'</a>').join('');
+$('#nav').innerHTML='<div class="br">Homaclo Admin</div>'+NAV.map(n=>'<a href="#'+n[0]+'">'+n[2]+' '+n[1]+'</a>').join('');
 addEventListener('hashchange',()=>{if(me)route()});
 sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&me){me=null;show('login')}});
 gate().catch(e=>{show('login');lm(e.message||'Could not start. Please reload.')});
