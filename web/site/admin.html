@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Homaclo Admin Console</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d9488'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'%3EH%3C/text%3E%3C/svg%3E">
+<style>
+:root{color-scheme:light dark;--bg:#f4f6fa;--card:#fff;--tx:#0f172a;--mu:#64748b;--bd:#e2e8f0;--pr:#0d9488;--er:#dc2626;--ok:#16a34a;--wa:#d97706;--side:#0f172a;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1120;--card:#131c2e;--tx:#e8edf6;--mu:#94a3b8;--bd:#223049}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100%}
+[hidden]{display:none!important}
+.mu{color:var(--mu)}.grow{flex:1}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+select{width:auto;max-width:100%;padding:6px 8px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pr);outline-offset:1px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 16px;background:var(--pr);color:#fff;cursor:pointer}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.btn.er{color:var(--er)}
+.btn:disabled{opacity:.6;cursor:wait}
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.lg{width:100%;max-width:380px;display:grid;gap:12px;padding:28px}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--pr);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px}
+.lg h1{margin:0;font-size:22px}.lg p{margin:0}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:var(--card);border-bottom:1px solid var(--bd)}
+#mb{font-size:20px;background:none;border:0;color:var(--tx);cursor:pointer;padding:4px 8px}
+#who{font-size:13px;max-width:30vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav{position:fixed;top:0;bottom:0;left:0;width:240px;background:var(--side);padding:calc(16px + env(safe-area-inset-top,0px)) 12px 16px;transform:translateX(-100%);transition:transform .2s;z-index:30;overflow:auto}
+nav.open{transform:none}
+nav .br{color:#fff;font-weight:800;font-size:18px;padding:4px 10px 16px}
+nav a{display:block;color:#cbd5e1;text-decoration:none;padding:10px 12px;border-radius:10px;margin-bottom:2px}
+nav a.on,nav a:hover{background:#1e293b;color:#fff}
+main{padding:16px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));max-width:1280px}
+@media (min-width:900px){nav{transform:none}header,main{margin-left:240px}#mb{display:none}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.kpi b{display:block;font-size:26px;line-height:1.2}.kpi span{color:var(--mu);font-size:13px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.bar input{max-width:340px}
+.fm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.fm.w textarea{grid-column:1/-1;min-height:90px}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:14px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top;font-size:14px}
+th{color:var(--mu);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:var(--bd);color:var(--tx)}
+.pill.ok{background:#16a34a22;color:var(--ok)}.pill.er{background:#dc262622;color:var(--er)}.pill.wa{background:#d9770622;color:var(--wa)}
+.pg{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:12px}
+.sk{height:120px;border-radius:14px;background:linear-gradient(90deg,var(--bd),var(--card),var(--bd));background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:90vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:700px){
+ .tw{border:0;background:none;overflow:visible}
+ table,tbody,tr,td{display:block;width:100%}thead{display:none}
+ tr{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px 12px;margin-bottom:10px}
+ td{display:flex;justify-content:space-between;gap:12px;border:0;padding:6px 0;text-align:right}
+ td::before{content:attr(data-l);color:var(--mu);font-size:12px;text-transform:uppercase;text-align:left;flex:none}
+ td[data-l=""]::before{display:none}td[data-l=""]{justify-content:flex-end;flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div id="login">
+ <div class="card lg">
+  <div class="logo">H</div>
+  <h1>Homaclo Admin</h1>
+  <p class="mu">Sign in with your admin email. A login code will be sent to you.</p>
+  <input id="em" type="email" placeholder="Admin email" autocomplete="email" inputmode="email">
+  <button id="send" class="btn">Send login code</button>
+  <div id="s2" hidden style="display:grid;gap:12px">
+   <input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="Enter code" maxlength="10">
+   <button id="ver" class="btn">Verify and sign in</button>
+  </div>
+  <p id="lm" class="mu" role="status"></p>
+ </div>
+</div>
+<div id="app" hidden>
+ <header><button id="mb" aria-label="Menu">☰</button><b id="ttl">Overview</b><span class="grow"></span><span id="who" class="mu"></span><button id="out" class="btn ghost sm">Sign out</button></header>
+ <nav id="nav"></nav>
+ <main id="v"></main>
+</div>
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+'use strict';
+const U='https://hudlucmsjyjilkjpviva.supabase.co';
+const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1ZGx1Y21zanlqaWxranB2aXZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDQwMzksImV4cCI6MjEwMzU4MDAzOX0.nEoVQzbJYD8EF5fQ168KPheIeJRpZMRm02D2zynn86M';
+/* separate storage key: the admin session never mixes with the customer site session */
+const sb=supabase.createClient(U,K,{auth:{storageKey:'homaclo-admin-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const dt=s=>s?new Date(s).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}):'—';
+const PS=20;
+let me=null,em='',PM={},CM={},st={k:'',p:0,q:''},idleT=0;
+function toast(m){const t=$('#toast');t.textContent=m;t.className='show';clearTimeout(toast.t);toast.t=setTimeout(()=>{t.className=''},3500)}
+const lm=m=>{$('#lm').textContent=m};
+const show=w=>{$('#login').hidden=w!=='login';$('#app').hidden=w!=='app'};
+const busy=(s,b)=>{$(s).disabled=b};
+const pill=s=>{const c=/success|approved|completed|resolved|active/i.test(s)?'ok':/fail|cancel|inactive/i.test(s)?'er':/pending|open|new|progress/i.test(s)?'wa':'';return '<span class="pill '+c+'">'+esc(s)+'</span>'};
+const who=id=>{const p=PM[id];return p?esc(p.full_name||p.email||String(id).slice(0,8)):esc(String(id||'').slice(0,8)||'—')};
+function sel(t,id,f,val,opts){
+  const o=opts.indexOf(val)<0&&val?opts.concat([val]):opts;
+  return '<select data-a="st" data-t="'+t+'" data-f="'+f+'" data-id="'+esc(id)+'">'+o.map(x=>'<option'+(x===val?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';
+}
+const btn=(a,id,txt,x,cls)=>'<button class="btn sm '+(cls||'ghost')+'" data-a="'+a+'" data-id="'+esc(id)+'" '+(x||'')+'>'+txt+'</button> ';
+
+/* ---------- list definitions ---------- */
+const L={
+ bookings:{t:'bookings',o:'created_at',s:['service_name','address'],cols:[
+  ['Service',r=>esc(r.service_name)],['Customer',r=>who(r.user_id)],
+  ['Service date',r=>esc(((r.booking_date||r.date||'—')+' '+(r.booking_time||'')).trim())],
+  ['Address',r=>esc(r.address||'—')],['Price',r=>inr(r.price)],
+  ['Status',r=>sel('bookings',r.id,'status',r.status,['CONFIRMED','In Progress','Completed'])],['Booked',r=>dt(r.created_at)]]},
+ customers:{t:'profiles',o:'updated_at',s:['full_name','email','phone_number'],coins:1,cols:[
+  ['Name',r=>esc(r.full_name||'—')+(r.is_admin?' <span class="pill ok">admin</span>':'')],['Email',r=>esc(r.email||'—')],
+  ['Phone',r=>esc(r.phone_number||'—')],['Coins',r=>CM[r.id]||0],['',r=>btn('coins',r.id,'Adjust coins')]]},
+ payments:{t:'payments',o:'created_at',cols:[
+  ['Customer',r=>who(r.user_id)],['Amount',r=>inr(r.amount/100)],['Status',r=>pill(r.status)],
+  ['Razorpay',r=>esc(r.razorpay_payment_id||r.razorpay_order_id||'—')],['Date',r=>dt(r.created_at)]]},
+ reviews:{t:'reviews',o:'created_at',cols:[
+  ['Customer',r=>r.user_name?esc(r.user_name):who(r.user_id)],['Service',r=>esc(r.service_name)],
+  ['Rating',r=>'★'.repeat(Math.round(Number(r.rating)||0))+' '+esc(r.rating)],['Review',r=>esc(r.review_text)],
+  ['Status',r=>pill(r.is_approved?'Approved':'Pending')],
+  ['',r=>btn('appr',r.id,r.is_approved?'Unapprove':'Approve','data-v="'+!r.is_approved+'"','')+btn('del',r.id,'Delete','data-t="reviews"','er')]]},
+ tickets:{t:'support_tickets',o:'created_at',cols:[
+  ['Customer',r=>who(r.user_id)],['Subject',r=>esc(r.subject)],['Message',r=>esc(r.message)],
+  ['Status',r=>sel('support_tickets',r.id,'status',r.status,['open','in_progress','resolved'])],['Date',r=>dt(r.created_at)]]},
+ messages:{t:'contact_messages',o:'created_at',s:['name','email','subject'],cols:[
+  ['Name',r=>esc(r.name)],['Email',r=>esc(r.email)],['Phone',r=>esc(r.phone||'—')],['Subject',r=>esc(r.subject)],['Message',r=>esc(r.message)],
+  ['Status',r=>sel('contact_messages',r.id,'status',r.status,['new','read','resolved'])],['Date',r=>dt(r.created_at)]]},
+ coupons:{t:'coupons',o:'created_at',
+  form:'<div class="fm"><input id="cc" placeholder="Code (e.g. SAVE100)" maxlength="20"><input id="ca" type="number" min="1" placeholder="Flat discount (₹)"><input id="cm" type="number" min="1" placeholder="Max uses (optional)"><input id="ce" type="date" title="Expiry (optional)"><input id="cd" placeholder="Description"><button class="btn" data-a="cadd">Add coupon</button></div>',
+  cols:[['Code',r=>'<b>'+esc(r.code)+'</b>'],['Discount',r=>inr(r.discount_amount)+' '+esc(r.discount_type)],
+  ['Used',r=>r.used_count+(r.max_uses?' / '+r.max_uses:'')],['Expires',r=>r.expires_at?dt(r.expires_at):'Never'],
+  ['Status',r=>pill(r.is_active?'Active':'Inactive')],
+  ['',r=>btn('ctog',r.id,r.is_active?'Disable':'Enable','data-v="'+!r.is_active+'"')+btn('del',r.id,'Delete','data-t="coupons"','er')]]},
+ services:{t:'services',o:'title',asc:1,cols:[
+  ['Service',r=>esc(r.title)],['Category',r=>esc(r.category)],['Price',r=>inr(r.price)],['Description',r=>esc(r.description)],
+  ['',r=>btn('svc',r.id,'Edit price','data-p="'+esc(r.price)+'" data-n="'+esc(r.title)+'"')]]},
+ broadcast:{t:'admin_broadcasts',o:'created_at',
+  form:'<div class="fm w"><input id="bt" placeholder="Title" maxlength="80"><textarea id="bb" placeholder="Message to all customers" maxlength="400"></textarea><button class="btn" data-a="bsend">Send to all customers</button></div>',
+  cols:[['Title',r=>esc(r.title)],['Message',r=>esc(r.body)],['Sent',r=>dt(r.created_at)]]}
+};
+const NAV=[['overview','Overview'],['bookings','Bookings'],['customers','Customers'],['payments','Payments'],['reviews','Reviews'],['tickets','Support tickets'],['messages','Contact messages'],['coupons','Coupons'],['services','Services & pricing'],['broadcast','Broadcasts']];
+
+/* ---------- rendering ---------- */
+function tbl(cols,rows){
+  if(!rows.length)return '<div class="card mu">Nothing here yet.</div>';
+  return '<div class="tw"><table><thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody>'+
+   rows.map(r=>'<tr>'+cols.map(c=>'<td data-l="'+c[0]+'">'+c[1](r)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+}
+async function loadPM(){
+  const r=await sb.from('profiles').select('id,full_name,email').limit(1000);
+  if(r.error)throw r.error;
+  PM={};(r.data||[]).forEach(p=>{PM[p.id]=p});
+}
+async function lv(k){
+  const c=L[k];
+  let q=sb.from(c.t).select('*',{count:'exact'});
+  if(st.q&&c.s){const z=st.q.replace(/[%,()*\\]/g,' ').trim();if(z)q=q.or(c.s.map(f=>f+'.ilike.%'+z+'%').join(','))}
+  q=q.order(c.o,{ascending:!!c.asc,nullsFirst:false}).order('id').range(st.p*PS,st.p*PS+PS-1);
+  const r=await q;if(r.error)throw r.error;
+  if(c.coins){CM={};if(r.data.length){const x=await sb.from('user_coins').select('user_id,balance').in('user_id',r.data.map(p=>p.id));(x.data||[]).forEach(u=>{CM[u.user_id]=u.balance})}}
+  const pages=Math.max(1,Math.ceil((r.count||0)/PS));
+  $('#lst').innerHTML=tbl(c.cols,r.data)+'<div class="pg"><span class="mu">'+(r.count||0)+' total · page '+(st.p+1)+' of '+pages+'</span>'+
+   '<button class="btn ghost sm" data-a="pg" data-d="-1"'+(st.p<=0?' disabled':'')+'>Prev</button><button class="btn ghost sm" data-a="pg" data-d="1"'+(st.p+1>=pages?' disabled':'')+'>Next</button></div>';
+}
+const cnt=(t,f)=>{let q=sb.from(t).select('*',{count:'exact',head:true});if(f)q=f(q);return q.then(r=>{if(r.error)throw r.error;return r.count||0})};
+async function ov(){
+  const [tb,ab,cu,ot,pr,nm,pay,rec]=await Promise.all([
+   cnt('bookings'),cnt('bookings',q=>q.not('status','ilike','completed')),cnt('profiles'),
+   cnt('support_tickets',q=>q.eq('status','open')),cnt('reviews',q=>q.eq('is_approved',false)),cnt('contact_messages',q=>q.eq('status','new')),
+   sb.from('payments').select('amount,created_at').eq('status','SUCCESS').limit(1000),
+   sb.from('bookings').select('*').order('created_at',{ascending:false}).order('id').limit(6)]);
+  if(pay.error)throw pay.error;if(rec.error)throw rec.error;
+  const ms=new Date();ms.setDate(1);ms.setHours(0,0,0,0);
+  const tot=pay.data.reduce((s,p)=>s+p.amount,0)/100,mon=pay.data.filter(p=>new Date(p.created_at)>=ms).reduce((s,p)=>s+p.amount,0)/100;
+  const K2=[['Revenue (paid)',inr(tot)],['This month',inr(mon)],['Total bookings',tb],['Active bookings',ab],['Customers',cu],['Open tickets',ot],['Reviews to approve',pr],['New messages',nm]];
+  $('#v').innerHTML='<div class="kpis">'+K2.map(k=>'<div class="card kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('')+'</div><h3>Recent bookings</h3>'+tbl(L.bookings.cols,rec.data);
+}
+async function route(){
+  const h=(location.hash||'#overview').slice(1);
+  const k=NAV.some(n=>n[0]===h)?h:'overview';
+  if(st.k!==k){st.p=0;st.q=''}st.k=k;
+  $('#ttl').textContent=NAV.find(n=>n[0]===k)[1];
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+k));
+  $('#nav').classList.remove('open');
+  $('#v').innerHTML='<div class="sk"></div>';
+  try{
+    if(!PM.__ok){await loadPM();PM.__ok=1}
+    if(k==='overview')return await ov();
+    const c=L[k];
+    $('#v').innerHTML=(c.form?'<div class="card" style="margin-bottom:14px">'+c.form+'</div>':'')+(c.s?'<div class="bar"><input id="sq" type="search" placeholder="Search…" value="'+esc(st.q)+'"></div>':'')+'<div id="lst"><div class="sk"></div></div>';
+    await lv(k);
+  }catch(e){$('#v').innerHTML='<div class="card"><b>Could not load this section.</b><p class="mu">'+esc(e.message||e)+'</p><button class="btn sm" data-a="retry">Try again</button></div>'}
+}
+const refresh=()=>lv(st.k).catch(e=>toast(e.message||'Refresh failed'));
+
+/* ---------- writes (every write checks that a row really changed) ---------- */
+async function upd(t,id,patch){
+  const r=await sb.from(t).update(patch).eq('id',id).select('id');
+  if(r.error||!r.data||!r.data.length){toast(r.error?r.error.message:'Not saved. The admin database policies may be missing.');return false}
+  toast('Saved');return true;
+}
+async function coins(id){
+  const v=prompt('Coins to add. Use a minus sign to deduct, e.g. 50 or -50');if(v===null)return;
+  const n=parseInt(v,10);if(!n||Math.abs(n)>100000)return toast('Enter a valid whole number');
+  const note=(prompt('Reason (shown in the customer coin history)','Admin adjustment')||'Admin adjustment').slice(0,120);
+  const cur=await sb.from('user_coins').select('balance').eq('user_id',id).maybeSingle();
+  if(cur.error)return toast(cur.error.message);
+  const nb=(cur.data?cur.data.balance:0)+n;if(nb<0)return toast('Balance cannot go below 0');
+  const tx=await sb.from('coin_transactions').insert({user_id:id,amount:n,type:n>0?'reward':'deduction',description:note}).select('id');
+  if(tx.error||!tx.data.length)return toast(tx.error?tx.error.message:'Coin history not saved. Nothing was changed.');
+  const u=await sb.from('user_coins').upsert({user_id:id,balance:nb,updated_at:new Date().toISOString()}).select('user_id');
+  if(u.error||!u.data.length)return toast('History saved but balance failed: '+(u.error?u.error.message:'no row changed'));
+  toast('Coins updated');refresh();
+}
+async function ins(t,row,ok){
+  const r=await sb.from(t).insert(row).select('id');
+  if(r.error||!r.data.length){toast(r.error?r.error.message:'Not saved');return false}
+  toast(ok);return true;
+}
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.tagName==='SELECT')return;
+  const a=b.dataset.a,id=b.dataset.id;
+  if(a==='retry')return route();
+  if(a==='pg'){st.p=Math.max(0,st.p+Number(b.dataset.d));return refresh()}
+  b.disabled=true;
+  try{
+   if(a==='appr'){if(await upd('reviews',id,{is_approved:b.dataset.v==='true'}))refresh()}
+   else if(a==='ctog'){if(await upd('coupons',id,{is_active:b.dataset.v==='true',updated_at:new Date().toISOString()}))refresh()}
+   else if(a==='del'){
+    const t=b.dataset.t;if(t!=='reviews'&&t!=='coupons')return;
+    if(!confirm('Delete this permanently? This cannot be undone.'))return;
+    const r=await sb.from(t).delete().eq('id',id).select('id');
+    if(r.error||!r.data.length)toast(r.error?r.error.message:'Not deleted');else{toast('Deleted');refresh()}
+   }
+   else if(a==='coins')await coins(id);
+   else if(a==='svc'){
+    const p=prompt('New price in ₹ for '+b.dataset.n,b.dataset.p);if(p===null)return;
+    const n=Number(p);if(!isFinite(n)||n<0||p.trim()==='')return toast('Enter a valid price');
+    if(await upd('services',id,{price:n}))refresh();
+   }
+   else if(a==='cadd'){
+    const code=($('#cc').value||'').trim().toUpperCase(),amt=parseInt($('#ca').value,10);
+    const mx=$('#cm').value?parseInt($('#cm').value,10):null,ex=$('#ce').value?new Date($('#ce').value+'T23:59:59+05:30').toISOString():null;
+    if(!/^[A-Z0-9]{3,20}$/.test(code)||!(amt>0))return toast('Code must be 3-20 letters or digits, with a discount above 0');
+    if(await ins('coupons',{code,description:$('#cd').value.trim(),discount_amount:amt,discount_type:'flat',is_active:true,max_uses:mx,expires_at:ex},'Coupon added'))route();
+   }
+   else if(a==='bsend'){
+    const title=$('#bt').value.trim(),body=$('#bb').value.trim();
+    if(!title||!body)return toast('Title and message are required');
+    if(!confirm('Send this to ALL customers now?'))return;
+    if(await ins('admin_broadcasts',{title,body,sent_by:me.id},'Broadcast sent'))route();
+   }
+  }finally{b.disabled=false}
+});
+document.addEventListener('change',async e=>{
+  const s=e.target;if(!s.matches||!s.matches('select[data-a="st"]'))return;
+  const ok=['bookings','support_tickets','contact_messages'].indexOf(s.dataset.t)>-1&&s.dataset.f==='status';
+  if(!ok)return;
+  if(!(await upd(s.dataset.t,s.dataset.id,{status:s.value})))refresh();
+});
+let sT=0;
+document.addEventListener('input',e=>{
+  if(e.target.id!=='sq')return;clearTimeout(sT);
+  sT=setTimeout(()=>{st.q=e.target.value.trim();st.p=0;refresh()},350);
+});
+
+/* ---------- login, admin check, idle timeout ---------- */
+async function gate(){
+  const s=(await sb.auth.getSession()).data.session;
+  if(!s){show('login');return}
+  const r=await sb.from('profiles').select('id,full_name,email,is_admin').eq('id',s.user.id).maybeSingle();
+  if(r.error||!r.data||r.data.is_admin!==true){await sb.auth.signOut();show('login');lm('This account does not have admin access.');return}
+  me=r.data;$('#who').textContent=me.email||me.full_name||'';
+  show('app');PM={};route();bump();
+}
+function bump(){clearTimeout(idleT);idleT=setTimeout(async()=>{await sb.auth.signOut();show('login');lm('Signed out after 30 minutes of inactivity.')},30*60*1000)}
+['click','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{if(me)bump()},{passive:true}));
+$('#send').onclick=async()=>{
+  const e=$('#em').value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(e))return lm('Enter a valid email address.');
+  busy('#send',true);
+  const r=await sb.auth.signInWithOtp({email:e,options:{shouldCreateUser:false}});
+  busy('#send',false);
+  if(r.error)return lm(r.error.message);
+  em=e;$('#s2').hidden=false;lm('Code sent. Check your email.');
+};
+$('#ver').onclick=async()=>{
+  const t=$('#code').value.trim();if(!t)return lm('Enter the code from your email.');
+  busy('#ver',true);
+  const r=await sb.auth.verifyOtp({email:em,token:t,type:'email'});
+  busy('#ver',false);
+  if(r.error)return lm(r.error.message);
+  lm('');gate();
+};
+$('#out').onclick=async()=>{clearTimeout(idleT);me=null;await sb.auth.signOut();show('login');lm('Signed out.')};
+$('#mb').onclick=()=>$('#nav').classList.toggle('open');
+$('#v').addEventListener('click',()=>$('#nav').classList.remove('open'));
+$('#nav').innerHTML='<div class="br">Homaclo Admin</div>'+NAV.map(n=>'<a href="#'+n[0]+'">'+n[1]+'</a>').join('');
+addEventListener('hashchange',()=>{if(me)route()});
+sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'&&me){me=null;show('login')}});
+gate().catch(e=>{show('login');lm(e.message||'Could not start. Please reload.')});
+})();
+</script>
+</body>
+</html>
