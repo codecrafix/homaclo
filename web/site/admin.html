@@ -120,6 +120,8 @@ function sel(t,id,f,val,opts){
 const btn=(a,id,txt,x,cls)=>'<button class="btn sm '+(cls===undefined?'ghost':cls)+'" data-a="'+a+'" data-id="'+esc(id)+'" '+(x||'')+'>'+txt+'</button> ';
 
 /* ---------- list definitions ---------- */
+/* plain-language reasons for a referral the database refused to reward (referrals.reject_reason) */
+const RR={not_first_booking:'Not their first booking',referrer_missing:'Referrer account missing',same_person:'Same person (same email)',same_address:'Same address as the referrer',monthly_limit:'Referrer already got 10 rewards in 30 days'};
 const L={
  bookings:{t:'bookings',o:'created_at',s:['service_name','address'],cols:[
   ['Service',r=>esc(r.service_name)],['Customer',r=>who(r.user_id)],
@@ -156,7 +158,7 @@ const L={
  referrals:{t:'referrals',o:'created_at',s:['code'],cols:[
   ['Referrer',r=>who(r.referrer_id)],['Friend',r=>who(r.referred_id)],['Code',r=>esc(r.code||'—')],
   ['Status',r=>pill(r.status||'—')],['Coins each',r=>r.status==='rewarded'?esc(r.coins_each):'—'],
-  ['Joined',r=>dt(r.created_at)],['Rewarded',r=>r.rewarded_at?dt(r.rewarded_at):'—'],['Note',r=>esc(r.reject_reason||'—')]]},
+  ['Joined',r=>dt(r.created_at)],['Rewarded',r=>r.rewarded_at?dt(r.rewarded_at):'—'],['Note',r=>esc(RR[r.reject_reason]||r.reject_reason||'—')]]},
  services:{t:'services',o:'title',asc:1,cols:[
   ['Service',r=>esc(r.title)],['Category',r=>esc(r.category)],['Price',r=>inr(r.price)],['Description',r=>esc(r.description)],
   ['',r=>btn('svc',r.id,'Edit price','data-p="'+esc(r.price)+'" data-n="'+esc(r.title)+'"')]]},
@@ -190,19 +192,20 @@ async function lv(k){
 }
 const cnt=(t,f)=>{let q=sb.from(t).select('*',{count:'exact',head:true});if(f)q=f(q);return q.then(r=>{if(r.error)throw new Error(r.error.message||('Cannot read '+t+' (permission or network)'));return r.count||0})};
 async function ov(){
-  const [tb,ab,cu,ot,pr,nm,pay,rec,rt,rr,rp]=await Promise.all([
+  const [tb,ab,cu,ot,pr,nm,pay,rec,rt,rr,rp,rj,rc]=await Promise.all([
    cnt('bookings'),cnt('bookings',q=>q.not('status','ilike','completed')),cnt('profiles'),
    cnt('support_tickets',q=>q.eq('status','open')),cnt('reviews',q=>q.eq('is_approved',false)),cnt('contact_messages',q=>q.eq('status','new')),
    sb.from('payments').select('amount,created_at').eq('status','SUCCESS').limit(1000),
    sb.from('bookings').select('*').order('created_at',{ascending:false}).order('id').limit(6),
-   cnt('referrals'),cnt('referrals',q=>q.eq('status','rewarded')),cnt('referrals',q=>q.eq('status','pending'))]);
+   cnt('referrals'),cnt('referrals',q=>q.eq('status','rewarded')),cnt('referrals',q=>q.eq('status','pending')),
+   cnt('referrals',q=>q.eq('status','rejected')),sb.from('referrals').select('coins_each').eq('status','rewarded').limit(1000)]);
   if(pay.error)throw pay.error;if(rec.error)throw rec.error;
   const ms=new Date();ms.setDate(1);ms.setHours(0,0,0,0);
   const tot=pay.data.reduce((s,p)=>s+p.amount,0)/100,mon=pay.data.filter(p=>new Date(p.created_at)>=ms).reduce((s,p)=>s+p.amount,0)/100;
   const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push([d,0])}
   pay.data.forEach(p=>{const t=new Date(p.created_at);t.setHours(0,0,0,0);const x=days.find(y=>y[0].getTime()===t.getTime());if(x)x[1]+=p.amount/100});
   const mx=Math.max(1,...days.map(y=>y[1]));
-  const K2=[['Revenue (paid)',inr(tot)],['This month',inr(mon)],['Total bookings',tb],['Active bookings',ab],['Customers',cu],['Open tickets',ot],['Reviews to approve',pr],['New messages',nm],['Referrals (total)',rt],['Referrals rewarded',rr],['Referrals waiting to book',rp]];
+  const K2=[['Revenue (paid)',inr(tot)],['This month',inr(mon)],['Total bookings',tb],['Active bookings',ab],['Customers',cu],['Open tickets',ot],['Reviews to approve',pr],['New messages',nm],['Referrals (total)',rt],['Referrals rewarded',rr],['Referrals waiting to book',rp],['Referrals rejected',rj],['Referral coins given (both sides)',rc.error?'—':rc.data.reduce((s,x)=>s+(x.coins_each||0),0)*2]];
   $('#v').innerHTML='<div class="kpis">'+K2.map(k=>'<div class="card kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('')+'</div>'+
    '<div class="card" style="margin-bottom:16px"><b>Revenue, last 14 days</b><div class="ch">'+days.map(y=>'<i title="'+y[0].toLocaleDateString('en-IN',{day:'numeric',month:'short'})+': '+inr(y[1])+'" style="height:'+Math.max(3,y[1]/mx*100)+'%"></i>').join('')+'</div></div>'+
    '<h3>Recent bookings</h3>'+tbl(L.bookings.cols,rec.data);
@@ -256,7 +259,7 @@ async function csv(){
   const ks=Object.keys(r.data[0]);
   const f=v=>{v=v==null?'':typeof v==='object'?JSON.stringify(v):String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
   const s=[ks.map(f).join(',')].concat(r.data.map(x=>ks.map(k=>f(x[k])).join(','))).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+s],{type:'text/csv'}));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+s],{type:'text/csv'}));
   a.download=st.k+'-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
 document.addEventListener('click',async e=>{
