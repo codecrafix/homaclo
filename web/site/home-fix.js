@@ -2,7 +2,7 @@
 'use strict';
 /* Home stats.
    - Numbers count up ONCE per page load with one shared timer (page re-renders while loading just continue it).
-   - Customer rating: shows 0.0, then counts up to the real average once the reviews are loaded (5.0 if none).
+   - The old "Customer rating" stat was replaced with a factual "2 hr time slot" stat (no rating is shown on the home page).
    - Text is changed through the existing text node, so the animation does not wake up the page's DOM watchers on every frame (smoother). */
 const D=1200,RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s);
@@ -13,6 +13,7 @@ let T0=0,fin=false,AVG=null,T1=0;
 const _hv=homeView;
 homeView=function(){
   return _hv()
+    .replace(/<div class="stat"><b id="st-r">[^<]*<\/b><span class="muted">Customer rating<\/span><\/div>/,'<div class="stat"><b>2 hr</b><span class="muted">Pick your time slot</span></div>')
     .replace(/<b id="st-r">[^<]*<\/b>/,'<b id="st-r" data-run="1">0.0 ★</b>')
     .replace(/(<div class="stat">)<b>/g,'$1<b data-run="1" data-final="1">');
 };

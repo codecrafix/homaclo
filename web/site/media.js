@@ -5,7 +5,7 @@ function fig(n,alt,cap,cls){const f=document.createElement('figure');f.className
 
 /* Home hero: render the live photo directly in the home markup (no old animated SVG placeholder first,
    so nothing "swaps" after load). The photo is also preloaded from index.html. */
-const HERO='<div class="hero-img"><img src="'+P(8)+'" alt="Homaclo technician cleaning a rooftop water tank with a pressure washer" width="460" height="575" decoding="async" fetchpriority="high" onerror="this.parentNode.remove()"><span class="hb">Starting ₹1,000</span><span class="hb2">TDS tested &amp; certified</span></div>';
+const HERO='<div class="hero-img"><img src="'+P(8)+'" alt="Homaclo technician cleaning a rooftop water tank with a pressure washer" width="460" height="575" decoding="async" fetchpriority="high" onerror="this.parentNode.remove()"><span class="hb">Starting ₹1,000</span><span class="hb2">Fixed, upfront pricing</span></div>';
 if(typeof homeView==='function'){const _hv=homeView;homeView=function(){return _hv().replace(/<svg[^>]*class="tankart"[\s\S]*?<\/svg>/,HERO)}}
 
 const ROWS=[[2,'Trained, uniformed professionals','Every visit is handled by a uniformed Homaclo technician with gloves and proper gear, so your tank is cleaned carefully and hygienically.',['Careful, step-by-step cleaning','Safety gear on every job','Respectful of your home']],
