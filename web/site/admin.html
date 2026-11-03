@@ -111,7 +111,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.className='show';clearTi
 const lm=m=>{$('#lm').textContent=m};
 const show=w=>{$('#login').hidden=w!=='login';$('#app').hidden=w!=='app'};
 const busy=(s,b)=>{$(s).disabled=b};
-const pill=s=>{const c=/success|approved|completed|resolved|active/i.test(s)?'ok':/fail|cancel|inactive/i.test(s)?'er':/pending|open|new|progress/i.test(s)?'wa':'';return '<span class="pill '+c+'">'+esc(s)+'</span>'};
+const pill=s=>{const c=/success|approved|completed|resolved|active|rewarded/i.test(s)?'ok':/fail|cancel|inactive|reject/i.test(s)?'er':/pending|open|new|progress/i.test(s)?'wa':'';return '<span class="pill '+c+'">'+esc(s)+'</span>'};
 const who=id=>{const p=PM[id];return p?esc(p.full_name||p.email||String(id).slice(0,8)):esc(String(id||'').slice(0,8)||'—')};
 function sel(t,id,f,val,opts){
   const o=opts.indexOf(val)<0&&val?opts.concat([val]):opts;
@@ -152,6 +152,11 @@ const L={
   ['Used',r=>r.used_count+(r.max_uses?' / '+r.max_uses:'')],['Expires',r=>r.expires_at?dt(r.expires_at):'Never'],
   ['Status',r=>pill(r.is_active?'Active':'Inactive')],
   ['',r=>btn('ctog',r.id,r.is_active?'Disable':'Enable','data-v="'+!r.is_active+'"')+btn('del',r.id,'Delete','data-t="coupons"','er')]]},
+ /* read-only: referral rewards are given automatically by the database, the admin only watches them */
+ referrals:{t:'referrals',o:'created_at',s:['code'],cols:[
+  ['Referrer',r=>who(r.referrer_id)],['Friend',r=>who(r.referred_id)],['Code',r=>esc(r.code||'—')],
+  ['Status',r=>pill(r.status||'—')],['Coins each',r=>r.status==='rewarded'?esc(r.coins_each):'—'],
+  ['Joined',r=>dt(r.created_at)],['Rewarded',r=>r.rewarded_at?dt(r.rewarded_at):'—'],['Note',r=>esc(r.reject_reason||'—')]]},
  services:{t:'services',o:'title',asc:1,cols:[
   ['Service',r=>esc(r.title)],['Category',r=>esc(r.category)],['Price',r=>inr(r.price)],['Description',r=>esc(r.description)],
   ['',r=>btn('svc',r.id,'Edit price','data-p="'+esc(r.price)+'" data-n="'+esc(r.title)+'"')]]},
@@ -159,7 +164,7 @@ const L={
   form:'<div class="fm w"><input id="bt" placeholder="Title" maxlength="80"><textarea id="bb" placeholder="Message to all customers" maxlength="400"></textarea><button class="btn" data-a="bsend">Send to all customers</button></div>',
   cols:[['Title',r=>esc(r.title)],['Message',r=>esc(r.body)],['Sent',r=>dt(r.created_at)]]}
 };
-const NAV=[['overview','Overview','📊'],['bookings','Bookings','📅'],['customers','Customers','👥'],['payments','Payments','💳'],['reviews','Reviews','⭐'],['tickets','Support tickets','🎧'],['messages','Contact messages','✉️'],['coupons','Coupons','🏷️'],['services','Services & pricing','🛠️'],['broadcast','Broadcasts','📣']];
+const NAV=[['overview','Overview','📊'],['bookings','Bookings','📅'],['customers','Customers','👥'],['payments','Payments','💳'],['reviews','Reviews','⭐'],['tickets','Support tickets','🎧'],['messages','Contact messages','✉️'],['coupons','Coupons','🏷️'],['referrals','Referrals','🎁'],['services','Services & pricing','🛠️'],['broadcast','Broadcasts','📣']];
 
 /* ---------- rendering ---------- */
 function tbl(cols,rows){
@@ -185,18 +190,19 @@ async function lv(k){
 }
 const cnt=(t,f)=>{let q=sb.from(t).select('*',{count:'exact',head:true});if(f)q=f(q);return q.then(r=>{if(r.error)throw new Error(r.error.message||('Cannot read '+t+' (permission or network)'));return r.count||0})};
 async function ov(){
-  const [tb,ab,cu,ot,pr,nm,pay,rec]=await Promise.all([
+  const [tb,ab,cu,ot,pr,nm,pay,rec,rt,rr,rp]=await Promise.all([
    cnt('bookings'),cnt('bookings',q=>q.not('status','ilike','completed')),cnt('profiles'),
    cnt('support_tickets',q=>q.eq('status','open')),cnt('reviews',q=>q.eq('is_approved',false)),cnt('contact_messages',q=>q.eq('status','new')),
    sb.from('payments').select('amount,created_at').eq('status','SUCCESS').limit(1000),
-   sb.from('bookings').select('*').order('created_at',{ascending:false}).order('id').limit(6)]);
+   sb.from('bookings').select('*').order('created_at',{ascending:false}).order('id').limit(6),
+   cnt('referrals'),cnt('referrals',q=>q.eq('status','rewarded')),cnt('referrals',q=>q.eq('status','pending'))]);
   if(pay.error)throw pay.error;if(rec.error)throw rec.error;
   const ms=new Date();ms.setDate(1);ms.setHours(0,0,0,0);
   const tot=pay.data.reduce((s,p)=>s+p.amount,0)/100,mon=pay.data.filter(p=>new Date(p.created_at)>=ms).reduce((s,p)=>s+p.amount,0)/100;
   const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push([d,0])}
   pay.data.forEach(p=>{const t=new Date(p.created_at);t.setHours(0,0,0,0);const x=days.find(y=>y[0].getTime()===t.getTime());if(x)x[1]+=p.amount/100});
   const mx=Math.max(1,...days.map(y=>y[1]));
-  const K2=[['Revenue (paid)',inr(tot)],['This month',inr(mon)],['Total bookings',tb],['Active bookings',ab],['Customers',cu],['Open tickets',ot],['Reviews to approve',pr],['New messages',nm]];
+  const K2=[['Revenue (paid)',inr(tot)],['This month',inr(mon)],['Total bookings',tb],['Active bookings',ab],['Customers',cu],['Open tickets',ot],['Reviews to approve',pr],['New messages',nm],['Referrals (total)',rt],['Referrals rewarded',rr],['Referrals waiting to book',rp]];
   $('#v').innerHTML='<div class="kpis">'+K2.map(k=>'<div class="card kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('')+'</div>'+
    '<div class="card" style="margin-bottom:16px"><b>Revenue, last 14 days</b><div class="ch">'+days.map(y=>'<i title="'+y[0].toLocaleDateString('en-IN',{day:'numeric',month:'short'})+': '+inr(y[1])+'" style="height:'+Math.max(3,y[1]/mx*100)+'%"></i>').join('')+'</div></div>'+
    '<h3>Recent bookings</h3>'+tbl(L.bookings.cols,rec.data);
