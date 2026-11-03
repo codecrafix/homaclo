@@ -24,3 +24,21 @@
   .nav .nav-r .icon,.nav .nav-r .burger{width:34px;height:34px;min-width:34px;min-height:34px;padding:0;font-size:.9rem;border-radius:10px}
   .nav .nav-r .btn{padding:6px 10px;font-size:.78rem;white-space:nowrap}
 }
+
+/* Mobile header layout (phones, up to 520px), two rows:
+   top row    -> Refer & Earn (gift) and Language (globe), on the right;
+   second row -> logo, Theme, Bell, Sign in / Sign out and Menu together on one line.
+   Only the order on screen changes (the buttons themselves, their sizes and what they do stay the same).
+   Desktop and tablet layouts are not touched. */
+@media (max-width:520px){
+  .nav{row-gap:0}
+  .nav .nav-r{display:contents}
+  .nav::before{content:"";order:3;flex:0 0 100%;height:0}
+  .nav #hmRef{order:1;margin-left:auto;margin-bottom:4px}
+  .nav #hmLang{order:2;margin-bottom:4px}
+  .nav>.logo{order:4}
+  .nav .nav-r [data-act="theme"]{order:5;margin-left:auto}
+  .nav #nbBell{order:6}
+  .nav #authBtn{order:7}
+  .nav .nav-r .burger{order:8}
+}
