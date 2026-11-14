@@ -501,9 +501,13 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                         ),
                       ),
                       const SiteFooter(),
-                      SafeArea(
-                        top: false,
-                        child: const SizedBox.shrink(),
+                      // Keep the footer colour under the system navigation bar.
+                      ColoredBox(
+                        color: const Color(0xFF0F172A),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: MediaQuery.of(context).padding.bottom,
+                        ),
                       ),
                     ],
                   ),
