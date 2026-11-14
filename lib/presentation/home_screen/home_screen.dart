@@ -6,19 +6,23 @@ import '../../providers/app_state.dart';
 import '../../widgets/gps_enforcement_wrapper.dart';
 import '../../widgets/site_footer.dart';
 import 'package:provider/provider.dart';
-import './widgets/home_before_after_widget.dart';
-import './widgets/home_cleaning_process_widget.dart';
-import './widgets/home_faqs_widget.dart';
-import './widgets/home_hero_banner_widget.dart';
 import './widgets/home_info_strip.dart';
-import './widgets/home_services_widget.dart';
-import './widgets/home_why_clean_widget.dart';
+import './widgets/home_web_sections.dart';
 
+/// Home screen: same content and order as the Homaclo website home page
+/// (hero, stats, services, how it works, why Homaclo, reviews, call to action).
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Widget section(Widget child, {double top = 22}) => SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, top, 16, 0),
+        child: child,
+      ),
+    );
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppTheme.overlayFor(Theme.of(context).brightness == Brightness.dark),
       child: GpsEnforcementWrapper(
@@ -35,42 +39,13 @@ class HomeScreen extends StatelessWidget {
               ),
               slivers: [
                 const SliverToBoxAdapter(child: HomeInfoStrip()),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: HomeHeroBannerWidget(),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: HomeBeforeAfterWidget(),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: HomeWhyCleanWidget(),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: HomeServicesWidget(),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: HomeCleaningProcessWidget(),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: HomeFaqsWidget(),
-                  ),
-                ),
+                section(const HomeWebHero(), top: 16),
+                section(const HomeWebStats()),
+                section(const HomeWebServices(), top: 28),
+                section(const HomeWebHowItWorks(), top: 28),
+                section(const HomeWebWhy(), top: 28),
+                section(const HomeWebReviews(), top: 28),
+                section(const HomeWebCta(), top: 28),
                 const SliverToBoxAdapter(child: SizedBox(height: 28)),
                 const SliverToBoxAdapter(child: SiteFooter()),
                 // Room for the floating bottom nav, same colour as the footer end.
