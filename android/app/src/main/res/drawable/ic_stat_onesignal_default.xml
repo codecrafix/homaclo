@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Small status-bar icon for push notifications (OneSignal looks for this
-     exact name). Must be white on transparent. -->
+<!-- Push notification small icon: Homaclo drop (alpha mask, shown white). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="1024"
-    android:viewportHeight="1024">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M462,177 C300,176 118,270 108,440 L103,740 C103,800 150,840 205,840 C262,840 307,795 307,740 L312,410 C322,300 380,200 462,177 Z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M757,183 C560,180 410,290 402,445 L397,745 C397,805 445,848 497,848 C552,848 598,805 598,745 L606,430 C620,300 680,215 757,183 Z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M692,395 C692,330 742,278 806,278 C870,278 920,330 920,395 L913,740 C913,795 865,840 800,840 C735,840 686,795 686,740 Z" />
+        android:pathData="M4,14.5 A8,13 0 0 1 20,14.5 A8,8 0 0 1 4,14.5 Z" />
 </vector>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Homaclo drop, single colour: themed (monochrome) launcher icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M33.25,60.5 A20.75,33.5 0 0 1 74.75,60.5 A20.75,20.5 0 0 1 33.25,60.5 Z" />
+</vector>
