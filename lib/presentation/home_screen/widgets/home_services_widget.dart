@@ -1,22 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_theme.dart';
 import '../../../routes/app_routes.dart';
 import '../../../services/solar_cart.dart';
 
 class HomeServicesWidget extends StatelessWidget {
   const HomeServicesWidget({super.key});
-
-  Future<void> _openWhatsApp() async {
-    final uri = Uri.parse(
-      'https://wa.me/916262262913?text=Hi%20Homaclo%2C%20I%20want%20to%20enquire%20about%20Solar%20Maintenance',
-    );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,25 +45,28 @@ class HomeServicesWidget extends StatelessWidget {
           buttonLabel: 'Book Now',
           buttonColor: AppTheme.tealAccent,
           onTap: () {
-            SolarCart.instance.setSolar(false);
+            SolarCart.instance.setMode(BookingMode.water);
             context.go(AppRoutes.bookingScreen);
           },
         ),
         const SizedBox(height: 12),
-        // Solar Maintenance
+        // Solar Maintenance & Repair — bookable, flat ₹1,000 (same as website)
         _ServiceCard(
           icon: Icons.solar_power_rounded,
           iconColor: AppTheme.warning,
           iconBg: AppTheme.warning.withAlpha(26),
           title: 'Solar Maintenance & Repair',
-          subtitle: 'Inverter check, wiring & panel repair',
+          subtitle: 'Inverter check, wiring & panel repair • ₹1,000',
           features: const [],
-          buttonLabel: 'Enquire on WhatsApp',
-          buttonColor: const Color(0xFF25D366),
-          onTap: _openWhatsApp,
+          buttonLabel: 'Book Now',
+          buttonColor: AppTheme.tealAccent,
+          onTap: () {
+            SolarCart.instance.setMode(BookingMode.repair);
+            context.go(AppRoutes.bookingScreen);
+          },
         ),
         const SizedBox(height: 12),
-        // Solar Panel Cleaning — now ACTIVE
+        // Solar Panel Cleaning
         _ServiceCard(
           icon: Icons.wb_sunny_rounded,
           iconColor: AppTheme.warning,
@@ -84,7 +77,7 @@ class HomeServicesWidget extends StatelessWidget {
           buttonLabel: 'Book Now',
           buttonColor: AppTheme.tealAccent,
           onTap: () {
-            SolarCart.instance.setSolar(true);
+            SolarCart.instance.setMode(BookingMode.solar);
             context.go(AppRoutes.bookingScreen);
           },
         ),
@@ -103,7 +96,6 @@ class _ServiceCard extends StatelessWidget {
   final String buttonLabel;
   final Color buttonColor;
   final VoidCallback? onTap;
-  final String? badge;
 
   const _ServiceCard({
     required this.icon,
@@ -115,7 +107,6 @@ class _ServiceCard extends StatelessWidget {
     required this.buttonLabel,
     required this.buttonColor,
     required this.onTap,
-    this.badge,
   });
 
   @override
@@ -149,39 +140,13 @@ class _ServiceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                    ),
-                    if (badge != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.divider,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          badge!,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textMuted,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                  ],
+                Text(
+                  title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
                 Text(
                   subtitle,
@@ -224,9 +189,7 @@ class _ServiceCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onTap,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: onTap != null
-                          ? buttonColor
-                          : AppTheme.divider,
+                      backgroundColor: buttonColor,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -238,9 +201,7 @@ class _ServiceCard extends StatelessWidget {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: onTap != null
-                            ? Colors.white
-                            : AppTheme.textMuted,
+                        color: Colors.white,
                       ),
                     ),
                   ),
