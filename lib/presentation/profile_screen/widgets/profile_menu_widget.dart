@@ -297,67 +297,6 @@ class ProfileMenuWidget extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceWhite,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Log Out',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to log out of your Homaclo account?',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            color: AppTheme.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              context.read<AppState>().logout();
-              context.go(AppRoutes.signUpLoginScreen);
-              try {
-                await SupabaseService.instance.signOut();
-              } catch (e) {
-                debugPrint('signOut error (non-critical): $e');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.error,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(
-              'Log Out',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showMyReviewsDialog(BuildContext context) {
     final reviews = context.read<AppState>().myReviews;
     showModalBottomSheet(
@@ -733,7 +672,7 @@ class ProfileMenuWidget extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // ── Theme Toggle ───────────────────────────────────────────────────────────
+        // ── Theme Toggle ────────────────────────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
@@ -804,40 +743,7 @@ class ProfileMenuWidget extends StatelessWidget {
         // NOTE: Special Offer card moved to ProfileSpecialOfferWidget
         // (shown right below the Active Offer card on the profile screen).
 
-        // ── Admin Panel button REMOVED from user profile UI ──
-        // Admin is accessible only at /admin route directly
-
-        // Logout button
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: () => _showLogoutDialog(context),
-            icon: const Icon(
-              Icons.logout_rounded,
-              color: AppTheme.error,
-              size: 20,
-            ),
-            label: Text(
-              'Log Out',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.error,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: AppTheme.error.withAlpha(128),
-                width: 1.5,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
+        // Logout button removed from Profile (Sign out lives in the top header).
         Text(
           'Homaclo © 2026 · @maintix.in · v1.0.0',
           style: GoogleFonts.plusJakartaSans(
