@@ -24,6 +24,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
   static const Color _cyan = Color(0xFF1ACBE8);
   static const Color _cyanDark = Color(0xFF0BB5D6);
   static const Color _ink = Color(0xFF04121F);
+  static const Color _link = Color(0xFF6FE3F5);
 
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -120,6 +121,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
   }
 
   Future<void> _continueWithGoogle() async {
+    FocusScope.of(context).unfocus();
     setState(() {
       _isGoogleLoading = true;
       _errorMessage = null;
@@ -129,8 +131,12 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
     } catch (e) {
       debugPrint('Google sign-in error: $e');
       if (mounted) {
+        // Short technical reason is shown so a failure can be diagnosed from a
+        // screenshot (e.g. redirect not allow-listed, Native API disabled).
+        var detail = e.toString().split('\n').first.trim();
+        if (detail.length > 140) detail = '${detail.substring(0, 140)}…';
         setState(() {
-          _errorMessage = 'Google sign-in failed. Please try again.';
+          _errorMessage = 'Google sign-in failed. Please try again.\n($detail)';
         });
       }
     } finally {
@@ -138,30 +144,33 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
     }
   }
 
+  OutlineInputBorder _border([Color? c, double w = 0]) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: c == null ? BorderSide.none : BorderSide(color: c, width: w),
+      );
+
   Widget _brand() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 16,
-          height: 22,
+          width: 13,
+          height: 18,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [Color(0xFF3DE0F5), _cyanDark],
             ),
-            borderRadius: const BorderRadius.all(Radius.elliptical(8, 12)),
-            boxShadow: [
-              BoxShadow(color: _cyan.withAlpha(120), blurRadius: 12),
-            ],
+            borderRadius: const BorderRadius.all(Radius.elliptical(6.5, 10)),
+            boxShadow: [BoxShadow(color: _cyan.withAlpha(120), blurRadius: 10)],
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         Text(
           'Homaclo',
           style: GoogleFonts.fraunces(
-            fontSize: 24,
+            fontSize: 20,
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
@@ -174,10 +183,10 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
     final busy = _isLoading || _isGoogleLoading;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(22),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withAlpha(46)),
       ),
       child: Column(
@@ -186,30 +195,30 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
           Text(
             'Continue with email',
             style: GoogleFonts.fraunces(
-              fontSize: 26,
+              fontSize: 21,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'We’ll email you a one-time code. New here? Your account is created automatically.',
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 15,
-              height: 1.45,
+              fontSize: 13,
+              height: 1.4,
               color: Colors.white.withAlpha(190),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           Text(
             'Email address',
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
               color: Colors.white.withAlpha(230),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -218,75 +227,66 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.email],
             onSubmitted: (_) => busy ? null : _sendOtp(),
-            style: GoogleFonts.plusJakartaSans(fontSize: 16, color: _ink),
+            style: GoogleFonts.plusJakartaSans(fontSize: 15, color: _ink),
             decoration: InputDecoration(
+              isDense: true,
               hintText: 'you@example.com',
               hintStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
+                fontSize: 15,
                 color: const Color(0xFF8493A8),
               ),
               prefixIcon: const Padding(
-                padding: EdgeInsets.only(left: 14, right: 8),
-                child: Text('✉️', style: TextStyle(fontSize: 18)),
+                padding: EdgeInsets.only(left: 12, right: 8),
+                child: Text('✉️', style: TextStyle(fontSize: 16)),
               ),
               prefixIconConstraints: const BoxConstraints(minWidth: 0),
               filled: true,
               fillColor: const Color(0xFFF5F7FB),
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(color: _cyan, width: 2),
-              ),
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              border: _border(),
+              enabledBorder: _border(),
+              focusedBorder: _border(_cyan, 2),
             ),
           ),
           if (_errorMessage != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               _errorMessage!,
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
+                fontSize: 12.5,
+                height: 1.35,
                 color: const Color(0xFFFFA3A3),
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           Opacity(
             opacity: busy ? 0.7 : 1,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
                 onTap: busy ? null : _sendOtp,
                 child: Ink(
-                  height: 56,
+                  height: 50,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_cyanDark, _cyan],
-                    ),
-                    borderRadius: BorderRadius.circular(18),
+                    gradient: const LinearGradient(colors: [_cyanDark, _cyan]),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: _cyan.withAlpha(90),
-                        blurRadius: 22,
-                        offset: const Offset(0, 8),
+                        color: _cyan.withAlpha(80),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Center(
                     child: _isLoading
                         ? const SizedBox(
-                            width: 22,
-                            height: 22,
+                            width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
                               color: _ink,
@@ -295,7 +295,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                         : Text(
                             'Send code  →',
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 17,
+                              fontSize: 15.5,
                               fontWeight: FontWeight.w800,
                               color: _ink,
                             ),
@@ -306,16 +306,16 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
             ),
           ),
           if (ClerkBridge.isSupported) ...[
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(child: Divider(color: Colors.white.withAlpha(60))),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     'or',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.white.withAlpha(170),
                     ),
                   ),
@@ -323,10 +323,10 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                 Expanded(child: Divider(color: Colors.white.withAlpha(60))),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 50,
               child: ElevatedButton(
                 onPressed: busy ? null : _continueWithGoogle,
                 style: ElevatedButton.styleFrom(
@@ -335,13 +335,13 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                   foregroundColor: _ink,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: _isGoogleLoading
                     ? const SizedBox(
-                        width: 22,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
                           color: _cyanDark,
@@ -350,12 +350,12 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const _GoogleG(size: 24),
-                          const SizedBox(width: 12),
+                          const _GoogleG(size: 20),
+                          const SizedBox(width: 10),
                           Text(
                             'Continue with Google',
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 17,
+                              fontSize: 15.5,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF1B2433),
                             ),
@@ -365,13 +365,13 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
               ),
             ),
           ],
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           Center(
             child: Text.rich(
               TextSpan(
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  height: 1.5,
+                  fontSize: 12.5,
+                  height: 1.45,
                   color: Colors.white.withAlpha(190),
                 ),
                 children: [
@@ -380,7 +380,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                     text: 'Terms',
                     recognizer: _termsTap,
                     style: const TextStyle(
-                      color: Color(0xFF6FE3F5),
+                      color: _link,
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -389,7 +389,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
                     text: 'Privacy Policy',
                     recognizer: _privacyTap,
                     style: const TextStyle(
-                      color: Color(0xFF6FE3F5),
+                      color: _link,
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -406,45 +406,58 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
 
   Widget _benefitTile(List<String> b) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(16),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.white.withAlpha(40)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: _cyan.withAlpha(36),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: _cyan.withAlpha(70)),
             ),
-            child: Text(b[0], style: const TextStyle(fontSize: 20)),
+            child: Text(b[0], style: const TextStyle(fontSize: 16)),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             b[1],
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 15,
+              fontSize: 13,
               fontWeight: FontWeight.w800,
-              height: 1.3,
+              height: 1.25,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Text(
             b[2],
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 12,
-              height: 1.4,
+              fontSize: 11,
+              height: 1.35,
               color: Colors.white.withAlpha(165),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _benefitRow(int i) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _benefitTile(_benefits[i])),
+          const SizedBox(width: 10),
+          Expanded(child: _benefitTile(_benefits[i + 1])),
         ],
       ),
     );
@@ -467,43 +480,37 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
           child: SafeArea(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 24),
               child: Column(
                 children: [
                   _brand(),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 14),
                   Text(
                     'Welcome to Homaclo',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.fraunces(
-                      fontSize: 38,
-                      height: 1.1,
+                      fontSize: 29,
+                      height: 1.12,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Text(
                     'Sign in or create your account in seconds. No password needed.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      height: 1.45,
+                      fontSize: 14,
+                      height: 1.4,
                       color: Colors.white.withAlpha(190),
                     ),
                   ),
-                  const SizedBox(height: 26),
-                  _card(),
                   const SizedBox(height: 18),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 0.88,
-                    children: _benefits.map(_benefitTile).toList(),
-                  ),
+                  _card(),
+                  const SizedBox(height: 14),
+                  _benefitRow(0),
+                  const SizedBox(height: 10),
+                  _benefitRow(2),
                 ],
               ),
             ),
