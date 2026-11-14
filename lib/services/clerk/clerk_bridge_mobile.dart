@@ -28,7 +28,9 @@ class ClerkBridge {
 
   static const bool isSupported = true;
 
-  static const String _redirectScheme = 'maintix';
+  // OAuth redirect: homaclo://auth/oauth (must be allow-listed in the Clerk
+  // dashboard: Configure > Native applications > Allowlist for mobile SSO redirect)
+  static const String _redirectScheme = 'homaclo';
   static const String _redirectHost = 'auth';
   static const String _oauthPath = '/oauth';
 
