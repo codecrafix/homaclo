@@ -8,6 +8,7 @@ import '../../providers/app_state.dart';
 import './widgets/reviews_card_widget.dart';
 import './widgets/reviews_stats_widget.dart';
 import '../../widgets/gps_enforcement_wrapper.dart';
+import '../../widgets/site_footer.dart';
 
 class ReviewsScreen extends StatefulWidget {
   const ReviewsScreen({super.key});
@@ -147,7 +148,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-              color: Colors.white,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -300,225 +301,225 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     },
   ];
 
+  /// Website-style navy band with the average rating (like the site's .band).
+  Widget _heroBand(AppState appState) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF072654), Color(0xFF0A3B66)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.star_rounded, color: AppTheme.warning, size: 24),
+              const SizedBox(width: 6),
+              Text(
+                appState.publicAvgRating > 0
+                    ? appState.publicAvgRating.toStringAsFixed(1)
+                    : '5.0',
+                style: GoogleFonts.fraunces(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppTheme.success.withAlpha(51),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '✓ Verified',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF34D399),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'What our customers say',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              color: const Color(0xFFC5D6EE),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: Theme.of(context).brightness == Brightness.dark
-          ? SystemUiOverlayStyle.light
-          : SystemUiOverlayStyle.dark,
+      value: AppTheme.overlayFor(Theme.of(context).brightness == Brightness.dark),
       child: GpsEnforcementWrapper(
         child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
-            onRefresh: _refreshReviews,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              slivers: [
-              SliverAppBar(
-                backgroundColor: AppTheme.primaryNavy,
-                pinned: true,
-                expandedHeight: 120,
-                elevation: 0,
-                scrolledUnderElevation: 0,
-                automaticallyImplyLeading: false,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppTheme.primaryNavy, Color(0xFF1A3F5C)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+          backgroundColor: AppTheme.background,
+          body: SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+              onRefresh: _refreshReviews,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  SliverToBoxAdapter(child: _heroBand(appState)),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: ReviewsStatsWidget(),
                     ),
-                    padding: const EdgeInsets.fromLTRB(20, 56, 20, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              color: AppTheme.warning,
-                              size: 22,
+                  ),
+                  // Write a Review button
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _onWriteReviewTapped(context),
+                          icon: const Icon(Icons.rate_review_rounded, size: 18),
+                          label: Text(
+                            'Write a Review',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                             appState.publicAvgRating  > 0
-                                  ? appState.publicAvgRating.toStringAsFixed(1)
-                                  : '5.0',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.tealAccent,
+                            foregroundColor: const Color(0xFF04202A),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            const SizedBox(width: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.success.withAlpha(51),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '✓ Verified',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.success,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'What our customers say',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            color: Colors.white.withAlpha(179),
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: ReviewsStatsWidget(),
-                ),
-              ),
-              // Write a Review button
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _onWriteReviewTapped(context),
-                      icon: const Icon(Icons.rate_review_rounded, size: 18),
-                      label: Text(
-                        'Write a Review',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Text(
+                        'Customer Reviews',
+                        style: GoogleFonts.fraunces(
+                          fontSize: 20,
                           fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.tealAccent,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          color: AppTheme.textPrimary,
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Text(
-                    'Customer Reviews',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    if (appState.reviewsLoading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    else
-                      ...appState.userReviews.map(
-                        (r) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Stack(
-                            children: [
-                              ReviewCardWidget(
-                                name: r.name,
-                                location: 'Satna, MP',
-                                timeAgo: r.timeAgo,
-                                rating: r.rating,
-                                review: r.review,
-                                tag: r.serviceName.isNotEmpty ? r.serviceName : 'Tank Cleaning',
-                                avatarColor: Color(r.avatarColorValue),
-                                initials: r.initials,
-                                photoUrl: r.photoUrl,
-                              ),
-                               if (r.id != null &&
-                                   r.userId == appState.currentUserId)
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _confirmDeleteReview(context, r.id!),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.error.withAlpha(20),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.delete_outline_rounded,
-                                        color: AppTheme.error,
-                                        size: 16,
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        if (appState.reviewsLoading)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        else
+                          ...appState.userReviews.map(
+                            (r) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Stack(
+                                children: [
+                                  ReviewCardWidget(
+                                    name: r.name,
+                                    location: 'Satna, MP',
+                                    timeAgo: r.timeAgo,
+                                    rating: r.rating,
+                                    review: r.review,
+                                    tag: r.serviceName.isNotEmpty
+                                        ? r.serviceName
+                                        : 'Tank Cleaning',
+                                    avatarColor: Color(r.avatarColorValue),
+                                    initials: r.initials,
+                                    photoUrl: r.photoUrl,
+                                  ),
+                                  if (r.id != null &&
+                                      r.userId == appState.currentUserId)
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: GestureDetector(
+                                        onTap: () => _confirmDeleteReview(
+                                          context,
+                                          r.id!,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.error.withAlpha(20),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.delete_outline_rounded,
+                                            color: AppTheme.error,
+                                            size: 16,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                            ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        // Localized Satna mock reviews
+                        ..._mockReviews.map(
+                          (r) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: ReviewCardWidget(
+                              name: r['name'] as String,
+                              location: r['location'] as String,
+                              timeAgo: r['timeAgo'] as String,
+                              rating: r['rating'] as int,
+                              review: r['review'] as String,
+                              tag: r['tag'] as String,
+                              avatarColor: r['color'] as Color,
+                              initials: r['initials'] as String,
+                            ),
                           ),
                         ),
-                      ),
-                    // Localized Satna mock reviews
-                    ..._mockReviews.map(
-                      (r) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: ReviewCardWidget(
-                          name: r['name'] as String,
-                          location: r['location'] as String,
-                          timeAgo: r['timeAgo'] as String,
-                          rating: r['rating'] as int,
-                          review: r['review'] as String,
-                          tag: r['tag'] as String,
-                          avatarColor: r['color'] as Color,
-                          initials: r['initials'] as String,
-                        ),
-                      ),
+                      ]),
                     ),
-                  ]),
-                ),
+                  ),
+                  const SliverToBoxAdapter(child: SiteFooter()),
+                  // Room for the floating bottom nav, same colour as the footer end.
+                  const SliverToBoxAdapter(
+                    child: ColoredBox(
+                      color: Color(0xFF0F172A),
+                      child: SizedBox(height: 90, width: double.infinity),
+                    ),
+                  ),
+                ],
               ),
-              ],
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -560,7 +561,7 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         child: Column(
@@ -572,7 +573,7 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: AppTheme.divider,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -580,9 +581,9 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
             const SizedBox(height: 16),
             Text(
               'Write a Review',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
+              style: GoogleFonts.fraunces(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inputTextColor(context),
               ),
             ),
@@ -621,11 +622,11 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
                 fillColor: AppTheme.inputFillColor(context),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: AppTheme.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: AppTheme.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -692,11 +693,11 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
                 fillColor: AppTheme.inputFillColor(context),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: AppTheme.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: AppTheme.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -749,7 +750,7 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: Color(0xFF04202A),
                         ),
                       )
                     : const Icon(Icons.send_rounded, size: 18),
@@ -762,7 +763,7 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.tealAccent,
-                  foregroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF04202A),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -773,8 +774,8 @@ class _ReviewSubmissionSheetState extends State<_ReviewSubmissionSheet> {
             // Extra bottom padding so submit button clears the floating tab bar
             SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
           ],
-       ),
-     ),
+        ),
+      ),
     );
   }
 }

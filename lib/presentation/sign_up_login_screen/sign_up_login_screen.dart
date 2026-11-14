@@ -9,10 +9,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../routes/app_routes.dart';
 import '../../services/clerk/clerk_bridge.dart';
 import '../../services/supabase_service.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/site_footer.dart';
+import '../../widgets/site_header.dart';
 
 /// Sign in / register screen. Mirrors the website's /login page
-/// (same copy, same flow: email one-time code + Google), backed by the same
-/// Supabase project and the same Clerk (production) instance.
+/// (same header, same copy, same flow: email one-time code + Google, same
+/// footer), backed by the same Supabase project and the same Clerk
+/// (production) instance.
 class SignUpLoginScreen extends StatefulWidget {
   const SignUpLoginScreen({super.key});
 
@@ -148,36 +152,6 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
         borderRadius: BorderRadius.circular(16),
         borderSide: c == null ? BorderSide.none : BorderSide(color: c, width: w),
       );
-
-  Widget _brand() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 13,
-          height: 18,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF3DE0F5), _cyanDark],
-            ),
-            borderRadius: const BorderRadius.all(Radius.elliptical(6.5, 10)),
-            boxShadow: [BoxShadow(color: _cyan.withAlpha(120), blurRadius: 10)],
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          'Homaclo',
-          style: GoogleFonts.fraunces(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _card() {
     final busy = _isLoading || _isGoogleLoading;
@@ -465,56 +439,82 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: AppTheme.overlayFor(dark),
       child: Scaffold(
-        backgroundColor: const Color(0xFF061126),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF061126), Color(0xFF0A2149), Color(0xFF0B4A7F)],
-            ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.fromLTRB(18, 20, 18, 24),
-              child: Column(
-                children: [
-                  _brand(),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Welcome to Homaclo',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.fraunces(
-                      fontSize: 29,
-                      height: 1.12,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
+        backgroundColor: AppTheme.background,
+        body: Column(
+          children: [
+            // Same website header as the rest of the app. The sign in button
+            // is hidden because this already is the sign in screen.
+            const SiteHeader(showRefer: false, showAuthButton: false),
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF061126),
+                      Color(0xFF0A2149),
+                      Color(0xFF0B4A7F),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Sign in or create your account in seconds. No password needed.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      height: 1.4,
-                      color: Colors.white.withAlpha(190),
-                    ),
+                ),
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 22, 18, 28),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Welcome to Homaclo',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.fraunces(
+                                fontSize: 29,
+                                height: 1.12,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Sign in or create your account in seconds. No password needed.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                height: 1.4,
+                                color: Colors.white.withAlpha(190),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            _card(),
+                            const SizedBox(height: 14),
+                            _benefitRow(0),
+                            const SizedBox(height: 10),
+                            _benefitRow(2),
+                          ],
+                        ),
+                      ),
+                      const SiteFooter(),
+                      // Keep the footer colour under the system navigation bar.
+                      ColoredBox(
+                        color: const Color(0xFF0F172A),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: MediaQuery.of(context).padding.bottom,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 18),
-                  _card(),
-                  const SizedBox(height: 14),
-                  _benefitRow(0),
-                  const SizedBox(height: 10),
-                  _benefitRow(2),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

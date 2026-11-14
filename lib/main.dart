@@ -15,6 +15,7 @@ import './services/notification_service.dart';
 import './services/supabase_service.dart';
 import './widgets/custom_error_widget.dart';
 import './widgets/global_tap_effect.dart';
+import './widgets/maintix_logo.dart';
 import 'core/app_export.dart';
 
 /// OneSignal App ID — from OneSignal dashboard (Settings > Keys & IDs) for
@@ -101,6 +102,8 @@ void main() {
   );
 }
 
+/// Boot surface shown while services load: the website logo (water drop +
+/// "Homaclo" wordmark) on the website's light background.
 class _BootSplash extends StatelessWidget {
   const _BootSplash();
 
@@ -109,24 +112,19 @@ class _BootSplash extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF5F8FC),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/images/maintix_m_logo.png',
-                width: 132,
-                height: 132,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 28),
-              const SizedBox(
+            children: const [
+              HomacloLogo(),
+              SizedBox(height: 28),
+              SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  color: Color(0xFF00A8CC),
+                  color: Color(0xFF06B6D4),
                 ),
               ),
             ],
@@ -459,10 +457,6 @@ class _MyAppState extends State<MyApp> {
         child: _WebFrame(
           child: Sizer(
             builder: (context, orientation, screenType) {
-              precacheImage(
-                const AssetImage('assets/images/maintix_full_logo.png'),
-                context,
-              );
               return Consumer<AppState>(
                 builder: (context, appState, _) {
                   AppTheme.applySystemUI(appState.themeMode);

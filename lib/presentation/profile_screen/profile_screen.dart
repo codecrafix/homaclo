@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/app_state.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/site_footer.dart';
 import '../../widgets/tap_scale.dart';
 import './widgets/profile_ad_widget.dart';
 import './widgets/profile_header_widget.dart';
@@ -49,11 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-      ),
+      value: AppTheme.overlayFor(isDark),
       child: Scaffold(
         backgroundColor: AppTheme.background,
         body: SafeArea(
@@ -68,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   sliver: SliverToBoxAdapter(
                     child: _entry(0, TapScale(scale: 0.985, child: ProfileHeaderWidget())),
                   ),
@@ -101,7 +98,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: _entry(4, ProfileMenuWidget()),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                const SliverToBoxAdapter(child: SiteFooter()),
+                // Room for the floating bottom nav, same colour as the footer end.
+                const SliverToBoxAdapter(
+                  child: ColoredBox(
+                    color: Color(0xFF0F172A),
+                    child: SizedBox(height: 90, width: double.infinity),
+                  ),
+                ),
               ],
             ),
           ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_theme.dart';
 import '../providers/app_state.dart';
 import 'package:provider/provider.dart';
 import 'tap_scale.dart';
 
-// V2 Floating Pill BottomNav — Bold/Premium family
+// Floating bottom nav, same look as the website's mobile `.bnav`:
+// dark translucent pill, active tab in a blue -> cyan gradient.
 class AppNavigation extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
   const AppNavigation({required this.navigationShell, super.key});
@@ -16,7 +16,9 @@ class AppNavigation extends StatefulWidget {
 }
 
 class _AppNavigationState extends State<AppNavigation> {
-  final List<_TabSpec> _tabs = [
+  static const Color _inactive = Color(0xFF94A3B8);
+
+  final List<_TabSpec> _tabs = const [
     _TabSpec(
       label: 'Home',
       icon: Icons.home_outlined,
@@ -48,22 +50,18 @@ class _AppNavigationState extends State<AppNavigation> {
     final currentIndex = widget.navigationShell.currentIndex;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 14),
       child: Container(
-        height: 64,
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.primaryNavy, AppTheme.headerAlt],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: Colors.white.withAlpha(18)),
-          boxShadow: [
+          color: const Color(0xEB050C1A),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0x1FFFFFFF)),
+          boxShadow: const [
             BoxShadow(
-              color: AppTheme.primaryNavy.withAlpha(100),
-              blurRadius: 26,
-              offset: const Offset(0, 10),
+              color: Color(0x66000000),
+              blurRadius: 30,
+              offset: Offset(0, 12),
             ),
           ],
         ),
@@ -74,69 +72,47 @@ class _AppNavigationState extends State<AppNavigation> {
 
             return Expanded(
               child: TapScale(
-                scale: 0.9,
+                scale: 0.94,
                 onTap: () {
-                  if (tab.branchIndex == null) return;
                   // When tapping the Booking tab, reset cart so it always shows fresh flow
                   if (tab.branchIndex == 1) {
                     context.read<AppState>().resetCart();
                   }
                   widget.navigationShell.goBranch(
-                    tab.branchIndex!,
+                    tab.branchIndex,
                     initialLocation: tab.branchIndex == currentIndex,
                   );
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
+                  duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
-                  margin: const EdgeInsets.all(6),
+                  height: 52,
                   decoration: BoxDecoration(
                     gradient: isActive
                         ? const LinearGradient(
-                            colors: [
-                              AppTheme.tealAccent,
-                              Color(0xFF0088A8),
-                            ],
+                            colors: [Color(0xFF0284C7), Color(0xFF06B6D4)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           )
                         : null,
-                    borderRadius: BorderRadius.circular(26),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.tealAccent.withAlpha(110),
-                              blurRadius: 16,
-                              spreadRadius: 0.5,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : null,
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         isActive ? tab.selectedIcon : tab.icon,
-                        color: isActive
-                            ? Colors.white
-                            : Colors.white.withAlpha(140),
-                        size: isActive ? 22 : 20,
+                        color: isActive ? Colors.white : _inactive,
+                        size: 21,
                       ),
                       const SizedBox(height: 2),
-                      AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 200),
+                      Text(
+                        tab.label,
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10,
-                          fontWeight: isActive
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                          letterSpacing: 0.2,
-                          color: isActive
-                              ? Colors.white
-                              : Colors.white.withAlpha(140),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: isActive ? Colors.white : _inactive,
                         ),
-                        child: Text(tab.label),
                       ),
                     ],
                   ),
@@ -154,7 +130,7 @@ class _TabSpec {
   final String label;
   final IconData icon;
   final IconData selectedIcon;
-  final int? branchIndex;
+  final int branchIndex;
 
   const _TabSpec({
     required this.label,
