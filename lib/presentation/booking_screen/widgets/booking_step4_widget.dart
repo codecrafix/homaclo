@@ -61,7 +61,7 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     return '₹$str';
   }
 
-  /// Service name stored on the booking (solar or water tank).
+  /// Service name stored on the booking (solar cleaning, solar repair or water tank).
   String _serviceName(CartState cart) {
     if (SolarCart.instance.isSolar) return SolarCart.instance.serviceName;
     final label = cart.tankQuantities.entries
@@ -71,18 +71,24 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     return '$label Tank Cleaning';
   }
 
-  /// Saves service_category / solar_kw / solar_panel_count on the booking row.
+  /// Saves service_category (+ solar_kw / solar_panel_count for panel cleaning)
+  /// on the booking row. Solar Repair only stores service_category 'solar',
+  /// exactly like the website.
   Future<void> _saveSolarMeta(String? bookingId) async {
     if (bookingId == null || bookingId.isEmpty) return;
     if (!SolarCart.instance.isSolar) return;
     try {
       await SupabaseService.instance.client
           .from('bookings')
-          .update({
-            'service_category': 'solar',
-            'solar_kw': SolarCart.instance.kw,
-            'solar_panel_count': SolarCart.instance.panels,
-          })
+          .update(
+            SolarCart.instance.isRepair
+                ? {'service_category': 'solar'}
+                : {
+                    'service_category': 'solar',
+                    'solar_kw': SolarCart.instance.kw,
+                    'solar_panel_count': SolarCart.instance.panels,
+                  },
+          )
           .eq('id', bookingId);
     } catch (e) {
       debugPrint('_saveSolarMeta error: $e');
@@ -282,7 +288,7 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
       final status = await RazorpayService.instance.checkOrderStatus(orderId);
       if (status != null && status['status'] == 'SUCCESS') {
         if (!mounted) return;
-        // Solar: make sure service_category/kw/panels are stored on the booking.
+        // Solar: make sure service_category (and kw/panels) are stored on the booking.
         await _saveSolarMeta(status['bookingId'] as String?);
         // Show the success modal BEFORE touching the cart (resetting first
         // snaps BookingScreen back to Step 1 and hides the success state).
@@ -410,7 +416,7 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     await Future.wait([
       coinsFuture,
       if (bookingAlreadyCreated) appState.loadDbBookings(),
-      // Solar: store service_category, solar_kw, solar_panel_count
+      // Solar: store service_category (and solar_kw, solar_panel_count)
       _saveSolarMeta(bookingId),
       RazorpayService.instance.recordPaymentSuccess(
         razorpayOrderId: orderId,
@@ -476,6 +482,7 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
     final coinBalance = appState.coinBalance;
     final solar = SolarCart.instance;
     final bool isSolar = solar.isSolar;
+    final bool isRepair = solar.isRepair;
 
     final List<MapEntry<String, int>> orderItems = cart.tankQuantities.entries
         .where((e) => e.value > 0)
@@ -554,38 +561,58 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
                 if (isSolar)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.wb_sunny_rounded,
-                                color: AppTheme.warning,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  'Solar ${solar.kw}kW • ${solar.panels} panel${solar.panels == 1 ? '' : 's'} × ${_formatPrice(SolarCart.pricePerPanel)}',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13,
-                                    color: AppTheme.textPrimary,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isRepair
+                                        ? Icons.build_rounded
+                                        : Icons.wb_sunny_rounded,
+                                    color: AppTheme.warning,
+                                    size: 14,
                                   ),
-                                ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      isRepair
+                                          ? 'Solar maintenance & repair'
+                                          : 'Solar ${solar.kw}kW • ${solar.panels} panel${solar.panels == 1 ? '' : 's'} × ${_formatPrice(SolarCart.pricePerPanel)}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 13,
+                                        color: AppTheme.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Text(
+                              _formatPrice(solar.total),
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          _formatPrice(solar.total),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
+                        if (isRepair && solar.repairCategory.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, left: 20),
+                            child: Text(
+                              solar.repairCategory,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   )
@@ -761,7 +788,7 @@ class _BookingStep4WidgetState extends State<BookingStep4Widget> {
 
           const SizedBox(height: 16),
 
-          // ── Coupon Code Input ────────────────────────────────────
+          // ── Coupon Code Input ──────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
