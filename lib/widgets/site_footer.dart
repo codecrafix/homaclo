@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../presentation/home_screen/widgets/web_tokens.dart';
 import 'site_header.dart' show SiteLogo;
 import 'tap_scale.dart';
 
-/// Homaclo footer: brand, contact buttons, social icons, services and contact
-/// details. Dark navy gradient in both light and dark mode. Put it at the end
-/// of a scrolling screen (never on the sign-in screen).
+/// Homaclo footer: brand, contact buttons, services and contact details.
+/// Dark navy gradient in both light and dark mode. Put it at the end of a
+/// scrolling screen (never on the sign-in screen).
 class SiteFooter extends StatelessWidget {
   const SiteFooter({super.key});
 
@@ -59,22 +58,6 @@ class SiteFooter extends StatelessWidget {
                   'Email',
                   onTap: () => wOpen('mailto:${WT.mail}'),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _SocialBtn(
-                icon: Icons.camera_alt_outlined,
-                label: 'Instagram',
-                onTap: () => wOpen('https://www.instagram.com/homaclo/'),
-              ),
-              const SizedBox(width: 10),
-              _SocialBtn(
-                icon: Icons.play_arrow_rounded,
-                label: 'YouTube',
-                onTap: () => wOpen('https://www.youtube.com/@homaclo'),
               ),
             ],
           ),
@@ -175,40 +158,6 @@ class _ContactBtn extends StatelessWidget {
             w: FontWeight.w700,
             h: 1.2,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SocialBtn extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _SocialBtn({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: label,
-      button: true,
-      child: TapScale(
-        scale: 0.92,
-        onTap: onTap,
-        child: Container(
-          width: 42,
-          height: 42,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: const Color(0x1A7F7F7F),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0x597F7F7F)),
-          ),
-          child: Icon(icon, size: 21, color: Colors.white),
         ),
       ),
     );

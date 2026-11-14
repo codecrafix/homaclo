@@ -161,78 +161,82 @@ class _LocationSheetState extends State<_LocationSheet> {
         color: WT.sf,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: WT.line,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      // The floating bottom navigation bar sits above this sheet, so leave
+      // room under the content (otherwise the Refresh button is hidden).
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 112,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: WT.line,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.location_on_rounded, color: WT.teal, size: 22),
+              const SizedBox(width: 8),
+              Text('Live Location', style: WT.serif(20)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: WT.bg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: WT.line, width: 1.5),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.location_on_rounded, color: WT.teal, size: 22),
-                const SizedBox(width: 8),
-                Text('Live Location', style: WT.serif(20)),
+                Text(
+                  'CURRENT ADDRESS',
+                  style: WT.sans(
+                    10.5,
+                    color: WT.mut,
+                    w: FontWeight.w700,
+                    ls: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  denied
+                      ? 'Location permission denied. Tap Refresh to retry.'
+                      : (location.isNotEmpty
+                            ? location
+                            : 'Location not yet fetched'),
+                  style: WT.sans(
+                    14,
+                    color: denied ? const Color(0xFFF59E0B) : WT.ink,
+                    w: FontWeight.w600,
+                    h: 1.4,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: WT.bg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: WT.line, width: 1.5),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'CURRENT ADDRESS',
-                    style: WT.sans(
-                      10.5,
-                      color: WT.mut,
-                      w: FontWeight.w700,
-                      ls: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    denied
-                        ? 'Location permission denied. Tap Refresh to retry.'
-                        : (location.isNotEmpty
-                              ? location
-                              : 'Location not yet fetched'),
-                    style: WT.sans(
-                      14,
-                      color: denied ? const Color(0xFFF59E0B) : WT.ink,
-                      w: FontWeight.w600,
-                      h: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            WBtn(
-              _refreshing ? 'Refreshing...' : 'Refresh Live Location',
-              onTap: () {
-                if (!_refreshing) _refresh();
-              },
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          WBtn(
+            _refreshing ? 'Refreshing...' : 'Refresh Live Location',
+            onTap: () {
+              if (!_refreshing) _refresh();
+            },
+          ),
+        ],
       ),
     );
   }

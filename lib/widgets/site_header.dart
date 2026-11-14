@@ -12,7 +12,7 @@ import 'maintix_logo.dart' show HomacloDrop;
 import 'tap_scale.dart';
 
 /// The Homaclo app header: logo on the left, Refer & Earn and Sign in / Sign
-/// out on the right. (Dark-mode toggle and notification bell were removed.)
+/// out on the right. Light / dark mode is switched from Profile.
 ///
 /// It paints its own background behind the status bar, so screens placed
 /// under it must not add the top safe-area inset again.
@@ -44,16 +44,6 @@ class SiteHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
-
-    // Dark mode was removed from the app: reset anyone who had it saved.
-    if (app.themeMode == ThemeMode.dark) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted &&
-            context.read<AppState>().themeMode == ThemeMode.dark) {
-          context.read<AppState>().toggleTheme();
-        }
-      });
-    }
 
     return Container(
       width: double.infinity,
