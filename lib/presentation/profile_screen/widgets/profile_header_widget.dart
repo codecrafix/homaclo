@@ -10,6 +10,7 @@ import '../../../providers/app_state.dart';
 import '../../../routes/app_routes.dart';
 import '../../../widgets/premium_ui.dart';
 
+/// Profile header card. Flat navy card: no light sheen and no glow effects.
 class ProfileHeaderWidget extends StatelessWidget {
   const ProfileHeaderWidget({super.key});
 
@@ -87,20 +88,9 @@ class ProfileHeaderWidget extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(2.5),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [AppTheme.tealAccent, Color(0xFF9BE7F7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppGradients.teal.withOpacity(0.5),
-                blurRadius: 18,
-                spreadRadius: 1,
-              ),
-            ],
+            color: AppTheme.tealAccent,
           ),
           child: Container(
             padding: const EdgeInsets.all(2.5),
@@ -173,26 +163,9 @@ class ProfileHeaderWidget extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryNavy,
-            AppTheme.headerAlt,
-            AppGradients.teal.withOpacity(0.14),
-          ],
-          stops: const [0.0, 0.6, 1.0],
+          colors: [AppTheme.primaryNavy, AppTheme.headerAlt],
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppGradients.teal.withOpacity(0.22), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryNavy.withAlpha(90),
-            blurRadius: 28,
-            offset: const Offset(0, 12),
-          ),
-          BoxShadow(
-            color: AppGradients.teal.withOpacity(0.08),
-            blurRadius: 40,
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -281,16 +254,7 @@ class ProfileHeaderWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(
-                        colors: [AppTheme.tealAccent, AppGradients.cyan],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppGradients.teal.withOpacity(0.4),
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      color: AppTheme.tealAccent,
                     ),
                     child: Text(
                       'Edit Profile',

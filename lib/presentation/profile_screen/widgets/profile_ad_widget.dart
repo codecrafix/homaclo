@@ -77,7 +77,7 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
     if (expiresAt != null) {
       final expiry = DateTime.tryParse(expiresAt);
       if (expiry != null) {
-        final months = [
+        const months = [
           'Jan',
           'Feb',
           'Mar',
@@ -96,6 +96,7 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
       }
     }
 
+    // Flat card: no decorative light circles / glow.
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -104,166 +105,119 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0D9488).withAlpha(77),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Stack(
-        children: [
-          // Decorative circles
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Container(
-              width: 100,
-              height: 100,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withAlpha(20),
+                color: Colors.white.withAlpha(38),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Text('🎁', style: TextStyle(fontSize: 24)),
               ),
             ),
-          ),
-          Positioned(
-            right: 30,
-            bottom: -30,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withAlpha(13),
-              ),
-            ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(38),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Text('🎁', style: TextStyle(fontSize: 24)),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Active Offer',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withAlpha(179),
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        discountAmount > 0
-                            ? '₹$discountAmount OFF'
-                            : description ?? 'Special Discount',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (description != null && discountAmount > 0) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          description,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            color: Colors.white.withAlpha(179),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      if (expiryText.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          expiryText,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 10,
-                            color: Colors.white.withAlpha(153),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => _copyCoupon(code),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Active Offer',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withAlpha(179),
+                      letterSpacing: 0.8,
                     ),
-                    decoration: BoxDecoration(
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    discountAmount > 0
+                        ? '₹$discountAmount OFF'
+                        : description ?? 'Special Discount',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(26),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
-                    child: Column(
+                  ),
+                  if (description != null && discountAmount > 0) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        color: Colors.white.withAlpha(179),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (expiryText.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      expiryText,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        color: Colors.white.withAlpha(153),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _copyCoupon(code),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      code,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0D9488),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          code,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF0D9488),
-                            letterSpacing: 1.2,
-                          ),
+                        Icon(
+                          Icons.copy_rounded,
+                          size: 10,
+                          color: const Color(0xFF0D9488).withAlpha(179),
                         ),
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.copy_rounded,
-                              size: 10,
-                              color: const Color(0xFF0D9488).withAlpha(179),
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              'COPY',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0D9488).withAlpha(179),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 2),
+                        Text(
+                          'COPY',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0D9488).withAlpha(179),
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

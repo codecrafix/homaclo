@@ -7,7 +7,7 @@ import '../../../routes/app_routes.dart';
 import '../../../widgets/premium_ui.dart';
 
 /// Special Offer promo card shown right below the Active Offer card.
-/// Tapping it takes the user to the Booking tab.
+/// Tapping it takes the user to the Booking tab. Flat (no light sheen / glow).
 class ProfileSpecialOfferWidget extends StatelessWidget {
   const ProfileSpecialOfferWidget({super.key});
 
@@ -23,25 +23,12 @@ class ProfileSpecialOfferWidget extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFF0D9488),
-              const Color(0xFF0A2540),
-              AppGradients.cyan.withOpacity(0.18),
-            ],
-            stops: const [0.0, 0.65, 1.0],
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0D9488), Color(0xFF0A2540)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0D9488).withOpacity(0.35),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(18),
@@ -90,16 +77,9 @@ class ProfileSpecialOfferWidget extends StatelessWidget {
               Container(
                 width: 34,
                 height: 34,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(26),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: const Icon(
                   Icons.arrow_forward_rounded,
