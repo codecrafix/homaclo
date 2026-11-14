@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../providers/app_state.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/site_footer.dart';
 import '../../widgets/tap_scale.dart';
 import './widgets/profile_ad_widget.dart';
 import './widgets/profile_header_widget.dart';
@@ -98,15 +97,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: _entry(4, ProfileMenuWidget()),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 28)),
-                const SliverToBoxAdapter(child: SiteFooter()),
-                // Room for the floating bottom nav, same colour as the footer end.
-                const SliverToBoxAdapter(
-                  child: ColoredBox(
-                    color: Color(0xFF0F172A),
-                    child: SizedBox(height: 90, width: double.infinity),
-                  ),
-                ),
+                // No footer here (footer is only on Home). Room for the floating bottom nav.
+                const SliverToBoxAdapter(child: SizedBox(height: 110)),
               ],
             ),
           ),

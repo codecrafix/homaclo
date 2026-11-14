@@ -7,10 +7,13 @@ import '../../widgets/gps_enforcement_wrapper.dart';
 import '../../widgets/site_footer.dart';
 import 'package:provider/provider.dart';
 import './widgets/home_info_strip.dart';
+import './widgets/home_web_proof.dart';
 import './widgets/home_web_sections.dart';
 
 /// Home screen: same content and order as the Homaclo website home page
-/// (hero, stats, services, how it works, why Homaclo, reviews, call to action).
+/// (hero, stats, services, how it works, why Homaclo, real work proof,
+/// how we keep your water safe, reviews, call to action). This is the only
+/// screen that shows the footer.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -44,6 +47,8 @@ class HomeScreen extends StatelessWidget {
                 section(const HomeWebServices(), top: 28),
                 section(const HomeWebHowItWorks(), top: 28),
                 section(const HomeWebWhy(), top: 28),
+                section(const HomeWebProof(), top: 28),
+                section(const HomeWebStory(), top: 28),
                 section(const HomeWebReviews(), top: 28),
                 section(const HomeWebCta(), top: 28),
                 const SliverToBoxAdapter(child: SizedBox(height: 28)),

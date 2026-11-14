@@ -5,9 +5,8 @@ import '../presentation/home_screen/widgets/web_tokens.dart';
 import 'site_header.dart' show SiteLogo;
 import 'tap_scale.dart';
 
-/// Homaclo footer: brand, contact buttons, services and contact details.
-/// Dark navy gradient in both light and dark mode. Put it at the end of a
-/// scrolling screen (never on the sign-in screen).
+/// Homaclo footer: brand, contact buttons and services. Dark navy gradient in
+/// both light and dark mode. Shown ONLY at the end of the Home screen.
 class SiteFooter extends StatelessWidget {
   const SiteFooter({super.key});
 
@@ -75,11 +74,6 @@ class SiteFooter extends StatelessWidget {
             'Solar repair & maintenance',
             () => wOpen('${_site}solar-repair-maintenance-satna/'),
           ),
-          const SizedBox(height: 22),
-          _head('Contact'),
-          _Link(WT.mail, () => wOpen('mailto:${WT.mail}')),
-          _Link('+91 62622 62913', () => wOpen('tel:+916262262913')),
-          _Link('Satna, Madhya Pradesh', null),
           const SizedBox(height: 22),
           Text(
             '© 2026 Homaclo. Payments secured by Razorpay.',
