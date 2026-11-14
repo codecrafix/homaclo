@@ -3,13 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../presentation/home_screen/widgets/web_tokens.dart';
-import '../routes/app_routes.dart';
 import 'site_header.dart' show SiteLogo;
 import 'tap_scale.dart';
 
-/// The Homaclo website footer (web/site `.foot`). Like the website it is a
-/// dark navy gradient in both light and dark mode. Put it at the end of a
-/// scrolling screen.
+/// Homaclo footer: brand, contact buttons, social icons, services and contact
+/// details. Dark navy gradient in both light and dark mode. Put it at the end
+/// of a scrolling screen (never on the sign-in screen).
 class SiteFooter extends StatelessWidget {
   const SiteFooter({super.key});
 
@@ -69,27 +68,17 @@ class SiteFooter extends StatelessWidget {
               _SocialBtn(
                 icon: Icons.camera_alt_outlined,
                 label: 'Instagram',
-                hover: const Color(0xFFDC2743),
                 onTap: () => wOpen('https://www.instagram.com/homaclo/'),
               ),
               const SizedBox(width: 10),
               _SocialBtn(
                 icon: Icons.play_arrow_rounded,
                 label: 'YouTube',
-                hover: const Color(0xFFFF0000),
                 onTap: () => wOpen('https://www.youtube.com/@homaclo'),
               ),
             ],
           ),
           const SizedBox(height: 28),
-          _head('Company'),
-          _Link('About Homaclo', () => wOpen('${_site}homaclo/')),
-          _Link('About', () => context.push(AppRoutes.aboutUsScreen)),
-          _Link('Reviews', () => context.go(AppRoutes.reviewsScreen)),
-          _Link('Blog', () => wOpen('${_site}blog/')),
-          _Link('Privacy Policy', () => context.push(AppRoutes.privacyPolicyScreen)),
-          _Link('Terms', () => context.push(AppRoutes.termsScreen)),
-          const SizedBox(height: 22),
           _head('Services in Satna'),
           _Link(
             'Water tank cleaning',
@@ -195,12 +184,10 @@ class _ContactBtn extends StatelessWidget {
 class _SocialBtn extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color hover;
   final VoidCallback onTap;
   const _SocialBtn({
     required this.icon,
     required this.label,
-    required this.hover,
     required this.onTap,
   });
 
