@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +10,8 @@ import '../services/location_service.dart';
 import '../theme/app_theme.dart';
 
 /// Non-dismissible GPS enforcement overlay.
-/// Wraps any child and shows a blocking overlay when GPS is disabled.
+/// Wraps any child and shows a blocking overlay only when GPS is really off
+/// or the location permission is really not granted.
 class GpsEnforcementWrapper extends StatefulWidget {
   final Widget child;
   const GpsEnforcementWrapper({super.key, required this.child});
@@ -21,12 +23,17 @@ class GpsEnforcementWrapper extends StatefulWidget {
 class _GpsEnforcementWrapperState extends State<GpsEnforcementWrapper>
     with WidgetsBindingObserver {
   Timer? _pollTimer;
+  DateTime? _lastFetch;
+
+  /// Real OS permission state. AppState also sets "permission denied" when a
+  /// GPS fix merely failed / timed out, which used to lock the whole app
+  /// behind the overlay even though permission was granted.
+  bool _permissionGranted = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Initial check
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkGps());
     // Poll every 3 seconds while app is active
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _checkGps());
@@ -39,29 +46,54 @@ class _GpsEnforcementWrapperState extends State<GpsEnforcementWrapper>
     }
   }
 
+  Future<bool> _readPermission() async {
+    try {
+      final p = await Geolocator.checkPermission();
+      return p == LocationPermission.always || p == LocationPermission.whileInUse;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  void _fetch(AppState appState, String? userId) {
+    _lastFetch = DateTime.now();
+    LocationService.instance.lastAutoRefreshUserId = userId;
+    appState.fetchAndSaveLocation();
+  }
+
   Future<void> _checkGps() async {
     if (!mounted) return;
     final appState = context.read<AppState>();
     await appState.checkGpsServiceStatus();
+    final granted = await _readPermission();
     if (!mounted) return;
+    if (granted != _permissionGranted) {
+      setState(() => _permissionGranted = granted);
+    }
+
+    if (appState.gpsServiceDisabled || appState.locationLoading) return;
+
+    final userId = appState.currentUserId;
+    final sinceLast = _lastFetch == null
+        ? const Duration(days: 1)
+        : DateTime.now().difference(_lastFetch!);
 
     // Fetch when GPS is on and either:
     //  - we have no location yet, or
-    //  - this is the first visit for this user in this session. The location
-    //    loaded from the DB at login can be an old / coarse address (e.g. only
-    //    "Satna, Madhya Pradesh") and would otherwise never be refreshed with
-    //    the detailed Mappls address (gali / mohalla / street).
-    final userId = appState.currentUserId;
+    //  - first visit for this user in this session (the DB address can be
+    //    old / coarse), or
+    //  - a previous fix failed although permission is granted: retry, but at
+    //    most every 20 seconds so GPS is not hammered.
     final needsFirstRefresh =
         appState.isLoggedIn &&
         userId != null &&
         LocationService.instance.lastAutoRefreshUserId != userId;
+    final retryAfterFailure =
+        granted && appState.locationPermissionDenied && sinceLast.inSeconds >= 20;
+    final empty = appState.liveLocation.isEmpty && sinceLast.inSeconds >= 20;
 
-    if (!appState.gpsServiceDisabled &&
-        !appState.locationLoading &&
-        (appState.liveLocation.isEmpty || needsFirstRefresh)) {
-      LocationService.instance.lastAutoRefreshUserId = userId;
-      appState.fetchAndSaveLocation();
+    if (needsFirstRefresh || retryAfterFailure || empty) {
+      _fetch(appState, userId);
     }
   }
 
@@ -76,14 +108,14 @@ class _GpsEnforcementWrapperState extends State<GpsEnforcementWrapper>
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, child) {
+        final permissionBlocked =
+            appState.locationPermissionDenied && !_permissionGranted;
         return Stack(
           children: [
             widget.child,
-            if (appState.gpsServiceDisabled ||
-                appState.locationPermissionDenied)
+            if (appState.gpsServiceDisabled || permissionBlocked)
               _GpsDisabledOverlay(
-                permissionDenied: appState.locationPermissionDenied &&
-                    !appState.gpsServiceDisabled,
+                permissionDenied: permissionBlocked && !appState.gpsServiceDisabled,
               ),
           ],
         );

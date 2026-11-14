@@ -9,14 +9,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../routes/app_routes.dart';
 import '../../services/clerk/clerk_bridge.dart';
 import '../../services/supabase_service.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/site_footer.dart';
-import '../../widgets/site_header.dart';
 
-/// Sign in / register screen. Mirrors the website's /login page
-/// (same header, same copy, same flow: email one-time code + Google, same
-/// footer), backed by the same Supabase project and the same Clerk
-/// (production) instance.
+/// Sign in / register screen (email one-time code + Google), backed by the
+/// same Supabase project and the same Clerk (production) instance as the
+/// website. It has no app header / footer.
+///
+/// On a cold start a Google (Clerk) session is restored asynchronously, so for
+/// a returning Google user we show a short splash instead of flashing this
+/// login form and redirecting a few seconds later.
 class SignUpLoginScreen extends StatefulWidget {
   const SignUpLoginScreen({super.key});
 
@@ -29,12 +29,18 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
   static const Color _cyanDark = Color(0xFF0BB5D6);
   static const Color _ink = Color(0xFF04121F);
   static const Color _link = Color(0xFF6FE3F5);
+  static const String _hintKey = 'google_session_hint';
+
+  /// True once the cold-start session check finished in this app process.
+  static bool _gateDone = false;
 
   final _emailController = TextEditingController();
   bool _isLoading = false;
   bool _isGoogleLoading = false;
+  bool _authReady = _gateDone;
   String? _errorMessage;
   StreamSubscription<ClerkBridgeEvent>? _clerkSub;
+  Timer? _gateTimer;
   late final TapGestureRecognizer _termsTap;
   late final TapGestureRecognizer _privacyTap;
 
@@ -53,8 +59,17 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
     _privacyTap = TapGestureRecognizer()
       ..onTap = () => context.push(AppRoutes.privacyPolicyScreen);
 
-    // Show Google (Clerk) sign-in problems on this screen.
+    // Show Google (Clerk) sign-in problems on this screen, and remember that
+    // this device has a Google session so the next cold start can wait for it.
     _clerkSub = ClerkBridge.events.listen((event) {
+      if (event.type == ClerkBridgeEventType.signedIn ||
+          event.type == ClerkBridgeEventType.initialSession) {
+        _gateDone = true;
+        _gateTimer?.cancel();
+        SharedPreferences.getInstance()
+            .then((p) => p.setBool(_hintKey, true))
+            .catchError((_) => false);
+      }
       if (!mounted) return;
       if (event.type == ClerkBridgeEventType.error) {
         setState(() {
@@ -68,10 +83,41 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (SupabaseService.instance.isLoggedIn && mounted) {
+        _gateDone = true;
         context.go(AppRoutes.homeScreen);
         return;
       }
+      await _initGate();
       await _checkPersistedOtpState();
+    });
+  }
+
+  /// Decides whether to show the login form right away or wait briefly for a
+  /// persisted Google (Clerk) session to be restored (cold start only).
+  Future<void> _initGate() async {
+    if (_gateDone) {
+      if (mounted && !_authReady) setState(() => _authReady = true);
+      return;
+    }
+    var hint = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      hint = prefs.getBool(_hintKey) ?? false;
+    } catch (_) {}
+    if (!mounted) return;
+    if (!hint) {
+      _gateDone = true;
+      setState(() => _authReady = true);
+      return;
+    }
+    _gateTimer = Timer(const Duration(seconds: 4), () async {
+      // No Google session came back: the user really is signed out.
+      _gateDone = true;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_hintKey);
+      } catch (_) {}
+      if (mounted) setState(() => _authReady = true);
     });
   }
 
@@ -88,6 +134,7 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
 
   @override
   void dispose() {
+    _gateTimer?.cancel();
     _clerkSub?.cancel();
     _termsTap.dispose();
     _privacyTap.dispose();
@@ -437,84 +484,76 @@ class _SignUpLoginScreenState extends State<SignUpLoginScreen> {
     );
   }
 
+  static const BoxDecoration _bg = BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFF061126), Color(0xFF0A2149), Color(0xFF0B4A7F)],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: AppTheme.overlayFor(dark),
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: const Color(0xFF0B4A7F),
+      ),
       child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: Column(
-          children: [
-            // Same website header as the rest of the app. The sign in button
-            // is hidden because this already is the sign in screen.
-            const SiteHeader(showRefer: false, showAuthButton: false),
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF061126),
-                      Color(0xFF0A2149),
-                      Color(0xFF0B4A7F),
-                    ],
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 22, 18, 28),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Welcome to Homaclo',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.fraunces(
-                                fontSize: 29,
-                                height: 1.12,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Sign in or create your account in seconds. No password needed.',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                height: 1.4,
-                                color: Colors.white.withAlpha(190),
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            _card(),
-                            const SizedBox(height: 14),
-                            _benefitRow(0),
-                            const SizedBox(height: 10),
-                            _benefitRow(2),
-                          ],
-                        ),
+        backgroundColor: const Color(0xFF061126),
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: _bg,
+          child: SafeArea(
+            child: !_authReady
+                // Restoring a saved Google session: no login form flash.
+                ? const Center(
+                    child: SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: _cyan,
                       ),
-                      const SiteFooter(),
-                      // Keep the footer colour under the system navigation bar.
-                      ColoredBox(
-                        color: const Color(0xFF0F172A),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: MediaQuery.of(context).padding.bottom,
+                    ),
+                  )
+                : SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.fromLTRB(18, 22, 18, 28),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Welcome to Homaclo',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.fraunces(
+                            fontSize: 29,
+                            height: 1.12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          'Sign in or create your account in seconds. No password needed.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            height: 1.4,
+                            color: Colors.white.withAlpha(190),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        _card(),
+                        const SizedBox(height: 14),
+                        _benefitRow(0),
+                        const SizedBox(height: 10),
+                        _benefitRow(2),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
