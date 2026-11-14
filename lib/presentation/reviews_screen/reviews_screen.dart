@@ -12,7 +12,6 @@ import '../../routes/app_routes.dart';
 import '../../services/supabase_service.dart';
 import './widgets/reviews_card_widget.dart';
 import '../../widgets/gps_enforcement_wrapper.dart';
-import '../../widgets/site_footer.dart';
 
 /// Reviews screen — same layout and rules as the website (web/site/reviews.js):
 ///  * hero band + stat cards + "What customers say" with Write a review
@@ -862,14 +861,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       ]),
                     ),
                   ),
-                  const SliverToBoxAdapter(child: SiteFooter()),
-                  // Room for the floating bottom nav, same colour as the footer end.
-                  const SliverToBoxAdapter(
-                    child: ColoredBox(
-                      color: Color(0xFF0F172A),
-                      child: SizedBox(height: 90, width: double.infinity),
-                    ),
-                  ),
+                  // No footer here (footer is only on Home). Room for the floating bottom nav.
+                  const SliverToBoxAdapter(child: SizedBox(height: 90)),
                 ],
               ),
             ),
