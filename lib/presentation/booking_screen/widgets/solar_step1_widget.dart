@@ -1,183 +1,265 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../theme/app_theme.dart';
-import '../../../services/solar_cart.dart';
 
-class SolarStep1Widget extends StatelessWidget {
+import '../../../services/solar_cart.dart';
+import '../../../theme/app_theme.dart';
+
+/// Step 1 (solar): system size dropdown + number of panels (typed or +/-),
+/// ₹100 per panel, minimum 5 panels — same as the website.
+class SolarStep1Widget extends StatefulWidget {
   final VoidCallback onNext;
   const SolarStep1Widget({required this.onNext, super.key});
 
-  String _fmt(int p) {
-    final s = p.toString();
-    if (s.length > 3) {
-      return '₹${s.substring(0, s.length - 3)},${s.substring(s.length - 3)}';
+  @override
+  State<SolarStep1Widget> createState() => _SolarStep1WidgetState();
+}
+
+class _SolarStep1WidgetState extends State<SolarStep1Widget> {
+  final SolarCart _cart = SolarCart.instance;
+  late final TextEditingController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = TextEditingController(text: _cart.panels == 0 ? '' : '${_cart.panels}');
+    _cart.addListener(_sync);
+  }
+
+  void _sync() {
+    if (int.tryParse(_c.text) != _cart.panels && mounted) {
+      final t = _cart.panels == 0 ? '' : '${_cart.panels}';
+      _c.value = TextEditingValue(
+        text: t,
+        selection: TextSelection.collapsed(offset: t.length),
+      );
     }
-    return '₹$s';
+  }
+
+  @override
+  void dispose() {
+    _cart.removeListener(_sync);
+    _c.dispose();
+    super.dispose();
+  }
+
+  String _inr(int n) {
+    final s = n.toString();
+    if (s.length <= 3) return '₹$s';
+    final head = s.substring(0, s.length - 3);
+    final withCommas = head.replaceAllMapped(
+      RegExp(r'\B(?=(\d{2})+(?!\d))'),
+      (m) => ',',
+    );
+    return '₹$withCommas,${s.substring(s.length - 3)}';
+  }
+
+  Widget _stepBtn(IconData icon, bool primary, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: primary ? AppTheme.tealAccent : AppTheme.primaryNavy,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: SolarCart.instance,
+      listenable: _cart,
       builder: (context, _) {
-        final s = SolarCart.instance;
-        final ready = s.panels > 0;
+        final ready = _cart.panelsReady;
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Solar Panel Cleaning',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                style: GoogleFonts.fraunces(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
-                'Select system size & number of panels (₹100 per panel)',
+                'Choose your system size, then add the number of panels (₹${SolarCart.pricePerPanel} per panel, minimum ${SolarCart.minPanels} panels). You can also type the number.',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
+                  height: 1.45,
                   color: AppTheme.textSecondary,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Text(
-                'SOLAR SYSTEM SIZE',
+                'Solar system size',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.textMuted,
-                  letterSpacing: 1.2,
+                  color: AppTheme.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
-              DropdownButtonFormField<int>(
-                value: s.kw,
-                dropdownColor: AppTheme.surfaceWhite,
-                isExpanded: true,
-                menuMaxHeight: 320,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppTheme.surfaceWhite,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.solar_power_rounded,
-                    color: AppTheme.warning,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppTheme.divider),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppTheme.divider),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppTheme.tealAccent, width: 1.5),
-                  ),
-                ),
-                items: SolarCart.kwOptions
-                    .map(
-                      (k) => DropdownMenuItem<int>(
-                        value: k,
-                        child: Text(
-                          '$k kW',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) {
-                  if (v != null) s.setKw(v);
-                },
-              ),
-              const SizedBox(height: 20),
               Container(
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceWhite,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.divider),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: _cart.kw,
+                    isExpanded: true,
+                    dropdownColor: AppTheme.surfaceWhite,
+                    items: SolarCart.kwOptions
+                        .map(
+                          (k) => DropdownMenuItem(
+                            value: k,
+                            child: Text(
+                              '$k kW',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 15,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) _cart.setKw(v);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: ready
+                      ? AppTheme.tealAccent.withAlpha(20)
+                      : AppTheme.surfaceWhite,
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: ready ? AppTheme.tealAccent : AppTheme.divider,
                     width: ready ? 2 : 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.cardShadow,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: 56,
+                      height: 56,
                       decoration: BoxDecoration(
-                        color: AppTheme.warning.withAlpha(26),
+                        color: AppTheme.warning.withAlpha(30),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        Icons.wb_sunny_rounded,
-                        color: AppTheme.warning,
+                      child: const Center(
+                        child: Text('☀️', style: TextStyle(fontSize: 26)),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Number of Panels',
+                            'Number of panels',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 2),
                           Text(
-                            '${_fmt(SolarCart.pricePerPanel)} per panel',
+                            '₹${SolarCart.pricePerPanel} / panel',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: AppTheme.tealAccent,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    _btn(Icons.remove_rounded, s.panels > 0 ? () => s.changePanels(-1) : null),
-                    SizedBox(
-                      width: 40,
-                      child: Center(
-                        child: Text(
-                          '${s.panels}',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: ready ? AppTheme.tealAccent : AppTheme.textMuted,
-                          ),
-                        ),
-                      ),
-                    ),
-                    _btn(Icons.add_rounded, s.panels < SolarCart.maxPanels ? () => s.changePanels(1) : null, add: true),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _stepBtn(Icons.remove_rounded, false, () => _cart.changePanels(-1)),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 92,
+                    height: 44,
+                    child: TextField(
+                      controller: _c,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      maxLength: 3,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.inputTextColor(context),
+                      ),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        hintText: '${SolarCart.minPanels}',
+                        hintStyle: GoogleFonts.plusJakartaSans(
+                          color: AppTheme.textMuted,
+                        ),
+                        filled: true,
+                        fillColor: AppTheme.inputFillColor(context),
+                        contentPadding: EdgeInsets.zero,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppTheme.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppTheme.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: AppTheme.tealAccent,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      onChanged: (v) => _cart.setPanels(int.tryParse(v) ?? 0),
+                      // Leaving the field with fewer than the minimum: raise it.
+                      onEditingComplete: () {
+                        if (_cart.panels > 0 && _cart.panels < SolarCart.minPanels) {
+                          _cart.setPanels(SolarCart.minPanels);
+                        }
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _stepBtn(Icons.add_rounded, true, () => _cart.changePanels(1)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Minimum ${SolarCart.minPanels} panels per booking.',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  color: ready ? AppTheme.textSecondary : AppTheme.error,
+                ),
+              ),
+              const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -186,45 +268,45 @@ class SolarStep1Widget extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    if (ready) ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${s.kw}kW • ${s.panels} panel${s.panels == 1 ? '' : 's'} × ${_fmt(SolarCart.pricePerPanel)}',
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${_cart.kw}kW • ${_cart.panels} panel${_cart.panels == 1 ? '' : 's'} × ₹${SolarCart.pricePerPanel}',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
-                              color: Colors.white.withAlpha(179),
+                              color: Colors.white.withAlpha(190),
                             ),
                           ),
-                          Text(
-                            _fmt(s.total),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              color: Colors.white.withAlpha(179),
-                            ),
+                        ),
+                        Text(
+                          _inr(_cart.panels * SolarCart.pricePerPanel),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.white.withAlpha(190),
                           ),
-                        ],
-                      ),
-                      const Divider(color: Colors.white24, height: 16),
-                    ],
+                        ),
+                      ],
+                    ),
+                    Divider(color: Colors.white.withAlpha(50), height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Total',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
                             color: Colors.white,
                           ),
                         ),
                         Text(
-                          ready ? _fmt(s.total) : '₹0',
+                          _inr(_cart.total),
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 20,
+                            fontSize: 24,
                             fontWeight: FontWeight.w800,
-                            color: AppTheme.tealAccent,
+                            color: AppTheme.brandCyan,
                           ),
                         ),
                       ],
@@ -232,35 +314,32 @@ class SolarStep1Widget extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: ready ? onNext : null,
-                child: Container(
-                  width: double.infinity,
-                  height: 54,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: ready ? AppTheme.tealAccent : AppTheme.divider,
-                    borderRadius: BorderRadius.circular(18),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: ready
+                      ? () {
+                          FocusScope.of(context).unfocus();
+                          widget.onNext();
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.tealAccent,
+                    disabledBackgroundColor: AppTheme.divider,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Next — Select Date & Time',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: ready ? Colors.white : AppTheme.textMuted,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 18,
-                        color: ready ? Colors.white : AppTheme.textMuted,
-                      ),
-                    ],
+                  child: Text(
+                    'Next — Select Date & Time  →',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -268,23 +347,6 @@ class SolarStep1Widget extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _btn(IconData icon, VoidCallback? onTap, {bool add = false}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: onTap == null
-              ? AppTheme.divider
-              : (add ? AppTheme.tealAccent : AppTheme.primaryNavy),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: Colors.white, size: 16),
-      ),
     );
   }
 }

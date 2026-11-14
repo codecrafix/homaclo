@@ -9,6 +9,7 @@ import '../../services/solar_cart.dart';
 import './widgets/booking_progress_widget.dart';
 import './widgets/booking_step1_widget.dart';
 import './widgets/solar_step1_widget.dart';
+import './widgets/repair_step1_widget.dart';
 import './widgets/booking_step2_widget.dart';
 import './widgets/booking_step3_widget.dart';
 import './widgets/booking_step4_widget.dart';
@@ -84,6 +85,12 @@ class _BookingScreenState extends State<BookingScreen> {
     super.dispose();
   }
 
+  static String _title(BookingMode m) => m == BookingMode.repair
+      ? 'Solar Maintenance & Repair'
+      : (m == BookingMode.solar
+            ? 'Solar Panel Cleaning'
+            : 'Water Tank Cleaning');
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -123,9 +130,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       ListenableBuilder(
                         listenable: SolarCart.instance,
                         builder: (context, _) => Text(
-                          SolarCart.instance.isSolar
-                              ? 'Solar Panel Cleaning'
-                              : 'Water Tank Cleaning',
+                          _title(SolarCart.instance.mode),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             color: Colors.white.withAlpha(179),
@@ -186,8 +191,9 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 }
 
-/// Step 1: service toggle (Water Tank / Solar Panel) + the matching form.
-/// IndexedStack keeps both forms alive so nothing is lost when toggling.
+/// Step 1: service toggle (Water Tank / Solar Panel / Solar Repair) + the
+/// matching form. IndexedStack keeps the forms alive so nothing is lost when
+/// toggling.
 class _ServiceTypeStep extends StatelessWidget {
   final VoidCallback onNext;
   const _ServiceTypeStep({required this.onNext});
@@ -198,7 +204,7 @@ class _ServiceTypeStep extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 11),
+          padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 2),
           decoration: BoxDecoration(
             color: active ? AppTheme.tealAccent : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
@@ -208,16 +214,24 @@ class _ServiceTypeStep extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 16,
+                size: 15,
                 color: active ? const Color(0xFF04202A) : AppTheme.textMuted,
               ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: active ? const Color(0xFF04202A) : AppTheme.textMuted,
+              const SizedBox(width: 4),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: active
+                          ? const Color(0xFF04202A)
+                          : AppTheme.textMuted,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -232,7 +246,7 @@ class _ServiceTypeStep extends StatelessWidget {
     return ListenableBuilder(
       listenable: SolarCart.instance,
       builder: (context, _) {
-        final solar = SolarCart.instance.isSolar;
+        final mode = SolarCart.instance.mode;
         return Column(
           children: [
             Container(
@@ -248,24 +262,33 @@ class _ServiceTypeStep extends StatelessWidget {
                   _tab(
                     'Water Tank',
                     Icons.water_drop_rounded,
-                    !solar,
-                    () => SolarCart.instance.setSolar(false),
+                    mode == BookingMode.water,
+                    () => SolarCart.instance.setMode(BookingMode.water),
                   ),
                   _tab(
                     'Solar Panel',
                     Icons.wb_sunny_rounded,
-                    solar,
-                    () => SolarCart.instance.setSolar(true),
+                    mode == BookingMode.solar,
+                    () => SolarCart.instance.setMode(BookingMode.solar),
+                  ),
+                  _tab(
+                    'Solar Repair',
+                    Icons.build_rounded,
+                    mode == BookingMode.repair,
+                    () => SolarCart.instance.setMode(BookingMode.repair),
                   ),
                 ],
               ),
             ),
             Expanded(
               child: IndexedStack(
-                index: solar ? 1 : 0,
+                index: mode == BookingMode.water
+                    ? 0
+                    : (mode == BookingMode.solar ? 1 : 2),
                 children: [
                   BookingStep1Widget(onNext: onNext),
                   SolarStep1Widget(onNext: onNext),
+                  RepairStep1Widget(onNext: onNext),
                 ],
               ),
             ),
