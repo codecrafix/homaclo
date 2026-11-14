@@ -15,6 +15,10 @@ class ReviewCardWidget extends StatelessWidget {
   final String initials;
   final String? photoUrl;
 
+  /// Service emoji shown in the tag: 💧 water tank, ☀️ solar cleaning,
+  /// 🔧 solar maintenance & repair (same as the website).
+  final String icon;
+
   const ReviewCardWidget({
     required this.name,
     required this.location,
@@ -25,6 +29,7 @@ class ReviewCardWidget extends StatelessWidget {
     required this.avatarColor,
     required this.initials,
     this.photoUrl,
+    this.icon = '💧',
     super.key,
   });
 
@@ -98,7 +103,6 @@ class ReviewCardWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Avatar
               _buildAvatar(),
               const SizedBox(width: 12),
               Expanded(
@@ -107,12 +111,15 @@ class ReviewCardWidget extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          name,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary,
+                        Flexible(
+                          child: Text(
+                            name,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -201,18 +208,16 @@ class ReviewCardWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.water_drop_rounded,
-                  color: AppTheme.tealAccent,
-                  size: 12,
-                ),
+                Text(icon, style: const TextStyle(fontSize: 12)),
                 const SizedBox(width: 4),
-                Text(
-                  tag,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.tealAccent,
+                Flexible(
+                  child: Text(
+                    tag,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.tealAccent,
+                    ),
                   ),
                 ),
               ],
