@@ -4,13 +4,13 @@ import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/app_state.dart';
 import '../../widgets/gps_enforcement_wrapper.dart';
+import '../../widgets/site_footer.dart';
 import 'package:provider/provider.dart';
 import './widgets/home_before_after_widget.dart';
 import './widgets/home_cleaning_process_widget.dart';
-import './widgets/home_contact_footer_widget.dart';
 import './widgets/home_faqs_widget.dart';
-import './widgets/home_header_widget.dart';
 import './widgets/home_hero_banner_widget.dart';
+import './widgets/home_info_strip.dart';
 import './widgets/home_services_widget.dart';
 import './widgets/home_why_clean_widget.dart';
 
@@ -20,13 +20,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: Theme.of(context).brightness == Brightness.dark
-          ? SystemUiOverlayStyle.light
-          : SystemUiOverlayStyle.dark,
+      value: AppTheme.overlayFor(Theme.of(context).brightness == Brightness.dark),
       child: GpsEnforcementWrapper(
         child: Scaffold(
           backgroundColor: AppTheme.background,
-          // Do NOT use SafeArea here — HomeHeaderWidget handles it internally
+          // The shared website header (SiteHeader) is added by AppScaffold.
           body: RefreshIndicator(
             onRefresh: () => context.read<AppState>().refreshAllData(
               refreshLocation: true,
@@ -36,7 +34,7 @@ class HomeScreen extends StatelessWidget {
                 parent: BouncingScrollPhysics(),
               ),
               slivers: [
-                SliverToBoxAdapter(child: HomeHeaderWidget()),
+                const SliverToBoxAdapter(child: HomeInfoStrip()),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -73,8 +71,15 @@ class HomeScreen extends StatelessWidget {
                     child: HomeFaqsWidget(),
                   ),
                 ),
-                SliverToBoxAdapter(child: HomeContactFooterWidget()),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                const SliverToBoxAdapter(child: SiteFooter()),
+                // Room for the floating bottom nav, same colour as the footer end.
+                const SliverToBoxAdapter(
+                  child: ColoredBox(
+                    color: Color(0xFF0F172A),
+                    child: SizedBox(height: 90, width: double.infinity),
+                  ),
+                ),
               ],
             ),
           ),
