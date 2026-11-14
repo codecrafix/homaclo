@@ -12,11 +12,40 @@ import '../../../widgets/premium_ui.dart';
 import './home_services_widget.dart';
 
 /// Home page sections that mirror the Homaclo website home page
-/// (hero, stats, services, how it works, why Homaclo, reviews, call to action).
-/// Services and reviews are read from the same Supabase tables as the website.
+/// (hero photo, stats, services, how it works, why Homaclo, real work proof,
+/// how we keep water safe, reviews, call to action).
+/// Services and reviews are read from the same Supabase tables as the website,
+/// and the photos are the same files the website uses (homaclo.in/img).
 
 /// Lets the hero's "See pricing" button scroll to the services section.
 final GlobalKey homeServicesKey = GlobalKey();
+
+const String _imgBase = 'https://homaclo.in/img/maintix-';
+const String _imgVer = '?v=20261023';
+
+/// A website photo (maintix-N.png). Shows [fallback] (or nothing) if it cannot load.
+Widget _webImage(
+  int n, {
+  BoxFit fit = BoxFit.cover,
+  Widget? fallback,
+  double? height,
+}) {
+  return Image.network(
+    '$_imgBase$n.png$_imgVer',
+    fit: fit,
+    width: double.infinity,
+    height: height,
+    gaplessPlayback: true,
+    loadingBuilder: (context, child, progress) {
+      if (progress == null) return child;
+      return Container(
+        height: height,
+        color: const Color(0xFF0B2A52).withOpacity(0.25),
+      );
+    },
+    errorBuilder: (_, __, ___) => fallback ?? const SizedBox.shrink(),
+  );
+}
 
 TextStyle _head(double size, {Color? color}) => GoogleFonts.fraunces(
   fontSize: size,
@@ -110,6 +139,46 @@ class _HomeWebHeroState extends State<HomeWebHero>
       );
     }
   }
+
+  Widget _tankArt() => Center(
+    child: SizedBox(
+      width: 230,
+      height: 230,
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (_, __) => CustomPaint(painter: _TankPainter(_c.value)),
+      ),
+    ),
+  );
+
+  Widget _badge(String text, {required Alignment at}) => Align(
+    alignment: at,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: _body(
+            12,
+            color: const Color(0xFF072654),
+            weight: FontWeight.w800,
+          ),
+        ),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -216,13 +285,19 @@ class _HomeWebHeroState extends State<HomeWebHero>
             ),
           ),
           const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 230,
-              height: 230,
-              child: AnimatedBuilder(
-                animation: _c,
-                builder: (_, __) => CustomPaint(painter: _TankPainter(_c.value)),
+          // Same photo as the website hero (falls back to the animated tank).
+          ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: AspectRatio(
+              aspectRatio: 4 / 5,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(color: const Color(0xFF0B2A52)),
+                  _webImage(8, fallback: _tankArt()),
+                  _badge('Starting ₹1,000', at: Alignment.topLeft),
+                  _badge('Fixed, upfront pricing', at: Alignment.bottomRight),
+                ],
               ),
             ),
           ),
@@ -444,6 +519,20 @@ class _HomeWebServicesState extends State<HomeWebServices> {
     return BookingMode.water;
   }
 
+  /// Same picture the website puts on each service card:
+  /// tank cleaning = 10, solar panel cleaning = 9, other solar (repair) = 7.
+  static int _imageFor(String title, String category) {
+    final t = '$title $category'.toLowerCase();
+    final solar = t.contains('solar');
+    if (solar) {
+      final cleaning = t.contains('cleaning') &&
+          !t.contains('maintenance') &&
+          !t.contains('repair');
+      return cleaning ? 9 : 7;
+    }
+    return 10;
+  }
+
   @override
   Widget build(BuildContext context) {
     return KeyedSubtree(
@@ -464,7 +553,7 @@ class _HomeWebServicesState extends State<HomeWebServices> {
                   children: List.generate(
                     3,
                     (_) => Container(
-                      height: 130,
+                      height: 260,
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: _card(),
                     ),
@@ -511,68 +600,88 @@ class _HomeWebServicesState extends State<HomeWebServices> {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(18),
+      clipBehavior: Clip.antiAlias,
       decoration: _card(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (category.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppTheme.success.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: Text(
-                category,
-                style: _body(
-                  11,
-                  color: AppTheme.success,
-                  weight: FontWeight.w800,
-                ),
-              ),
+          AspectRatio(
+            aspectRatio: 16 / 10,
+            child: Container(
+              color: const Color(0xFF0B2A52),
+              child: _webImage(_imageFor(title, category)),
             ),
-          const SizedBox(height: 10),
-          Text(title, style: _head(19)),
-          if (desc.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(desc, style: _body(13, height: 1.5)),
-          ],
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Text('from ', style: _body(12)),
-              Text(
-                '₹${_Stat._fmt(price)}',
-                style: _head(24, color: AppTheme.tealAccent),
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () {
-                  SolarCart.instance.setMode(_modeFor('$title $category'));
-                  context.go(AppRoutes.bookingScreen);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.tealAccent,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (category.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Text(
+                      category,
+                      style: _body(
+                        11,
+                        color: AppTheme.success,
+                        weight: FontWeight.w800,
+                      ),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                const SizedBox(height: 10),
+                Text(title, style: _head(19)),
+                if (desc.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(desc, style: _body(13, height: 1.5)),
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Text('from ', style: _body(12)),
+                    Text(
+                      '₹${_Stat._fmt(price)}',
+                      style: _head(24, color: AppTheme.tealAccent),
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () {
+                        SolarCart.instance.setMode(
+                          _modeFor('$title $category'),
+                        );
+                        context.go(AppRoutes.bookingScreen);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.tealAccent,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Book now',
+                        style: _body(
+                          13,
+                          color: Colors.white,
+                          weight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  'Book now',
-                  style: _body(
-                    13,
-                    color: Colors.white,
-                    weight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -713,6 +822,122 @@ class HomeWebWhy extends StatelessWidget {
   }
 }
 
+// --------------------------------------------------------------- story
+
+/// "How we keep your water safe": the website's four photo rows.
+class HomeWebStory extends StatelessWidget {
+  const HomeWebStory({super.key});
+
+  static const _rows = <Map<String, Object>>[
+    {
+      'n': 2,
+      'title': 'Trained, uniformed professionals',
+      'text':
+          'Every visit is handled by a uniformed Homaclo technician with gloves and proper gear, so your tank is cleaned carefully and hygienically.',
+      'points': [
+        'Careful, step-by-step cleaning',
+        'Safety gear on every job',
+        'Respectful of your home',
+      ],
+    },
+    {
+      'n': 3,
+      'title': 'Professional equipment, no shortcuts',
+      'text':
+          'High-pressure washer, wet-and-dry vacuum, cleaning agents, boots, gloves and a safety harness all arrive with the team.',
+      'points': [
+        'High-pressure washing',
+        'Sludge vacuum removal',
+        'Safety-first rooftop work',
+      ],
+    },
+    {
+      'n': 5,
+      'title': 'Tested after cleaning',
+      'text':
+          'We check your water with a TDS meter after the clean, so you can see the result and not just take our word for it.',
+      'points': [
+        'TDS meter reading shown',
+        'Clean, clear sample',
+        'Transparent process',
+      ],
+    },
+    {
+      'n': 6,
+      'title': 'A tank you can trust again',
+      'text':
+          'Scrubbed walls, flushed pipes and fresh water, ready to store safe drinking water for your family.',
+      'points': [
+        'Spotless inner walls',
+        'Clean inlet and outlet pipes',
+        'Fresh-water ready',
+      ],
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _sectionHead(
+          'How we keep your water safe',
+          'Real people, real tools, a result you can see.',
+        ),
+        const SizedBox(height: 16),
+        for (final r in _rows)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 14),
+            clipBehavior: Clip.antiAlias,
+            decoration: _card(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: Container(
+                    color: const Color(0xFF0B2A52),
+                    child: _webImage(r['n'] as int),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(r['title'] as String, style: _head(19)),
+                      const SizedBox(height: 8),
+                      Text(r['text'] as String, style: _body(13, height: 1.55)),
+                      const SizedBox(height: 12),
+                      for (final p in r['points'] as List<String>)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '✓ ',
+                                style: _body(
+                                  13,
+                                  color: AppTheme.tealAccent,
+                                  weight: FontWeight.w800,
+                                ),
+                              ),
+                              Expanded(child: Text(p, style: _body(13))),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 // ------------------------------------------------------------- reviews
 
 class HomeWebReviews extends StatefulWidget {
@@ -757,6 +982,50 @@ class _HomeWebReviewsState extends State<HomeWebReviews> {
       children: [
         _sectionHead('What customers say', 'Real reviews from Satna homes.'),
         const SizedBox(height: 16),
+        // Same family photo the website shows above the reviews.
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 14),
+          clipBehavior: Clip.antiAlias,
+          decoration: _card(),
+          child: Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 4 / 3,
+                child: Container(
+                  color: const Color(0xFF0B2A52),
+                  child: _webImage(1),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 26, 16, 14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.6),
+                      ],
+                    ),
+                  ),
+                  child: Text(
+                    'Clean water for the people you love',
+                    style: _body(
+                      13,
+                      color: Colors.white,
+                      weight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         FutureBuilder<List<Map<String, dynamic>>>(
           future: _f,
           builder: (context, snap) {
@@ -846,6 +1115,15 @@ class _HomeWebReviewsState extends State<HomeWebReviews> {
           ),
           const SizedBox(height: 12),
           Text('“$text”', style: _body(13, height: 1.55)),
+          const SizedBox(height: 10),
+          Text(
+            '✔ Verified Satna customer',
+            style: _body(
+              11.5,
+              color: AppTheme.success,
+              weight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
