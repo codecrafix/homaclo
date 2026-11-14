@@ -10,12 +10,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'clerk_types.dart';
 
-/// Public identifier (same key the website uses). Can be overridden with
-/// --dart-define=CLERK_PUBLISHABLE_KEY=... for the live instance.
+/// Public identifier: the SAME production Clerk key the website uses
+/// (clerk.homaclo.in). Using the production instance means Google sign-in shows
+/// Homaclo's own branding (no Clerk development-mode screen) and the app and the
+/// website share the exact same Google accounts. Can still be overridden with
+/// --dart-define=CLERK_PUBLISHABLE_KEY=...
 const String _publishableKey = String.fromEnvironment(
   'CLERK_PUBLISHABLE_KEY',
-  defaultValue:
-      'pk_test_Z2xhZC1nYW5uZXQtODI3OC5jbGVyay5hY2NvdW50cy5kZXYk',
+  defaultValue: 'pk_live_Y2xlcmsuaG9tYWNsby5pbiQ',
 );
 
 /// Connects Clerk (Google sign-in) to the app's Supabase user model.
