@@ -16,3 +16,6 @@
 .fp-k{font-size:.68rem;font-weight:800;letter-spacing:.14em;color:#22d3ee}
 .fp-t b{color:#fff;font-size:1.05rem}.fp-t span:last-child{color:#94a3b8;font-size:.85rem}
 .fp .cbar{margin:0}
+/* perf: the page is built by JS, so reserve a full screen for it. Without this the footer shows
+   right under the header and then jumps down when content arrives (CLS ~0.97 on mobile). */
+#app{min-height:100vh;min-height:100svh}
