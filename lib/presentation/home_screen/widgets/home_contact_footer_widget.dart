@@ -73,7 +73,7 @@ class HomeContactFooterWidget extends StatelessWidget {
           const SizedBox(height: 16),
           _infoRow(Icons.location_on_rounded, 'Satna, Madhya Pradesh — 485001'),
           const SizedBox(height: 8),
-          _infoRow(Icons.email_rounded, 'maintix.help@gmail.com'),
+          _infoRow(Icons.email_rounded, 'homaclo.official@gmail.com'),
           const SizedBox(height: 8),
           _infoRow(Icons.access_time_rounded, 'Mon–Sat: 8:00 AM – 6:00 PM'),
           const SizedBox(height: 12),

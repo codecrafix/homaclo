@@ -12,7 +12,7 @@ class ProfileMenuWidget extends StatelessWidget {
   const ProfileMenuWidget({super.key});
 
   Future<void> _openEmail() async {
-    final uri = Uri.parse('mailto:maintix.help@gmail.com');
+    final uri = Uri.parse('mailto:homaclo.official@gmail.com');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
@@ -143,7 +143,7 @@ class ProfileMenuWidget extends StatelessWidget {
                 _contactOption(
                   ctx,
                   icon: Icons.email_rounded,
-                  label: 'maintix.help@gmail.com',
+                  label: 'homaclo.official@gmail.com',
                   color: AppTheme.onSurfaceStrong,
                   onTap: _openEmail,
                 ),
