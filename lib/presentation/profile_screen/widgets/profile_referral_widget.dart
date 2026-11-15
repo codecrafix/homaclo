@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../../providers/app_state.dart';
 import '../../../services/home_data_service.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/premium_ui.dart' show AppGradients;
 import '../../home_screen/widgets/web_header.dart' show showReferSheet;
 import '../../home_screen/widgets/web_tokens.dart';
 
@@ -144,12 +146,47 @@ class _ProfileReferralWidgetState extends State<ProfileReferralWidget> {
           : 'Your referral reward was not eligible.';
     }
 
-    return WCard(
+    // Own section card, same look as the other Profile sections.
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceWhite,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppGradients.teal.withOpacity(0.12), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.cardShadow,
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('🎁 Refer & Earn', style: WT.serif(20)),
-          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF06B6D4)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Text('🎁', style: TextStyle(fontSize: 22)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('Refer & Earn', style: WT.serif(20)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
             'Earn 50 coins (₹50) for every friend who makes a first booking of ₹500 or more through your link. Your friend gets 50 coins too.',
             style: WT.sans(13.5, color: WT.mut, h: 1.5),
@@ -248,47 +285,64 @@ class _ProfileReferralWidgetState extends State<ProfileReferralWidget> {
               _stat('Coins earned', _n('coins_earned')),
             ], gap: 10),
             const SizedBox(height: 16),
-            Text(
-              'Your referrals',
-              style: WT.sans(15, w: FontWeight.w800, h: 1.2),
-            ),
-            const SizedBox(height: 8),
-            if (items.isEmpty)
-              Text(
-                'No referrals yet. Share your link to get started.',
-                style: WT.sans(13.5, color: WT.mut),
-              )
-            else
-              for (final raw in items)
-                if (raw is Map)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 7),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+              decoration: BoxDecoration(
+                color: WT.bg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: WT.line),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your referrals',
+                    style: WT.sans(15, w: FontWeight.w800, h: 1.2),
+                  ),
+                  const SizedBox(height: 6),
+                  if (items.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        'No referrals yet. Share your link to get started.',
+                        style: WT.sans(13.5, color: WT.mut),
+                      ),
+                    )
+                  else
+                    for (final raw in items)
+                      if (raw is Map)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 7),
+                          child: Row(
                             children: [
-                              Text(
-                                '${raw['name'] ?? ''}',
-                                style: WT.sans(
-                                  14,
-                                  w: FontWeight.w800,
-                                  h: 1.3,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${raw['name'] ?? ''}',
+                                      style: WT.sans(
+                                        14,
+                                        w: FontWeight.w800,
+                                        h: 1.3,
+                                      ),
+                                    ),
+                                    Text(
+                                      'joined ${_date(raw['joined'])}',
+                                      style: WT.sans(12, color: WT.mut, h: 1.3),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Text(
-                                'joined ${_date(raw['joined'])}',
-                                style: WT.sans(12, color: WT.mut, h: 1.3),
-                              ),
+                              const SizedBox(width: 8),
+                              _pill('${raw['status'] ?? ''}'),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        _pill('${raw['status'] ?? ''}'),
-                      ],
-                    ),
-                  ),
+                ],
+              ),
+            ),
           ],
         ],
       ),
