@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -6,8 +7,23 @@ import '../../../theme/app_theme.dart';
 /// "Real work proof" section of the Homaclo website home page: the drag
 /// slider (muddy tank before, hygienic tank after) plus the two cards
 /// "Dirty water risks" and "Clean water benefits".
-/// Uses the same photos as the website (homaclo.in/img/before.png, after.png).
+/// Uses the same photos as the website (homaclo.in/img/before.png, after.png),
+/// laid out like the website: square photo, BEFORE bottom-left, AFTER bottom-right.
 const String _imgBase = 'https://homaclo.in/img/';
+
+/// Shows only the left [fraction] of its child (the "before" photo).
+class _LeftClipper extends CustomClipper<Rect> {
+  const _LeftClipper(this.fraction);
+  final double fraction;
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTWH(0, 0, size.width * fraction, size.height);
+
+  @override
+  bool shouldReclip(covariant _LeftClipper oldClipper) =>
+      oldClipper.fraction != fraction;
+}
 
 class HomeWebProof extends StatefulWidget {
   const HomeWebProof({super.key});
@@ -47,36 +63,38 @@ class _HomeWebProofState extends State<HomeWebProof> {
         color: color ?? AppTheme.textSecondary,
       );
 
-  Widget _photo(String file) => Image.network(
-    '$_imgBase$file',
+  /// Cached on disk (loads once, instant on every next visit) and decoded at
+  /// a phone-friendly size.
+  Widget _photo(String file) => CachedNetworkImage(
+    imageUrl: '$_imgBase$file',
     fit: BoxFit.cover,
-    width: double.infinity,
-    height: double.infinity,
-    gaplessPlayback: true,
-    errorBuilder: (_, __, ___) => Container(color: const Color(0xFF0B2A52)),
+    memCacheWidth: 1000,
+    fadeInDuration: Duration.zero,
+    fadeOutDuration: Duration.zero,
+    placeholder: (_, __) => const ColoredBox(color: Color(0xFF0B2A52)),
+    errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFF0B2A52)),
   );
 
   Widget _tag(String text, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.9),
-      borderRadius: BorderRadius.circular(8),
+      color: color,
+      borderRadius: BorderRadius.circular(99),
     ),
     child: Text(
       text,
-      style: _body(11, color: Colors.white, w: FontWeight.w800),
+      style: _body(14, color: Colors.white, w: FontWeight.w600),
     ),
   );
 
   Widget _slider() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(24),
       child: AspectRatio(
-        aspectRatio: 4 / 3,
+        aspectRatio: 1,
         child: LayoutBuilder(
           builder: (context, c) {
             final w = c.maxWidth;
-            final h = c.maxHeight;
             void setFrom(double dx) =>
                 setState(() => _p = (dx / w).clamp(0.0, 1.0));
             return GestureDetector(
@@ -87,47 +105,38 @@ class _HomeWebProofState extends State<HomeWebProof> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Container(color: const Color(0xFF0B2A52)),
+                  // Clean tank underneath (right side)...
                   _photo('after.png'),
-                  ClipRect(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: _p,
-                      child: SizedBox(
-                        width: w,
-                        height: h,
-                        child: _photo('before.png'),
-                      ),
-                    ),
-                  ),
+                  // ...muddy tank on top, cut off at the slider (left side).
+                  ClipRect(clipper: _LeftClipper(_p), child: _photo('before.png')),
                   Positioned(
-                    left: w * _p - 1.5,
+                    left: w * _p - 1,
                     top: 0,
                     bottom: 0,
-                    width: 3,
+                    width: 2,
                     child: const ColoredBox(color: Colors.white),
                   ),
                   Positioned(
-                    left: w * _p - 21,
+                    left: w * _p - 23,
                     top: 0,
                     bottom: 0,
                     child: Center(
                       child: Container(
-                        width: 42,
-                        height: 42,
+                        width: 46,
+                        height: 46,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
+                              color: Colors.black.withAlpha(64),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
                           ],
                         ),
                         child: const Icon(
-                          Icons.compare_arrows_rounded,
+                          Icons.swap_horiz_rounded,
                           color: Color(0xFF072654),
                           size: 22,
                         ),
@@ -135,14 +144,14 @@ class _HomeWebProofState extends State<HomeWebProof> {
                     ),
                   ),
                   Positioned(
-                    top: 12,
-                    left: 12,
-                    child: _tag('BEFORE', AppTheme.error),
+                    left: 18,
+                    bottom: 18,
+                    child: _tag('BEFORE', const Color(0xFFDC2626)),
                   ),
                   Positioned(
-                    top: 12,
-                    right: 12,
-                    child: _tag('AFTER ✨', AppTheme.success),
+                    right: 18,
+                    bottom: 18,
+                    child: _tag('AFTER ✨', const Color(0xFF10B981)),
                   ),
                 ],
               ),
@@ -160,7 +169,7 @@ class _HomeWebProofState extends State<HomeWebProof> {
       decoration: BoxDecoration(
         color: AppTheme.surfaceWhite,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.35)),
+        border: Border.all(color: color.withAlpha(90)),
         boxShadow: [
           BoxShadow(
             color: AppTheme.cardShadow,

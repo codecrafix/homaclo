@@ -15,6 +15,7 @@ import '../presentation/terms_screen/terms_screen.dart';
 import '../presentation/notifications_screen/notifications_screen.dart';
 import '../presentation/admin_panel_screen/admin_panel_screen.dart';
 import '../widgets/app_scaffold.dart';
+import '../services/auth_hint.dart';
 import '../services/supabase_service.dart';
 
 class AppRoutes {
@@ -34,10 +35,49 @@ class AppRoutes {
   static const String adminPanelScreen = '/admin';
 }
 
+CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+        child: child,
+      );
+    },
+  );
+}
+
+CustomTransitionPage<void> _slidePage(
+  GoRouterState state,
+  Widget child, {
+  Offset begin = const Offset(1, 0),
+  int milliseconds = 280,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: Duration(milliseconds: milliseconds),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return SlideTransition(
+        position: Tween<Offset>(begin: begin, end: Offset.zero).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+        ),
+        child: FadeTransition(opacity: animation, child: child),
+      );
+    },
+  );
+}
+
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.initial,
   redirect: (context, state) {
-    final isLoggedIn = SupabaseService.instance.isLoggedIn;
+    // A user who was signed in last time counts as signed in while the session
+    // (especially a Google/Clerk one) is still being restored in the
+    // background. This is what removes the login-page flash on app start.
+    final isLoggedIn =
+        SupabaseService.instance.isLoggedIn || AuthHint.wasLoggedIn;
     final path = state.uri.toString();
 
     // Always allow /admin route through — it handles its own auth check internally
@@ -69,203 +109,57 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(
       path: AppRoutes.initial,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const SignUpLoginScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            ),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) =>
+          _fadePage(state, const SignUpLoginScreen()),
     ),
     GoRoute(
       path: AppRoutes.signUpLoginScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const SignUpLoginScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            ),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) =>
+          _fadePage(state, const SignUpLoginScreen()),
     ),
     GoRoute(
       path: AppRoutes.otpVerifyScreen,
       pageBuilder: (context, state) {
         final email = state.extra as String? ?? '';
-        return CustomTransitionPage(
-          key: state.pageKey,
-          child: OtpVerifyScreen(email: email),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
-              child: FadeTransition(opacity: animation, child: child),
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 280),
-        );
+        return _slidePage(state, OtpVerifyScreen(email: email));
       },
     ),
     GoRoute(
       path: AppRoutes.bookingHistoryScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const BookingHistoryScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) =>
+          _slidePage(state, const BookingHistoryScreen()),
     ),
     GoRoute(
       path: AppRoutes.editProfileScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const EditProfileScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, state) => _slidePage(
+        state,
+        const EditProfileScreen(),
+        begin: const Offset(0, 1),
+        milliseconds: 300,
       ),
     ),
     GoRoute(
       path: AppRoutes.aboutUsScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const AboutUsScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) => _slidePage(state, const AboutUsScreen()),
     ),
     GoRoute(
       path: AppRoutes.privacyPolicyScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const PrivacyPolicyScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) =>
+          _slidePage(state, const PrivacyPolicyScreen()),
     ),
     GoRoute(
       path: AppRoutes.termsScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const TermsScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) => _slidePage(state, const TermsScreen()),
     ),
     GoRoute(
       path: AppRoutes.notificationsScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const NotificationsScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) =>
+          _slidePage(state, const NotificationsScreen()),
     ),
     GoRoute(
       path: AppRoutes.adminPanelScreen,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const AdminPanelScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                .animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      pageBuilder: (context, state) =>
+          _slidePage(state, const AdminPanelScreen()),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
