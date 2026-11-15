@@ -8,7 +8,6 @@ import '../../widgets/tap_scale.dart';
 import './widgets/profile_ad_widget.dart';
 import './widgets/profile_header_widget.dart';
 import './widgets/profile_menu_widget.dart';
-import './widgets/profile_referral_widget.dart';
 import './widgets/profile_special_offer_widget.dart';
 import './widgets/profile_stats_widget.dart';
 
@@ -92,17 +91,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-                // Refer & Earn: same section as the website profile page.
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   sliver: SliverToBoxAdapter(
-                    child: _entry(4, const ProfileReferralWidget()),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _entry(5, ProfileMenuWidget()),
+                    child: _entry(4, ProfileMenuWidget()),
                   ),
                 ),
                 // No footer here (footer is only on Home). Room for the floating bottom nav.

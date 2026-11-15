@@ -13,6 +13,7 @@ import '../presentation/about_us_screen/about_us_screen.dart';
 import '../presentation/privacy_policy_screen/privacy_policy_screen.dart';
 import '../presentation/terms_screen/terms_screen.dart';
 import '../presentation/notifications_screen/notifications_screen.dart';
+import '../presentation/refer_earn_screen/refer_earn_screen.dart';
 import '../presentation/admin_panel_screen/admin_panel_screen.dart';
 import '../widgets/app_scaffold.dart';
 import '../services/auth_hint.dart';
@@ -32,6 +33,7 @@ class AppRoutes {
   static const String privacyPolicyScreen = '/privacy-policy-screen';
   static const String termsScreen = '/terms-screen';
   static const String notificationsScreen = '/notifications-screen';
+  static const String referEarnScreen = '/refer-earn-screen';
   static const String adminPanelScreen = '/admin';
 }
 
@@ -155,6 +157,11 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.notificationsScreen,
       pageBuilder: (context, state) =>
           _slidePage(state, const NotificationsScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.referEarnScreen,
+      pageBuilder: (context, state) =>
+          _slidePage(state, const ReferEarnScreen()),
     ),
     GoRoute(
       path: AppRoutes.adminPanelScreen,

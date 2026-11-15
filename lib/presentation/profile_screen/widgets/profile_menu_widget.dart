@@ -1,301 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_theme.dart';
 import '../../../providers/app_state.dart';
 import '../../../routes/app_routes.dart';
-import '../../../services/supabase_service.dart';
+import './help_support_dialog.dart';
 import 'package:go_router/go_router.dart';
 
 class ProfileMenuWidget extends StatelessWidget {
   const ProfileMenuWidget({super.key});
-
-  Future<void> _openEmail() async {
-    final uri = Uri.parse('mailto:homaclo.official@gmail.com');
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
-  }
-
-  Future<void> _openWhatsApp() async {
-    final uri = Uri.parse(
-      'https://wa.me/916262262913?text=Hi%20Homaclo%2C%20I%20need%20help',
-    );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  void _showHelpDialog(BuildContext context) {
-    final subjectController = TextEditingController();
-    final messageController = TextEditingController();
-    bool isSubmitting = false;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: AppTheme.surfaceWhite,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Help & Support',
-            style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Submit a support ticket or reach us directly:',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: subjectController,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: AppTheme.inputTextColor(context),
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Subject',
-                    labelStyle: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      color: AppTheme.textSecondary,
-                    ),
-                    filled: true,
-                    fillColor: AppTheme.inputFillColor(context),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: AppTheme.divider),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: AppTheme.divider),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: AppTheme.tealAccent,
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: messageController,
-                  maxLines: 4,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: AppTheme.inputTextColor(context),
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Message',
-                    labelStyle: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      color: AppTheme.textSecondary,
-                    ),
-                    alignLabelWithHint: true,
-                    filled: true,
-                    fillColor: AppTheme.inputFillColor(context),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: AppTheme.divider),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: AppTheme.divider),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: AppTheme.tealAccent,
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Or reach us directly:',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _contactOption(
-                  ctx,
-                  icon: Icons.email_rounded,
-                  label: 'homaclo.official@gmail.com',
-                  color: AppTheme.onSurfaceStrong,
-                  onTap: _openEmail,
-                ),
-                const SizedBox(height: 8),
-                _contactOption(
-                  ctx,
-                  icon: Icons.chat_rounded,
-                  label: 'WhatsApp Support',
-                  color: const Color(0xFF25D366),
-                  onTap: _openWhatsApp,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                subjectController.dispose();
-                messageController.dispose();
-                Navigator.pop(ctx);
-              },
-              child: Text(
-                'Close',
-                style: GoogleFonts.plusJakartaSans(
-                  color: AppTheme.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () async {
-                      final subject = subjectController.text.trim();
-                      final message = messageController.text.trim();
-                      if (subject.isEmpty || message.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Please fill in subject and message.',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: AppTheme.error,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.all(16),
-                          ),
-                        );
-                        return;
-                      }
-                      setDialogState(() => isSubmitting = true);
-                      final success = await SupabaseService.instance
-                          .createSupportTicket(
-                            subject: subject,
-                            message: message,
-                          );
-                      if (ctx.mounted) {
-                        subjectController.dispose();
-                        messageController.dispose();
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success
-                                  ? '✅ Support ticket submitted! We will get back to you soon.'
-                                  : '❌ Failed to submit. Please try again.',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: success
-                                ? AppTheme.success
-                                : AppTheme.error,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.all(16),
-                          ),
-                        );
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.tealAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: isSubmitting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      'Submit Ticket',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _contactOption(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withAlpha(20),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withAlpha(51)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _showMyReviewsDialog(BuildContext context) {
     final reviews = context.read<AppState>().myReviews;
@@ -477,6 +190,13 @@ class ProfileMenuWidget extends StatelessWidget {
         onTap: () => context.push(AppRoutes.notificationsScreen),
       ),
       _MenuItem(
+        icon: Icons.card_giftcard_rounded,
+        iconColor: const Color(0xFFEC4899),
+        title: 'Refer & Earn',
+        subtitle: 'Invite friends, earn 50 coins each',
+        onTap: () => context.push(AppRoutes.referEarnScreen),
+      ),
+      _MenuItem(
         icon: Icons.history_rounded,
         iconColor: AppTheme.tealAccent,
         title: 'My Bookings',
@@ -516,7 +236,7 @@ class ProfileMenuWidget extends StatelessWidget {
         iconColor: AppTheme.success,
         title: 'Help & Support',
         subtitle: 'Submit a ticket or contact us',
-        onTap: () => _showHelpDialog(context),
+        onTap: () => showHelpSupportDialog(context),
       ),
     ];
 
