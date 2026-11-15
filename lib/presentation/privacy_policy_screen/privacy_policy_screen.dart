@@ -163,7 +163,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 8),
                     Text(
-                      'To exercise any of these rights, contact us at maintix.help@gmail.com',
+                      'To exercise any of these rights, contact us at homaclo.official@gmail.com',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         color: AppTheme.tealAccent,
@@ -200,13 +200,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
                                       '• Credit Duration: All approved refunds will be credited back to the customer’s original payment source (Bank Account, Credit/Debit Card, or UPI ID) within 5 to 7 business days (approx. 1 week).\n\n'
                                         '📞 DISPUTES & SUPPORT RESOLUTION:\n'
                                           '• For any refund status tracking, billing discrepancies, or failed transaction queries, please contact our support desk directly with your Booking ID and payment reference number.\n'
-                                            '• Official Email: maintix.help@gmail.com\n'
+                                            '• Official Email: homaclo.official@gmail.com\n'
                                               '• Escalation Contact: +91 62622 62913',
                                               ),
                 
                 _policySection(
                   '11. Contact Us',
-                  'For privacy-related questions, data requests, or concerns:\n\n📧 Email: maintix.help@gmail.com\n📞 Phone: +91 62622 62913\n📍 Address: Satna, Madhya Pradesh, India',
+                  'For privacy-related questions, data requests, or concerns:\n\n📧 Email: homaclo.official@gmail.com\n📞 Phone: +91 62622 62913\n📍 Address: Satna, Madhya Pradesh, India',
                 ),
 
                 const SizedBox(height: 32),

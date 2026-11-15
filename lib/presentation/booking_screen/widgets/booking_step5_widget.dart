@@ -391,7 +391,7 @@ class _BookingStep5WidgetState extends State<BookingStep5Widget>
 
           const SizedBox(height: 20),
           Text(
-            'Need help? Contact us at maintix.help@gmail.com or WhatsApp',
+            'Need help? Contact us at homaclo.official@gmail.com or WhatsApp',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: AppTheme.textMuted,
