@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import './providers/app_state.dart';
 import './routes/app_routes.dart';
+import './services/auth_hint.dart';
 import './services/clerk/clerk_bridge.dart';
 import './services/notification_service.dart';
 import './services/supabase_service.dart';
@@ -50,6 +52,11 @@ void main() {
         FlutterError.presentError(details);
         debugPrint('Flutter error caught: ${details.exceptionAsString()}');
       };
+
+      // Was the user signed in last time? Lets the router open the account
+      // straight away instead of flashing the login page while the (Google)
+      // session is restored in the background.
+      await AuthHint.load();
 
       // Initialize Supabase before creating the authenticated app shell.
       String? startupError;
@@ -286,6 +293,7 @@ class _MyAppState extends State<MyApp> {
   late final AppState _appState;
   StreamSubscription<AuthState>? _authSubscription;
   StreamSubscription<ClerkBridgeEvent>? _clerkSubscription;
+  Timer? _restoreWatchdog;
   bool _initialized = false;
 
   @override
@@ -295,8 +303,45 @@ class _MyAppState extends State<MyApp> {
     _appState.loadThemePreference();
     _initAuthListener();
     _initClerkListener();
+    _startRestoreWatchdog();
+    _warmUpImages();
     // Apply initial system UI overlay for light mode
     AppTheme.applySystemUI(ThemeMode.light);
+  }
+
+  /// If we optimistically opened the account because the user was signed in
+  /// last time, but no session could be restored (expired / signed out
+  /// elsewhere), send them to the login page instead of leaving them on a
+  /// signed-out home screen. A late Google session restore still routes them
+  /// back home through the Clerk listener below.
+  void _startRestoreWatchdog() {
+    if (!AuthHint.wasLoggedIn) return;
+    _restoreWatchdog = Timer(const Duration(seconds: 8), () {
+      if (!mounted) return;
+      if (SupabaseService.instance.isLoggedIn) return;
+      unawaited(AuthHint.set(false));
+      final path = appRouter.routerDelegate.currentConfiguration.uri.toString();
+      if (!path.startsWith('/admin')) {
+        appRouter.go(AppRoutes.signUpLoginScreen);
+      }
+    });
+  }
+
+  /// Downloads the two "Real work proof" photos into the disk cache a moment
+  /// after start, so the slider is instant when the user scrolls to it.
+  void _warmUpImages() {
+    if (kIsWeb) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future<void>.delayed(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        for (final file in const ['before.png', 'after.png']) {
+          precacheImage(
+            CachedNetworkImageProvider('https://homaclo.in/img/$file'),
+            context,
+          ).catchError((Object _) {});
+        }
+      });
+    });
   }
 
   void _initAuthListener() {
@@ -311,6 +356,7 @@ class _MyAppState extends State<MyApp> {
             debugPrint('Auth event: $event');
 
             if (event == AuthChangeEvent.signedIn && session != null) {
+              unawaited(AuthHint.set(true));
               // Email-OTP login wins: drop any leftover Google (Clerk) session
               // so its token is never attached to this user's requests.
               if (ClerkBridge.appUserId != null) {
@@ -344,6 +390,7 @@ class _MyAppState extends State<MyApp> {
               _handleSignedOut();
             } else if (event == AuthChangeEvent.initialSession) {
               if (session != null) {
+                unawaited(AuthHint.set(true));
                 _linkOneSignalIdentity(session.user.id);
               }
               if (session != null && !_appState.isLoggedIn) {
@@ -355,6 +402,7 @@ class _MyAppState extends State<MyApp> {
               _initialized = true;
             } else if (event == AuthChangeEvent.tokenRefreshed &&
                 session != null) {
+              unawaited(AuthHint.set(true));
               _linkOneSignalIdentity(session.user.id);
               if (!_appState.isLoggedIn) {
                 await _appState.loginWithSupabase();
@@ -377,6 +425,7 @@ class _MyAppState extends State<MyApp> {
         case ClerkBridgeEventType.initialSession:
           final userId = event.userId;
           if (userId == null) return;
+          unawaited(AuthHint.set(true));
           _linkOneSignalIdentity(userId);
           if (!_appState.isLoggedIn) {
             await _appState.loginWithSupabase();
@@ -404,6 +453,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleSignedOut() {
+    unawaited(AuthHint.set(false));
     NotificationService.instance.unsubscribe();
     if (!kIsWeb) {
       OneSignal.logout();
@@ -444,6 +494,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _restoreWatchdog?.cancel();
     _authSubscription?.cancel();
     _clerkSubscription?.cancel();
     super.dispose();

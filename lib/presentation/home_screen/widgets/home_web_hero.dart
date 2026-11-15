@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -173,11 +174,15 @@ class HomeHero extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   const ColoredBox(color: Color(0xFF0B2A52)),
-                  Image.network(
-                    _photo,
+                  // Disk-cached: downloaded once, instant on every next launch.
+                  CachedNetworkImage(
+                    imageUrl: _photo,
                     fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    memCacheWidth: 900,
+                    fadeInDuration: const Duration(milliseconds: 120),
+                    fadeOutDuration: Duration.zero,
+                    placeholder: (_, __) => const SizedBox.shrink(),
+                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
                   ),
                   _badge(
                     'Fixed, upfront pricing',
