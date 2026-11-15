@@ -184,7 +184,7 @@ class TermsScreen extends StatelessWidget {
 
                 _termsSection(
                   '12. Contact',
-                  'For questions about these Terms:\n\n📧 maintix.help@gmail.com\n📞 +91 62622 62913\n📍 Satna, Madhya Pradesh, India',
+                  'For questions about these Terms:\n\n📧 homaclo.official@gmail.com\n📞 +91 62622 62913\n📍 Satna, Madhya Pradesh, India',
                 ),
 
                 const SizedBox(height: 32),

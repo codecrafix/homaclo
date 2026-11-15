@@ -182,7 +182,7 @@ class AboutUsScreen extends StatelessWidget {
                       _infoRow(
                         Icons.email_rounded,
                         'Email',
-                        'maintix.help@gmail.com',
+                        'homaclo.official@gmail.com',
                       ),
                       const SizedBox(height: 10),
                       _infoRow(Icons.phone_rounded, 'Phone', '+91 62622 62913'),
