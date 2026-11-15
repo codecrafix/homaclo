@@ -60,6 +60,22 @@ class SiteFooter extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _SocialBtn(
+                tooltip: 'Instagram',
+                onTap: () => wOpen('https://www.instagram.com/homaclo/'),
+                painter: _InstagramPainter(),
+              ),
+              const SizedBox(width: 10),
+              _SocialBtn(
+                tooltip: 'YouTube',
+                onTap: () => wOpen('https://www.youtube.com/@homaclo'),
+                painter: _YoutubePainter(),
+              ),
+            ],
+          ),
           const SizedBox(height: 28),
           _head('Services in Satna'),
           _Link(
@@ -156,4 +172,100 @@ class _ContactBtn extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Square social button, same look as the website footer (42px, 12px radius).
+class _SocialBtn extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback onTap;
+  final CustomPainter painter;
+  const _SocialBtn({
+    required this.tooltip,
+    required this.onTap,
+    required this.painter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: tooltip,
+      child: TapScale(
+        scale: 0.92,
+        onTap: onTap,
+        child: Container(
+          width: 42,
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color(0x1A7F7F7F),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0x597F7F7F)),
+          ),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CustomPaint(painter: painter),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Instagram glyph (24x24 viewBox, same shapes as the website icon).
+class _InstagramPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final k = size.width / 24;
+    final stroke = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 * k
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(3 * k, 3 * k, 18 * k, 18 * k),
+        Radius.circular(5 * k),
+      ),
+      stroke,
+    );
+    canvas.drawCircle(Offset(12 * k, 12 * k), 4 * k, stroke);
+    canvas.drawCircle(
+      Offset(17.5 * k, 6.5 * k),
+      1 * k,
+      Paint()..color = Colors.white,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// YouTube glyph (24x24 viewBox): rounded rectangle with a play triangle cut out.
+class _YoutubePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final k = size.width / 24;
+    final body = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTRB(0, 3.6 * k, 24 * k, 20.4 * k),
+          Radius.circular(5 * k),
+        ),
+      );
+    final play = Path()
+      ..moveTo(9.6 * k, 8.4 * k)
+      ..lineTo(15.8 * k, 12 * k)
+      ..lineTo(9.6 * k, 15.6 * k)
+      ..close();
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, body, play),
+      Paint()..color = Colors.white,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

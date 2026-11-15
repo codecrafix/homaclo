@@ -33,7 +33,7 @@ class CustomErrorWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Please restart the app. If the problem persists, contact maintix.help@gmail.com',
+                'Please restart the app. If the problem persists, contact homaclo.official@gmail.com',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   color: AppTheme.textSecondary,
