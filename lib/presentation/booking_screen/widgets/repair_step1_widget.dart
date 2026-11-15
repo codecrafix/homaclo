@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../services/solar_cart.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/picker_sheet.dart';
 
 /// Step 1 (Solar Maintenance & Repair): problem type + description, flat
 /// ₹1,000 service charge — same as the website.
@@ -30,12 +31,24 @@ class _RepairStep1WidgetState extends State<RepairStep1Widget> {
     super.dispose();
   }
 
+  Future<void> _pickProblem() async {
+    FocusScope.of(context).unfocus();
+    final v = await showOptionSheet(
+      context,
+      title: 'What is the problem related to?',
+      options: SolarCart.repairCategories,
+      selected: _cart.repairCategory.isEmpty ? null : _cart.repairCategory,
+    );
+    if (v != null) _cart.setRepairCategory(v);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _cart,
       builder: (context, _) {
         final ready = _cart.repairReady;
+        final picked = _cart.repairCategory;
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
           child: Column(
@@ -68,43 +81,41 @@ class _RepairStep1WidgetState extends State<RepairStep1Widget> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceWhite,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.divider),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _cart.repairCategory.isEmpty ? null : _cart.repairCategory,
-                    isExpanded: true,
-                    dropdownColor: AppTheme.surfaceWhite,
-                    hint: Text(
-                      'Select problem type…',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 15,
+              // Opens the full list in a sheet above the bottom bar, so every
+              // option is visible and nothing hides behind the floating nav.
+              InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: _pickProblem,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 52),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceWhite,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.divider),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          picked.isEmpty ? 'Select problem type…' : picked,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: picked.isEmpty ? 15 : 14,
+                            color: picked.isEmpty
+                                ? AppTheme.textMuted
+                                : AppTheme.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
                         color: AppTheme.textMuted,
                       ),
-                    ),
-                    items: SolarCart.repairCategories
-                        .map(
-                          (c) => DropdownMenuItem(
-                            value: c,
-                            child: Text(
-                              c,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) {
-                      if (v != null) _cart.setRepairCategory(v);
-                    },
+                    ],
                   ),
                 ),
               ),

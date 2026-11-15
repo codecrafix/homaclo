@@ -6,7 +6,7 @@ import '../../providers/app_state.dart';
 import '../../widgets/gps_enforcement_wrapper.dart';
 import '../../widgets/site_footer.dart';
 import 'package:provider/provider.dart';
-import './widgets/home_info_strip.dart';
+import './widgets/home_web_hero.dart';
 import './widgets/home_web_proof.dart';
 import './widgets/home_web_sections.dart';
 
@@ -14,6 +14,9 @@ import './widgets/home_web_sections.dart';
 /// (hero, stats, services, how it works, why Homaclo, real work proof,
 /// how we keep your water safe, reviews, call to action). This is the only
 /// screen that shows the footer.
+///
+/// The location now lives in the shared header (location icon), so the hero
+/// starts right under the header, like the website.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -41,9 +44,9 @@ class HomeScreen extends StatelessWidget {
                 parent: BouncingScrollPhysics(),
               ),
               slivers: [
-                const SliverToBoxAdapter(child: HomeInfoStrip()),
-                section(const HomeWebHero(), top: 16),
-                section(const HomeWebStats()),
+                // Full-width hero, same as the website.
+                const SliverToBoxAdapter(child: HomeHero()),
+                section(const HomeWebStats(), top: 22),
                 section(const HomeWebServices(), top: 28),
                 section(const HomeWebHowItWorks(), top: 28),
                 section(const HomeWebWhy(), top: 28),

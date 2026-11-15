@@ -46,4 +46,18 @@ class HomeDataService {
       return null;
     }
   }
+
+  /// Referral summary for the Profile page (same RPC the website uses):
+  /// code, invited, rewarded, pending, coins_earned, referred_by, items.
+  static Future<Map<String, dynamic>?> myReferralSummary() async {
+    try {
+      final r = await SupabaseService.instance.client.rpc(
+        'my_referral_summary',
+      );
+      if (r is Map) return Map<String, dynamic>.from(r);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
 }
