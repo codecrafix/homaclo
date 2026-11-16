@@ -65,7 +65,7 @@ class HomacloLogo extends StatelessWidget {
     final stacked =
         width != null && height != null && (width! / height!) < 1.6;
 
-    final drop = const HomacloDrop(height: 32);
+    final drop = const HomacloDrop(height: 44);
     final text = Text(
       'Homaclo',
       maxLines: 1,
