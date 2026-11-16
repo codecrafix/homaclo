@@ -25,9 +25,11 @@
   <style>
     html, body { margin: 0; padding: 0; height: 100%; background: #ffffff; }
     #homaclo-loader {
-      position: fixed; inset: 0; display: flex; align-items: center;
-      justify-content: center; background: #ffffff; z-index: 1;
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 22px;
+      background: #ffffff; z-index: 1;
     }
+    #homaclo-loader img { width: 150px; max-width: 60vw; height: auto; }
     #homaclo-loader .spinner {
       width: 28px; height: 28px; border-radius: 50%;
       border: 3px solid #d9eef4; border-top-color: #00A8CC;
@@ -37,7 +39,7 @@
   </style>
 </head>
 <body>
-  <div id="homaclo-loader"><div class="spinner"></div></div>
+  <div id="homaclo-loader"><img src="assets/assets/images/homaclo_logo.svg" alt="Homaclo"><div class="spinner"></div></div>
 
   <!-- Razorpay checkout SDK (used by lib/services/razorpay_checkout_web.dart) -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
