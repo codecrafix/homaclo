@@ -132,8 +132,10 @@ class SiteHeader extends StatelessWidget {
   }
 }
 
-/// Website logo: gradient water drop + "Homaclo" in Fraunces Bold.
-/// [light] forces the white wordmark (used on the dark footer).
+/// Website logo: Homaclo mark + "Homaclo" in Fraunces Bold.
+/// The mark is sized from the wordmark (30 vs 19 at scale 1) so it is clearly
+/// visible and in proportion with the text. [light] forces the white wordmark
+/// (used on the dark footer).
 class SiteLogo extends StatelessWidget {
   final bool light;
   final double scale;
@@ -145,8 +147,8 @@ class SiteLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        HomacloDrop(height: 21 * scale),
-        SizedBox(width: 8 * scale),
+        HomacloDrop(height: 30 * scale),
+        SizedBox(width: 9 * scale),
         Text(
           'Homaclo',
           maxLines: 1,

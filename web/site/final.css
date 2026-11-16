@@ -65,10 +65,15 @@ dialog{width:calc(100vw - 24px);padding:22px 18px;border-radius:20px}
 .page{padding:24px 0 60px}}
 @media(max-width:360px){
 .nav{gap:4px;padding:8px 10px}.nav-r{gap:4px}
-.nav .logo{font-size:1.05rem;gap:6px}.drop{width:16px;height:21px}
+.nav .logo{font-size:1.05rem;gap:6px}
 .nav-r .btn{padding:6px 10px;font-size:.8rem}
 .icon,.burger{width:40px}
 .wrap{padding:0 12px}
 #cd{letter-spacing:.15em!important;font-size:1.15rem!important}
 .steps span{min-width:76px}
 .pc{padding:12px 14px}.pc button{padding:0 12px}}
+
+/* ===== Logo mark: sized in em from the "Homaclo" wordmark, so icon and text always stay in proportion
+   on mobile, desktop and in the footer (logo ratio 1310:880). Replaces the old fixed 16x21px phone size. ===== */
+.logo .drop{width:3.42em;height:2.3em}
+@media(max-width:340px){.logo .drop{width:2.98em;height:2em}}
