@@ -1,7 +1,7 @@
 (function(){
 /* Policy & legal pages: content mirrored 1:1 from the Flutter app
    (terms_screen.dart, privacy_policy_screen.dart, about_us_screen.dart). Keep in sync with the app. */
-const E=s=>h(s).replace(/homaclo\.official@gmail\.com/g,'<a href="mailto:homaclo.official@gmail.com">homaclo.official@gmail.com</a>').replace(/\+91 62622 62913/g,'<a href="tel:+916262262913">+91 62622 62913</a>');
+const E=s=>h(s).replace(/homaclo\.official@gmail\.com/g,'<a href="mailto:homaclo.official@gmail.com">homaclo.official@gmail.com</a>').replace(/\+91 62622 62913/g,'<a href="tel:+916262262913">+91 62622 62913</a>').replace(/https:\/\/homaclo\.in\/delete-account\//g,'<a href="/delete-account/">homaclo.in/delete-account</a>');
 const sub=(t,i)=>({k:'sub',t,i}),ul=(i,d)=>({k:'ul',i,d}),box=t=>({k:'box',t}),note=t=>({k:'note',t});
 const S=(t,p,b)=>({t,p,b:b||[]});
 const ADDR='Jawahar Nagar, Satna, Madhya Pradesh, India';
@@ -54,8 +54,8 @@ const PAGES={
    sub('Infrastructure Security',['• Data hosted on ISO 27001-certified cloud infrastructure','• Regular security audits and penetration testing conducted','• Automated threat detection and intrusion prevention systems active'])]),
   S('4. How We Use Your Data',null,[ul(['To process and confirm your service bookings','To dispatch and coordinate our cleaning technicians','To send booking confirmations and service reminders','To improve app features and user experience','To calculate and credit loyalty reward coins','To respond to customer support inquiries','To comply with applicable legal obligations'],1)]),
   S('5. Data Sharing & Third Parties','We do NOT sell, trade, or rent your personal information to third parties. We may share limited data with:\n\n• Service technicians (name, address, phone) — only for active bookings\n• Payment processors — only transaction amounts, no card data stored by us\n• Legal authorities — only when required by law or court order\n\nAll third-party partners are contractually bound to maintain data confidentiality.'),
-  S('6. Your Privacy Rights',null,[ul(['🔍 Right to Access — Request a copy of all data we hold about you','✏️ Right to Rectification — Correct inaccurate or incomplete data','🗑️ Right to Erasure — Request deletion of your account and data','🚫 Right to Object — Opt out of non-essential data processing','📦 Right to Portability — Receive your data in a portable format','🔒 Right to Restriction — Limit how we process your data'],1),note('To exercise any of these rights, contact us at homaclo.official@gmail.com')]),
-  S('7. Data Retention','We retain your personal data for as long as your account is active or as needed to provide services. Booking records are retained for 3 years for legal and tax compliance. You may request deletion of your account at any time, after which personal data is purged within 30 days.'),
+  S('6. Your Privacy Rights',null,[ul(['🔍 Right to Access — Request a copy of all data we hold about you','✏️ Right to Rectification — Correct inaccurate or incomplete data','🗑️ Right to Erasure — Request deletion of your account and data','🚫 Right to Object — Opt out of non-essential data processing','📦 Right to Portability — Receive your data in a portable format','🔒 Right to Restriction — Limit how we process your data'],1),note('To exercise any of these rights, contact us at homaclo.official@gmail.com. To delete your account and data, follow the steps at https://homaclo.in/delete-account/')]),
+  S('7. Data Retention','We retain your personal data for as long as your account is active or as needed to provide services. Booking records are retained for 3 years for legal and tax compliance. You may request deletion of your account at any time, after which personal data is purged within 30 days.\n\nTo delete your account and data, follow the steps at https://homaclo.in/delete-account/ (one request removes it from both the website and the app).'),
   S('8. Children\'s Privacy','Homaclo services are not directed to individuals under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a child under 18 has provided us with personal data, we will delete it immediately.'),
   S('9. Changes to This Policy','We may update this Privacy Policy periodically. We will notify you of significant changes via in-app notification or email. Continued use of the app after changes constitutes acceptance of the updated policy.'),
   S('10. Cancellation & Refund Policy',null,CANCEL_REFUND),
@@ -103,7 +103,7 @@ Object.assign(ROUTES,{refund:'refund',cancellation:'cancellation',contact:'conta
 function foot(){
   const c=[...document.querySelectorAll('.foot h5')].find(x=>x.textContent.trim()==='Company');
   if(!c||c.parentElement.querySelector('[href="#/refund"]'))return;
-  [['#/refund','Cancellation & Refund'],['#/contact','Contact Us']].forEach(([u,t])=>{const a=document.createElement('a');a.href=u;a.textContent=t;c.parentElement.append(a)});
+  [['#/refund','Cancellation & Refund'],['#/contact','Contact Us'],['/delete-account/','Delete Account']].forEach(([u,t])=>{const a=document.createElement('a');a.href=u;a.textContent=t;c.parentElement.append(a)});
 }
 foot();
 /* footer address: show the full business address */
