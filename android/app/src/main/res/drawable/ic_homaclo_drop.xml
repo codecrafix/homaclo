@@ -26,27 +26,27 @@
     </path>
     <path
         android:pathData="M1010,492 L1358,511 L1020,524 Z"
-        android:fillColor="#FFDFE9F1"
-        android:strokeColor="#FF9DB3C4"
-        android:strokeWidth="2"
+        android:fillColor="#FFC5D5E3"
+        android:strokeColor="#FF7F97AB"
+        android:strokeWidth="6"
         android:strokeLineJoin="round" />
     <path
         android:pathData="M185,485 L622,102 L1006,482 L1020,600 L622,210 L383,415 L380,640 L302,658 L302,468 Z"
-        android:strokeColor="#FF27465C"
-        android:strokeWidth="3"
+        android:strokeColor="#FF3A6079"
+        android:strokeWidth="9"
         android:strokeLineJoin="round">
         <aapt:attr name="android:fillColor">
             <gradient android:type="linear" android:startX="0" android:startY="102" android:endX="0" android:endY="658">
-                <item android:color="#FFFFFFFF" android:offset="0" />
-                <item android:color="#FFB9C9D8" android:offset="1" />
+                <item android:color="#FFD3E0EC" android:offset="0" />
+                <item android:color="#FF8EA7BC" android:offset="1" />
             </gradient>
         </aapt:attr>
     </path>
     <path
         android:pathData="M548,347 H604 Q612,347 612,355 V412 Q612,420 604,420 H548 Q540,420 540,412 V355 Q540,347 548,347 Z M636,347 H692 Q700,347 700,355 V412 Q700,420 692,420 H636 Q628,420 628,412 V355 Q628,347 636,347 Z M548,433 H604 Q612,433 612,441 V498 Q612,506 604,506 H548 Q540,506 540,498 V441 Q540,433 548,433 Z M636,433 H692 Q700,433 700,441 V498 Q700,506 692,506 H636 Q628,506 628,498 V441 Q628,433 636,433 Z"
-        android:fillColor="#FFF6F9FC"
-        android:strokeColor="#FF9FB0BF"
-        android:strokeWidth="3"
+        android:fillColor="#FFE6EEF6"
+        android:strokeColor="#FF7F97AB"
+        android:strokeWidth="7"
         android:strokeLineJoin="round" />
     <path
         android:pathData="M840,432 C795,520 712,590 712,690 C712,770 772,814 842,814 C918,814 970,766 970,690 C970,600 888,522 840,432 Z"
@@ -57,7 +57,7 @@
     <path
         android:pathData="M840,432 C795,520 712,590 712,690 C712,770 772,814 842,814 C918,814 970,766 970,690 C970,600 888,522 840,432 Z"
         android:strokeColor="#FF1A5F80"
-        android:strokeWidth="2"
+        android:strokeWidth="6"
         android:strokeLineJoin="round">
         <aapt:attr name="android:fillColor">
             <gradient android:type="linear" android:startX="0" android:startY="432" android:endX="0" android:endY="814">
