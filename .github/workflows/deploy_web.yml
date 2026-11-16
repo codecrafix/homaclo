@@ -39,7 +39,7 @@ jobs:
           python3 - <<'PY'
           from PIL import Image
 
-          src = Image.open('assets/images/maintix_m_logo.png').convert('RGBA')
+          src = Image.open('assets/images/homaclo_logo.png').convert('RGBA')
 
           def render(size, pad_ratio):
               canvas = Image.new('RGBA', (size, size), (255, 255, 255, 255))
