@@ -1,3 +1,4 @@
+(function(){try{var h=document.head,a=[['icon','image/svg+xml','img/homaclo-logo.svg'],['apple-touch-icon','','img/homaclo-logo.svg']];a.forEach(function(x){var o=document.querySelector('link[rel="'+x[0]+'"]');if(o)o.remove();var l=document.createElement('link');l.rel=x[0];if(x[1])l.type=x[1];l.href=x[2];h.appendChild(l)})}catch(e){}})();
 (function(){
 'use strict';
 /* Home stats.
