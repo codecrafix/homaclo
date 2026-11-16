@@ -1,52 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Homaclo brand logo, identical to the website header logo
-/// (`.logo` + `.drop` in web/site/styles.css): a teal/cyan water-drop mark
-/// followed by the "Homaclo" wordmark in Fraunces Bold.
+/// Homaclo brand mark: house + solar panel + water drop + wave, rendered from
+/// `assets/images/homaclo_logo.svg` (sharp on every screen density).
 ///
-/// Drawn in code (no image asset), so it is sharp on every screen density and
-/// follows light / dark theme automatically.
+/// The class keeps its old name so every existing call site picks up the new
+/// logo without touching imports.
 class HomacloDrop extends StatelessWidget {
-  /// Height of the drop. Width follows the website ratio (20 : 26).
+  /// Height of the mark. Width follows the logo ratio (1310 : 880).
   final double height;
 
   const HomacloDrop({super.key, this.height = 26});
 
+  static const double _ratio = 1310 / 880;
+
   @override
   Widget build(BuildContext context) {
-    final h = height;
-    final w = h * 20 / 26;
-    return Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment(-0.34, -0.94),
-          end: Alignment(0.34, 0.94),
-          colors: [Color(0xFF22D3EE), Color(0xFF0FB9A8)],
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.elliptical(w / 2, h * 0.62),
-          topRight: Radius.elliptical(w / 2, h * 0.62),
-          bottomLeft: Radius.elliptical(w / 2, h * 0.38),
-          bottomRight: Radius.elliptical(w / 2, h * 0.38),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(15, 185, 168, 0.45),
-            offset: Offset(0, h * 4 / 26),
-            blurRadius: h * 12 / 26,
-          ),
-        ],
-      ),
+    return SvgPicture.asset(
+      'assets/images/homaclo_logo.svg',
+      width: height * _ratio,
+      height: height,
+      fit: BoxFit.contain,
     );
   }
 }
 
-/// Drop + "Homaclo" wordmark. Pass [width] / [height] to fit it into a box
-/// (it scales down, never distorts). With a near-square box the drop is
-/// stacked above the text; otherwise they sit side by side like the website.
+/// Logo mark + "Homaclo" wordmark in Fraunces Bold. Pass [width] / [height] to
+/// fit it into a box (it scales down, never distorts). With a near-square box
+/// the mark is stacked above the text; otherwise they sit side by side.
 class HomacloLogo extends StatelessWidget {
   final double? width;
   final double? height;
@@ -59,7 +41,7 @@ class HomacloLogo extends StatelessWidget {
   /// current light / dark theme).
   final Color? color;
 
-  /// Set false to show only the drop mark.
+  /// Set false to show only the logo mark.
   final bool showText;
 
   const HomacloLogo({
@@ -83,7 +65,7 @@ class HomacloLogo extends StatelessWidget {
     final stacked =
         width != null && height != null && (width! / height!) < 1.6;
 
-    final drop = const HomacloDrop(height: 26);
+    final drop = const HomacloDrop(height: 32);
     final text = Text(
       'Homaclo',
       maxLines: 1,
