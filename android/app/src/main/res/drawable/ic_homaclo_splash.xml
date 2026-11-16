@@ -1,22 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Homaclo drop shown on the native launch screen (before Flutter draws). -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
-    android:width="72dp"
-    android:height="94dp"
-    android:viewportWidth="41.5"
-    android:viewportHeight="54">
-    <path android:pathData="M0,33.5 A20.75,33.5 0 0 1 41.5,33.5 A20.75,20.5 0 0 1 0,33.5 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="6"
-                android:startY="0"
-                android:endX="35"
-                android:endY="54">
-                <item android:color="#FF22D3EE" android:offset="0" />
-                <item android:color="#FF0FB9A8" android:offset="1" />
-            </gradient>
-        </aapt:attr>
-    </path>
-</vector>
+<!-- Homaclo logo shown on the native launch screen (before Flutter draws). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="300dp"
+        android:height="300dp"
+        android:drawable="@drawable/ic_homaclo_drop"
+        android:gravity="center" />
+</layer-list>

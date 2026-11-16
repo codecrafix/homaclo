@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Push notification small icon: Homaclo drop (alpha mask, shown white). -->
+<!-- Push notification small icon: Homaclo logo (alpha mask, shown white). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+    <group
+        android:translateX="-0.562"
+        android:translateY="3.447"
+        android:scaleX="0.016496"
+        android:scaleY="0.016496">
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M4,14.5 A8,13 0 0 1 20,14.5 A8,8 0 0 1 4,14.5 Z" />
+        android:pathData="M678,105 L1185,248 L1398,482 L1000,458 Z M185,485 L622,102 L1006,482 L1020,600 L622,210 L383,415 L380,640 L302,658 L302,468 Z M840,432 C795,520 712,590 712,690 C712,770 772,814 842,814 C918,814 970,766 970,690 C970,600 888,522 840,432 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M125,768 C250,690 400,650 540,690 C660,725 730,830 890,848 C1060,866 1210,790 1290,680 C1235,835 1090,935 900,926 C720,918 610,800 480,782 C440,776 400,770 365,770 C440,772 500,800 560,830 C560,780 300,700 125,768 Z M365,770 C440,768 520,790 600,840 C700,900 840,935 920,930 C1090,935 1230,830 1290,680 C1200,800 1070,880 900,880 C760,880 680,800 600,770 C520,745 440,755 365,770 Z" />
+    </group>
 </vector>
