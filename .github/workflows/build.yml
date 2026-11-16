@@ -8,40 +8,51 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.38.4'
           channel: 'stable'
           cache: true
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - run: flutter pub get
 
       - name: Decode Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
 
-      - name: Build Android App Bundle (AAB)
+      - name: Create Flutter defines
+        env:
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          d = {}
+          if os.environ.get("RAZORPAY_KEY_ID"):
+              d["RAZORPAY_KEY_ID"] = os.environ["RAZORPAY_KEY_ID"]
+          json.dump(d, open("dart_defines.json", "w"))
+          PY
+
+      - name: Build AAB
         env:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || secrets.ANDROID_KEYSTORE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --dart-define-from-file=dart_defines.json
 
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
+      - name: Remove secrets
+        if: always()
+        run: rm -f dart_defines.json android/app/keystore.jks
+
+      - uses: actions/upload-artifact@v4
         with:
           name: release-aab
           path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
