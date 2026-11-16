@@ -2,10 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
+
+  static const String _deleteUrl = 'https://homaclo.in/delete-account/';
+
+  Future<void> _openDeletePage() async {
+    final uri = Uri.parse(_deleteUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,12 +180,26 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: _openDeletePage,
+                      child: Text(
+                        'Delete your account & data: homaclo.in/delete-account',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          color: AppTheme.tealAccent,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
 
                 _policySection(
                   '7. Data Retention',
-                  'We retain your personal data for as long as your account is active or as needed to provide services. Booking records are retained for 3 years for legal and tax compliance. You may request deletion of your account at any time, after which personal data is purged within 30 days.',
+                  'We retain your personal data for as long as your account is active or as needed to provide services. Booking records are retained for 3 years for legal and tax compliance. You may request deletion of your account at any time, after which personal data is purged within 30 days.\n\nTo delete your account and data, follow the steps at homaclo.in/delete-account (one request removes it from both the website and the app).',
+                  onTapExtra: _openDeletePage,
                 ),
 
                 _policySection(
@@ -222,6 +246,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     String title,
     String? content, {
     List<Widget>? children,
+    VoidCallback? onTapExtra,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -258,6 +283,21 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 height: 1.6,
               ),
             ),
+          if (onTapExtra != null) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: onTapExtra,
+              child: Text(
+                'Open delete account page',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: AppTheme.tealAccent,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
           if (children != null) ...children,
         ],
       ),
