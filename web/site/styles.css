@@ -8,7 +8,7 @@ h1{font-size:clamp(2.3rem,5.5vw,4rem)}h2{font-size:clamp(1.7rem,3.4vw,2.5rem)}h3
 a{color:inherit;text-decoration:none}.muted{color:var(--mut)}.small{font-size:.85rem}.grow{flex:1}.c{text-align:center}
 .wrap{max-width:1160px;margin:0 auto;padding:0 22px}.sec{padding:84px 0}.sec.alt{background:var(--sf)}
 .nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;padding:12px max(22px,calc((100vw - 1160px)/2));background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.logo{display:flex;align-items:center;gap:9px;font:700 1.35rem Fraunces,serif}.drop{width:38px;height:26px;flex:none;background:url(img/homaclo-logo.svg) center/contain no-repeat!important;border-radius:0!important;box-shadow:none!important}
+.logo{display:flex;align-items:center;gap:9px;font:700 1.35rem Fraunces,serif}.drop{width:66px;height:44px;flex:none;background:url(img/homaclo-logo.svg?v=3) center/contain no-repeat!important;border-radius:0!important;box-shadow:none!important}
 #links{display:flex;gap:4px;margin-left:18px;flex:1}#links a{padding:8px 13px;border-radius:12px;font-weight:600;font-size:.92rem;color:var(--mut);transition:.2s}#links a:hover,#links a.on{background:color-mix(in srgb,var(--teal) 14%,transparent);color:var(--ink)}
 .auth-only{display:none}.authed .auth-only{display:block}.nav-r{display:flex;gap:8px;align-items:center}.burger{display:none}
 .icon{border:1px solid var(--line);background:var(--sf);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1rem;cursor:pointer}
