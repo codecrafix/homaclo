@@ -25,6 +25,9 @@ class _ProfileReferralWidgetState extends State<ProfileReferralWidget> {
   bool _copied = false;
   int? _lastCoins;
 
+  static const _playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.maintix.app';
+
   static const _months = [
     'Jan',
     'Feb',
@@ -64,7 +67,8 @@ class _ProfileReferralWidgetState extends State<ProfileReferralWidget> {
   }
 
   String _msg(String link) =>
-      'Book professional water tank cleaning with Homaclo in Satna. Sign up with my link and we both get 50 coins after your first booking of ₹500 or more: $link';
+      'Book professional water tank cleaning with Homaclo in Satna. Sign up with my link and we both get 50 coins after your first booking of ₹500 or more: $link'
+      '\n\nDownload the Homaclo app: $_playStoreUrl';
 
   Widget _stat(String label, int value) => Container(
     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
@@ -263,6 +267,13 @@ class _ProfileReferralWidgetState extends State<ProfileReferralWidget> {
                   onTap: () => wOpen(
                     'https://wa.me/?text=${Uri.encodeComponent(_msg(link))}',
                   ),
+                ),
+                WBtn(
+                  'Get the app',
+                  small: true,
+                  ghost: true,
+                  full: false,
+                  onTap: () => wOpen(_playStoreUrl),
                 ),
                 WBtn(
                   'How it works',
