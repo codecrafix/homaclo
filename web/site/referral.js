@@ -59,10 +59,11 @@ async function claim(){
 setInterval(claim,2500);
 
 /* ---------- 3) popup, header buttons ---------- */
+const PLAY='https://play.google.com/store/apps/details?id=com.maintix.app';
 const STEPS=[['Get your link','Sign in and copy your personal referral link.'],['Friend joins','Your friend opens your link and signs up as a new customer.'],['Friend books','They book any service worth ₹500 or more.'],['Both earn','50 coins (₹50) go to your wallet and your friend’s wallet automatically.']];
 const RULES=['Only new customers: your friend must be a new account (created within the last 7 days) making their first booking.','The booking must be ₹500 or more after discounts, paid online.','Coins are added automatically once the paid booking is confirmed. 1 coin = ₹1, and up to 50 coins can be used per booking.','No self-referrals: your own extra accounts, the same email (including Gmail dot or plus tricks) or the same address do not qualify.','Up to 10 rewarded referrals in any 30 days.','Homaclo can cancel rewards that look fake or abusive.'];
-const msg=l=>`Book professional water tank cleaning with Homaclo in Satna. Sign up with my link and we both get 50 coins after your first booking of ₹500 or more: ${l}`;
-const boxHTML=l=>`<div class='hm-link'><input id='hmL' class='notranslate' readonly value='${h(l)}' aria-label='Your referral link'><button class='btn sm' data-hm='copy' data-link='${h(l)}'>Copy</button></div><div class='hm-sh'><button class='btn sm ghost' data-hm='share' data-link='${h(l)}'>Share</button><a class='btn sm ghost' target='_blank' rel='noopener' href='${h('https://wa.me/?text='+encodeURIComponent(msg(l)))}'>WhatsApp</a></div>`;
+const msg=l=>`Book professional water tank cleaning with Homaclo in Satna. Sign up with my link and we both get 50 coins after your first booking of ₹500 or more: ${l}\n\nDownload the Homaclo app: ${PLAY}`;
+const boxHTML=l=>`<div class='hm-link'><input id='hmL' class='notranslate' readonly value='${h(l)}' aria-label='Your referral link'><button class='btn sm' data-hm='copy' data-link='${h(l)}'>Copy</button></div><div class='hm-sh'><button class='btn sm ghost' data-hm='share' data-link='${h(l)}'>Share</button><a class='btn sm ghost' target='_blank' rel='noopener' href='${h('https://wa.me/?text='+encodeURIComponent(msg(l)))}'>WhatsApp</a><a class='btn sm ghost' target='_blank' rel='noopener' href='${h(PLAY)}'>Get the app</a></div>`;
 const stepsHTML=`<ol class='hm-steps'>${STEPS.map(s=>`<li><b>${s[0]}.</b> ${s[1]}</li>`).join('')}</ol>`;
 const rulesHTML=`<details class='hm-rules'><summary><b>Rules that keep it fair</b></summary><ul>${RULES.map(r=>`<li>${r}</li>`).join('')}</ul></details>`;
 
