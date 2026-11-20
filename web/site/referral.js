@@ -105,9 +105,9 @@ function loadGT(){
 if(curLang()!=='en')loadGT();
 
 function copy(b){
-  const l=b.dataset.link,done=()=>toast('Referral link copied ✅');
-  const fb=()=>{const i=$('#hmL')||b.parentNode.querySelector('input');if(i){i.select();i.setSelectionRange(0,9999)}try{document.execCommand('copy');done()}catch(e){toast('Press and hold the link to copy it')}};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(l).then(done,fb);else fb();
+  const l=b.dataset.link,t=msg(l),done=()=>toast('Referral message with app link copied ✅');
+  const fb=()=>{const ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';(b.closest('dialog')||document.body).appendChild(ta);ta.select();ta.setSelectionRange(0,99999);try{document.execCommand('copy');done()}catch(e){toast('Press and hold the link to copy it')}ta.remove()};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb();
 }
 function share(b){
   const l=b.dataset.link;
