@@ -345,7 +345,7 @@ class _ReferSheetState extends State<_ReferSheet> {
                               small: true,
                               onTap: () async {
                                 await Clipboard.setData(
-                                  ClipboardData(text: link),
+                                  ClipboardData(text: _msg(link)),
                                 );
                                 if (!mounted) return;
                                 setState(() => _copied = true);
