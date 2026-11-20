@@ -244,7 +244,7 @@ class _ProfileReferralWidgetState extends State<ProfileReferralWidget> {
                   small: true,
                   full: false,
                   onTap: () async {
-                    await Clipboard.setData(ClipboardData(text: link));
+                    await Clipboard.setData(ClipboardData(text: _msg(link)));
                     if (!mounted) return;
                     setState(() => _copied = true);
                     Future.delayed(const Duration(milliseconds: 1800), () {
