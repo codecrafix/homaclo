@@ -226,8 +226,12 @@ class _ReferSheetState extends State<_ReferSheet> {
   late final Future<String?> _code = HomeDataService.myReferralCode();
   bool _copied = false;
 
+  static const _playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.maintix.app';
+
   String _msg(String link) =>
-      'Book professional water tank cleaning with Homaclo in Satna. Sign up with my link and we both get 50 coins after your first booking of ₹500 or more: $link';
+      'Book professional water tank cleaning with Homaclo in Satna. Sign up with my link and we both get 50 coins after your first booking of ₹500 or more: $link'
+      '\n\nDownload the Homaclo app: $_playStoreUrl';
 
   @override
   Widget build(BuildContext context) {
@@ -366,6 +370,13 @@ class _ReferSheetState extends State<_ReferSheet> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 10),
+                      WBtn(
+                        'Get the app',
+                        small: true,
+                        ghost: true,
+                        onTap: () => wOpen(_playStoreUrl),
                       ),
                     ],
                   );
