@@ -6,13 +6,30 @@
 .foot .soc a.ig:hover,.foot .soc a.ig:focus-visible{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)}
 .foot .soc a.yt:hover,.foot .soc a.yt:focus-visible{background:#ff0000}
 
+/* Google Play button in the footer ("Get it on Google Play" badge) */
+.foot .gpw{margin-top:14px}
+.foot a.gpb{display:inline-flex;align-items:center;gap:10px;margin:0;padding:8px 18px 8px 12px;border-radius:12px;background:#0b0f19;color:#fff;border:1px solid rgba(255,255,255,.30);text-decoration:none;line-height:1.1;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.foot a.gpb svg{width:28px;height:28px;flex:none;display:block}
+.foot a.gpb .gpt{display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+.foot a.gpb small{font-size:10px;letter-spacing:.08em;font-weight:600;opacity:.85}
+.foot a.gpb b{font-size:17px;font-weight:700;margin-top:2px;letter-spacing:.01em}
+.foot a.gpb:hover,.foot a.gpb:focus-visible{transform:translateY(-2px);border-color:rgba(255,255,255,.6);box-shadow:0 8px 18px rgba(0,0,0,.28)}
+
+/* Google Play button in the header */
+.hgp{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;min-width:34px;padding:0 9px;border-radius:10px;border:1px solid rgba(127,127,127,.35);background:rgba(127,127,127,.10);color:inherit;text-decoration:none;font-size:.78rem;font-weight:700;line-height:1;white-space:nowrap;flex:none;transition:transform .2s ease,background .2s ease,box-shadow .2s ease}
+.hgp svg{width:18px;height:18px;flex:none;display:block}
+.hgp span{display:none}
+.hgp:hover,.hgp:focus-visible{transform:translateY(-1px);background:rgba(127,127,127,.2);box-shadow:0 6px 14px rgba(0,0,0,.18)}
+@media (min-width:521px){.hgp{height:40px;min-width:40px;border-radius:12px}}
+@media (min-width:1100px){.hgp{padding:0 14px;font-size:.85rem}.hgp span{display:inline}}
+
 /* Header side spacing in desktop-site mode on phones/tablets (600-1024px): a little margin on both sides,
    same as the page content (22px). Mobile view (<600px) and large desktop (>1024px) are not touched. */
 @media (min-width:600px) and (max-width:1024px){
   .nav{padding-left:22px;padding-right:22px}
 }
 
-/* Mobile header (phones, up to 520px): the header now holds Refer, Language, Theme, Bell, Sign out and Menu.
+/* Mobile header (phones, up to 520px): the header now holds Get app, Refer, Language, Theme, Bell, Sign out and Menu.
    At 44px each they were wider than the screen and the Menu button was pushed off the edge.
    Compact sizes make them fit on one row; on extremely narrow screens the buttons drop to a second row instead of overflowing.
    Desktop and tablet layouts are not touched. */
@@ -31,7 +48,7 @@
 }
 
 /* Mobile header layout (phones, up to 520px), two rows:
-   top row    -> Refer & Earn (gift) and Language (globe), on the right;
+   top row    -> Get the app (Google Play), Refer & Earn (gift) and Language (globe), on the right;
    second row -> logo, Theme, Bell, Sign in / Sign out and Menu together on one line.
    Only the order on screen changes (the buttons themselves, their sizes and what they do stay the same).
    Desktop and tablet layouts are not touched. */
@@ -39,11 +56,14 @@
   .nav{row-gap:0}
   .nav .nav-r{display:contents}
   .nav::before{content:"";order:3;flex:0 0 100%;height:0}
-  .nav #hmRef{order:1;margin-left:auto;margin-bottom:4px}
-  .nav #hmLang{order:2;margin-bottom:4px}
-  .nav>.logo{order:4}
-  .nav .nav-r [data-act="theme"]{order:5;margin-left:auto}
-  .nav #nbBell{order:6}
-  .nav #authBtn{order:7}
-  .nav .nav-r .burger{order:8}
+  .nav #hmPlay{order:1;margin-left:auto;margin-bottom:4px}
+  .nav #hmPlay span{display:inline}
+  .nav #hmRef{order:2;margin-bottom:4px}
+  .nav #hmLang{order:3;margin-bottom:4px}
+  .nav::before{order:4}
+  .nav>.logo{order:5}
+  .nav .nav-r [data-act="theme"]{order:6;margin-left:auto}
+  .nav #nbBell{order:7}
+  .nav #authBtn{order:8}
+  .nav .nav-r .burger{order:9}
 }
