@@ -471,6 +471,10 @@ Future<void> sendOtp(String email) async {
 
   // ─── BOOKINGS ────────────────────────────────────────────────────────────
 
+  /// Same query as the website (web/site/bookings.js): rows the user removed
+  /// from "My Bookings" (or that were auto-hidden after 7 days) are excluded.
+  /// Admin accounts can read every row through RLS, so the filter must be
+  /// explicit here, otherwise the app shows bookings the website hides.
   Future<List<BookingRecord>> fetchBookings() async {
     final user = currentUser;
     if (user == null) return [];
@@ -480,6 +484,7 @@ Future<void> sendOtp(String email) async {
           .from('bookings')
           .select()
           .eq('user_id', user.id)
+          .eq('hidden_by_user', false)
           .order('created_at', ascending: false);
 
       return (data as List)
@@ -761,11 +766,13 @@ Future<void> sendOtp(String email) async {
     if (user == null) return {'bookings': 0, 'coins': 0, 'avgRating': 0.0};
 
     try {
-      // Fetch bookings count
+      // Fetch bookings count (hidden/removed bookings excluded, same as the
+      // My Bookings list and the website)
       final bookingsResp = await client
           .from('bookings')
           .select('id')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('hidden_by_user', false);
       final bookingsCount = (bookingsResp as List).length;
 
       // Fetch coin balance
