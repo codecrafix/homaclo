@@ -57,3 +57,26 @@
   .nav #authBtn{order:8}
   .nav .nav-r .burger{order:9}
 }
+
+/* DESKTOP VIEW (600px and wider, incl. phone browser "Desktop site") - header + footer fix.
+   Problem: .icon has a fixed width (40/44px) and min-height 48px, while Refer & Earn / Language (.hm) set their own
+   32px height. So Refer & Earn text wrapped into 3 lines inside a narrow box and the Language, Google Play and Theme
+   buttons all had different sizes. Now every header button is exactly 42px high (same as the footer social icons),
+   the Refer & Earn label stays on one line and grows sideways, and Sign in matches the same height.
+   Mobile view (under 600px) is NOT touched: the rules above keep controlling it. */
+@media (min-width:600px){
+  .nav .nav-r{display:flex;align-items:center;gap:8px;flex:none}
+  .nav .nav-r .icon{width:42px;height:42px;min-width:42px;min-height:42px;padding:0;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;line-height:1;border-radius:12px;white-space:nowrap}
+  .nav .nav-r .hm{width:auto;gap:6px}
+  .nav .nav-r .hm span{display:none;white-space:nowrap;font-size:.85rem;font-weight:600;line-height:1}
+  .nav .nav-r .btn{height:42px;min-height:42px;padding:0 20px;white-space:nowrap;flex:none}
+  /* Footer: Get the app button keeps its full size and text in one line */
+  .foot .soc a.sb{flex:none}
+  .foot .soc a.sb.gpb{height:42px;min-height:42px}
+  .foot .soc a.sb.gpb span{margin:0;font:inherit;line-height:1;color:inherit;white-space:nowrap;overflow-wrap:normal}
+}
+/* Wide enough for the full "Refer & Earn" label (same breakpoint referral.js uses) */
+@media (min-width:820px){
+  .nav .nav-r #hmRef{padding:0 14px}
+  .nav .nav-r #hmRef span{display:inline}
+}
